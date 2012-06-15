@@ -226,6 +226,7 @@
         </plugins>
     </build>
 
+    <!--
     <distributionManagement>
         <repository>
             <id>nexus-release</id>
@@ -238,5 +239,6 @@
             <url>http://192.168.24.249:8081/nexus/content/repositories/Starmedia-Snapshot</url>
         </snapshotRepository>
     </distributionManagement>
+    -->
 
 </project>
