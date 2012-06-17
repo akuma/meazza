@@ -20,6 +20,7 @@ public class ResponseMessage implements Serializable {
     private Collection<String> actionMessages;
     private Collection<String> actionErrors;
     private Map<String, Collection<String>> fieldErrors;
+    private Map<String, Object> data; // 其他响应数据
 
     public Collection<String> getActionErrors() {
         return actionErrors;
@@ -43,6 +44,14 @@ public class ResponseMessage implements Serializable {
 
     public void setFieldErrors(Map<String, Collection<String>> fieldErrors) {
         this.fieldErrors = fieldErrors;
+    }
+
+    public Map<String, Object> getData() {
+        return data;
+    }
+
+    public void setData(Map<String, Object> data) {
+        this.data = data;
     }
 
 }
