@@ -184,7 +184,6 @@ public abstract class AbstractController implements ValidationSupport {
         message.setActionMessages(getActionMessages(model));
         message.setActionErrors(getActionErrors(model));
         message.setFieldErrors(getFieldErrors(model));
-        message.setData(model.asMap());
         return message;
     }
 
