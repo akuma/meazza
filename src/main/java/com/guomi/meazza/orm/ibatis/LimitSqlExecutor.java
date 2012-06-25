@@ -7,7 +7,7 @@ package com.guomi.meazza.orm.ibatis;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import com.guomi.meazza.dao.Dialect;
 import com.ibatis.sqlmap.engine.execution.SqlExecutor;
 import com.ibatis.sqlmap.engine.mapping.statement.RowHandlerCallback;
 import com.ibatis.sqlmap.engine.scope.StatementScope;
-
 
 /**
  * 扩展 iBATIS 的 {@link com.ibatis.sqlmap.engine.execution.SqlExecutor}，提供了限制数据库查询记录条数的功能。
