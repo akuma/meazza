@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -24,16 +26,20 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * <code>Controller</code> 抽象类，可供业务 <code>Controller</code> 继承。主要提供了以下功能：
+ * <code>Controller</code> 抽象类，可供业务 <code>Controller</code> 继承。
+ * <p>
+ * 主要提供了以下功能：
  * 
  * <ul>
  * <li>提供了添加错误信息、提示信息的相关方法。</li>
- * <li>对异常进行统一拦截，如果是 AJAX 请求会 dispatch 到 JSON 异常页面，否则 dispatch 到普通异常页面。</li>
+ * <li>对异常进行统一拦截，如果是 AJAX 请求会直接返回 JSON 格式的出错响应，否则 dispatch 到出错视图。</li>
+ * <li>对于非 AJAX 的请求，默认的出错视图名称为 'error'，可以使用 {@link #setDefaultErrorView(String)} 修改默认值，也可以使用
+ * {@link #setExceptionMappings(Map)} 给不同的异常指定不同的出错视图。</li>
  * </ul>
  * 
  * @author akuma
@@ -49,8 +55,8 @@ public abstract class AbstractController implements ValidationSupport {
     private static final String AJAX_REQUEST_HEADER_NAME = "X-Requested-With";
     private static final String AJAX_REQUEST_HEADER_VALUE = "XMLHttpRequest";
 
-    private String exceptionViewName = "exceptionPage";
-    private String exceptionJsonViewName = "exceptionJson";
+    private String defaultErrorView = "error";
+    private Map<Object, String> exceptionMappings = Collections.emptyMap();
 
     @Resource
     protected MessageSource messageSource;
@@ -230,41 +236,48 @@ public abstract class AbstractController implements ValidationSupport {
      *            异常信息
      * @param request
      *            Spring WebRequest
+     * @return
      * @return 异常视图
+     * @throws Exception
      */
     @ExceptionHandler(Exception.class)
-    public String handleException(Exception ex, WebRequest request) {
+    public ModelAndView handleException(Exception ex, WebRequest request, HttpServletResponse response) {
         logger.error(ex.getMessage(), ex);
 
         StringWriter stackTrace = new StringWriter();
         ex.printStackTrace(new PrintWriter(stackTrace));
 
-        ExceptionResponse response = new ExceptionResponse();
-        response.setMessage(ex.getMessage());
-        response.setStackTrace(stackTrace.toString());
-        request.setAttribute("exception", response, RequestAttributes.SCOPE_REQUEST);
+        ExceptionResponse ersp = new ExceptionResponse();
+        ersp.setMessage(ex.getMessage());
+        ersp.setStackTrace(stackTrace.toString());
 
-        return isAjaxRequest(request) ? exceptionJsonViewName : exceptionViewName;
+        if (isAjaxRequest(request)) {
+            return JsonViewHelper.render(ersp, response);
+        }
+
+        String exceptionView = StringUtils.defaultString(exceptionMappings.get(ex.getClass()), defaultErrorView);
+        return new ModelAndView(exceptionView, "exception", ersp);
     }
 
     /**
-     * 设置异常拦截时需要跳转的视图名称，默认为 exceptionPage。
+     * 设置默认的出错视图名称，默认为 'error'。
      * 
-     * @param exceptionViewName
-     *            view name
+     * @param defaultErrorView
+     *            默认的出错视图名称
      */
-    public void setExceptionViewName(String exceptionViewName) {
-        this.exceptionViewName = exceptionViewName;
+    public void setDefaultErrorView(String defaultErrorView) {
+        this.defaultErrorView = defaultErrorView;
     }
 
     /**
-     * 设置异常拦截时需要跳转的 JSON 视图名称，默认为 exceptionJson。
+     * 设置异常和出错视图名称的映射表。可以根据这个实现针对不同的异常显示不同的出错页面。
      * 
-     * @param exceptionJsonViewName
-     *            view name
+     * @param exceptionMappings
+     *            the exceptionMappings to set
      */
-    public void setExceptionJsonViewName(String exceptionJsonViewName) {
-        this.exceptionJsonViewName = exceptionJsonViewName;
+    @Resource
+    public void setExceptionMappings(Map<Object, String> exceptionMappings) {
+        this.exceptionMappings = exceptionMappings;
     }
 
     /**
