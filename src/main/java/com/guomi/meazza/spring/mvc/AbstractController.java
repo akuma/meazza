@@ -55,8 +55,10 @@ public abstract class AbstractController implements ValidationSupport {
     private static final String AJAX_REQUEST_HEADER_NAME = "X-Requested-With";
     private static final String AJAX_REQUEST_HEADER_VALUE = "XMLHttpRequest";
 
+    private static final String EXCEPTION_ATTRIBUTE_NAME = "exception";
+
     private String defaultErrorView = "error";
-    private Map<Object, String> exceptionMappings = Collections.emptyMap();
+    private Map<String, String> exceptionMappings = Collections.emptyMap();
 
     @Resource
     protected MessageSource messageSource;
@@ -247,16 +249,17 @@ public abstract class AbstractController implements ValidationSupport {
         StringWriter stackTrace = new StringWriter();
         ex.printStackTrace(new PrintWriter(stackTrace));
 
-        ExceptionResponse ersp = new ExceptionResponse();
-        ersp.setMessage(ex.getMessage());
-        ersp.setStackTrace(stackTrace.toString());
+        ExceptionResponse exRsp = new ExceptionResponse();
+        exRsp.setMessage(ex.getMessage());
+        exRsp.setStackTrace(stackTrace.toString());
 
         if (isAjaxRequest(request)) {
-            return JsonViewHelper.render(ersp, response);
+            return JsonViewHelper.render(exRsp, response);
         }
 
-        String exceptionView = StringUtils.defaultString(exceptionMappings.get(ex.getClass()), defaultErrorView);
-        return new ModelAndView(exceptionView, "exception", ersp);
+        String exName = ex.getClass().getName();
+        String exView = StringUtils.defaultString(exceptionMappings.get(exName), defaultErrorView);
+        return new ModelAndView(exView, EXCEPTION_ATTRIBUTE_NAME, exRsp);
     }
 
     /**
@@ -276,7 +279,7 @@ public abstract class AbstractController implements ValidationSupport {
      *            the exceptionMappings to set
      */
     @Resource
-    public void setExceptionMappings(Map<Object, String> exceptionMappings) {
+    public void setExceptionMappings(Map<String, String> exceptionMappings) {
         this.exceptionMappings = exceptionMappings;
     }
 
