@@ -9,6 +9,11 @@
     <name>Meazza: Guomi Core Libraries for Java</name>
     <description>Meazza is a libraries that include utility classes, framework wrapper classes, and much more.</description>
 
+    <scm>
+        <developerConnection>scm:git:git@git.gm.com:meazza.git</developerConnection>
+        <url>http://gitweb.gm.com/?p=meazza.git</url>
+    </scm>
+
     <properties>
         <maven.compile.source>1.7</maven.compile.source>
         <maven.compile.target>1.7</maven.compile.target>
