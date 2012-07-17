@@ -244,7 +244,7 @@ public abstract class AbstractController implements ValidationSupport {
      */
     @ExceptionHandler(Exception.class)
     public ModelAndView handleException(Exception ex, WebRequest request, HttpServletResponse response) {
-        logger.error(ex.getMessage(), ex);
+        logger.error("Exception handler caught an exception", ex);
 
         StringWriter stackTrace = new StringWriter();
         ex.printStackTrace(new PrintWriter(stackTrace));
