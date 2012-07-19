@@ -18,7 +18,6 @@ import org.springframework.util.StringUtils;
  * 此工具类中的代码来自 Apache Shiro，有些地方稍微做了修改。<br>
  * 之所以直接拷贝此类是因为不想重新发明轮子又不想让 meazza 必须依赖 shiro。
  * 
- * @author akuma
  * @since 0.0.5
  */
 public abstract class WebUtils {

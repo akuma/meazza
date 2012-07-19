@@ -8,7 +8,7 @@ package com.guomi.meazza.util;
  * 此类引用自 Apache Shiro，用于验证字符串是否和某个规则匹配。规则可以是 Ant 方式的，也可以是正则表达式，或者是其他方式。
  * 之所以直接引用此类是因为不想让 meazza 在工具类上必须依赖于 Apache Shiro。
  * 
- * @author akuma
+ * @see AntPathMatcher
  * @see RegexPathMatcher
  */
 public interface PatternMatcher {
