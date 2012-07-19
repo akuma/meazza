@@ -47,9 +47,9 @@ public abstract class UUIDUtils {
         }
 
         /**
-         * 生成16进制表达的字符串 UUID。
+         * 生成16进制表达的字符串 UUID，其中字母采用小写形式。
          * 
-         * @return 32 字节长度的 UUID 字符串
+         * @return 32个字节长度的 UUID 字符串
          */
         public String generateHex() {
             StringBuilder sb = new StringBuilder(32);
@@ -58,7 +58,7 @@ public abstract class UUIDUtils {
             sb.append(format(getHighTime()));
             sb.append(format(getLowTime()));
             sb.append(format(getCount()));
-            return sb.toString().toUpperCase();
+            return sb.toString();
         }
 
         private String format(int intval) {
