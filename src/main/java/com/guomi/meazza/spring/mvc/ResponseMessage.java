@@ -24,12 +24,13 @@ public class ResponseMessage implements Serializable {
     private Map<String, Collection<String>> fieldErrors;
     private Map<String, Object> data = new HashMap<String, Object>(); // 其他响应数据
 
-    public Collection<String> getActionErrors() {
-        return actionErrors;
-    }
-
-    public void setActionErrors(Collection<String> actionErrors) {
-        this.actionErrors = actionErrors;
+    /**
+     * 获取是否存在 Action 消息。
+     * 
+     * @return true/false
+     */
+    public boolean getHasActionMessages() {
+        return !actionMessages.isEmpty();
     }
 
     public Collection<String> getActionMessages() {
@@ -38,6 +39,32 @@ public class ResponseMessage implements Serializable {
 
     public void setActionMessages(Collection<String> actionMessages) {
         this.actionMessages = actionMessages;
+    }
+
+    /**
+     * 获取是否存在 Action 错误。
+     * 
+     * @return true/false
+     */
+    public boolean getHasActionErrors() {
+        return !actionErrors.isEmpty();
+    }
+
+    public Collection<String> getActionErrors() {
+        return actionErrors;
+    }
+
+    public void setActionErrors(Collection<String> actionErrors) {
+        this.actionErrors = actionErrors;
+    }
+
+    /**
+     * 获取是否存在字段错误。
+     * 
+     * @return true/false
+     */
+    public boolean getHasFieldErrors() {
+        return !getFieldErrors().isEmpty();
     }
 
     public Map<String, Collection<String>> getFieldErrors() {
