@@ -74,6 +74,16 @@ public abstract class ServletUtils {
      */
     public static final String METHOD_DELETE = "DELETE";
 
+    /**
+     * AJAX 请求头的名称：X-Requested-With
+     */
+    public static final String AJAX_REQUEST_HEADER = "X-Requested-With";
+
+    /**
+     * AJAX 请求头的值：XMLHttpRequest
+     */
+    public static final String AJAX_REQUEST_HEADER_VALUE = "XMLHttpRequest";
+
     private static final String DEFAULT_MIME_TYPE = "text/html";
     private static final String MULTIPART = "multipart/form-data";
 
@@ -84,9 +94,6 @@ public abstract class ServletUtils {
     private static final String X_REAL_IP_HEADER = "x-real-ip";
     private static final String PROXY_CLIENT_IP_HEADER = "Proxy-Client-IP";
     private static final String WL_PROXY_CLIENT_IP_HEADER = "WL-Proxy-Client-IP";
-
-    private static final String AJAX_REQUEST_HEADER = "X-Requested-With";
-    private static final String AJAX_REQUEST_HEADER_VALUE = "XMLHttpRequest";
 
     private static final int ONE_KB = 1024; // 1 KB
     private static final int BUFFER_SIZE = ONE_KB * 4;

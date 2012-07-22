@@ -13,12 +13,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.guomi.meazza.util.ServletUtils;
 
 /**
  * <code>Controller</code> 抽象类，可供业务 <code>Controller</code> 继承。
@@ -52,15 +54,14 @@ public abstract class AbstractController implements ValidationSupport {
     private static final String ACTION_MESSAGES = "actionMessages";
     private static final String FIELD_ERRORS = "fieldErrors";
 
-    private static final String AJAX_REQUEST_HEADER_NAME = "X-Requested-With";
-    private static final String AJAX_REQUEST_HEADER_VALUE = "XMLHttpRequest";
-
     private static final String EXCEPTION_ATTRIBUTE_NAME = "exception";
+    private static final String EXCEPTION_MESSAGE_ATTRIBUTE_NAME = "message";
+    private static final String EXCEPTION_STACKTRACE_ATTRIBUTE_NAME = "stackTrace";
 
     private String defaultErrorView = "error";
     private Map<String, String> exceptionMappings = Collections.emptyMap();
 
-    @Resource
+    @Autowired
     protected MessageSource messageSource;
 
     @Override
@@ -232,15 +233,27 @@ public abstract class AbstractController implements ValidationSupport {
     }
 
     /**
-     * 处理异常 {@link Exception} 的方法，它会记录系统日志然后跳转到异常页面。
+     * 拦截 Controller 中抛出的 {@link Exception}，将异常信息记录到日志并添加到 HTTP 响应中。<br>
+     * 对于不同的请求，对异常反馈方式有所不同：
+     * <ul>
+     * <li>对于 AJAX 请求，异常信息会以 JSON 格式的报文返回，格式为：{"exception":{"message":"foo","stackTrace":"bar"}</li>
+     * <li>对于普通请求，异常信息会添加到 Request Attribute 中（属性名为 exception），并 dispatch 到错误视图（默认为 error）</li>
+     * </ul>
+     * 
+     * 另外，还有两个可以修改的设置：
+     * <ul>
+     * <li>允许通过 {@link #setDefaultErrorView(String)} 修改默认的错误视图名称</li>
+     * <li>允许通过 {@link #setExceptionMappings(Map)} 指定不同的异常类型使用不同的错误视图</li>
+     * </ul>
      * 
      * @param ex
      *            异常信息
      * @param request
      *            Spring WebRequest
+     * @param response
+     *            HTTP 响应
      * @return
-     * @return 异常视图
-     * @throws Exception
+     *         对于 AJAX 请求，返回 <code>null</code>，而对于普通请求，返回错误视图对象。
      */
     @ExceptionHandler(Exception.class)
     public ModelAndView handleException(Exception ex, WebRequest request, HttpServletResponse response) {
@@ -248,18 +261,21 @@ public abstract class AbstractController implements ValidationSupport {
 
         StringWriter stackTrace = new StringWriter();
         ex.printStackTrace(new PrintWriter(stackTrace));
+        Map<String, String> exp = new LinkedHashMap<>();
+        exp.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, ex.getMessage());
+        exp.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
+        Map<String, Map<String, String>> exRsp = new LinkedHashMap<>();
+        exRsp.put(EXCEPTION_ATTRIBUTE_NAME, exp);
 
-        ExceptionResponse exRsp = new ExceptionResponse();
-        exRsp.setMessage(ex.getMessage());
-        exRsp.setStackTrace(stackTrace.toString());
-
+        // 如果是 AJAX 请求，以 JSON 格式返回
         if (isAjaxRequest(request)) {
             return JsonViewHelper.render(exRsp, response);
         }
 
+        // 如果是普通请求，dispatch 到错误页面
         String exName = ex.getClass().getName();
         String exView = StringUtils.defaultString(exceptionMappings.get(exName), defaultErrorView);
-        return new ModelAndView(exView, EXCEPTION_ATTRIBUTE_NAME, exRsp);
+        return new ModelAndView(exView, exRsp);
     }
 
     /**
@@ -268,6 +284,7 @@ public abstract class AbstractController implements ValidationSupport {
      * @param defaultErrorView
      *            默认的出错视图名称
      */
+    @Autowired(required = false)
     public void setDefaultErrorView(String defaultErrorView) {
         this.defaultErrorView = defaultErrorView;
     }
@@ -278,7 +295,7 @@ public abstract class AbstractController implements ValidationSupport {
      * @param exceptionMappings
      *            the exceptionMappings to set
      */
-    @Resource
+    @Autowired(required = false)
     public void setExceptionMappings(Map<String, String> exceptionMappings) {
         this.exceptionMappings = exceptionMappings;
     }
@@ -291,34 +308,8 @@ public abstract class AbstractController implements ValidationSupport {
      * @return true/false
      */
     protected boolean isAjaxRequest(WebRequest request) {
-        String header = request.getHeader(AJAX_REQUEST_HEADER_NAME);
-        return AJAX_REQUEST_HEADER_VALUE.equalsIgnoreCase(header);
-    }
-
-    /**
-     * 异常消息响应封装类。
-     */
-    public static class ExceptionResponse {
-
-        private String message;
-        private String stackTrace;
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public String getStackTrace() {
-            return stackTrace;
-        }
-
-        public void setStackTrace(String stackTrace) {
-            this.stackTrace = stackTrace;
-        }
-
+        String header = request.getHeader(ServletUtils.AJAX_REQUEST_HEADER);
+        return ServletUtils.AJAX_REQUEST_HEADER_VALUE.equalsIgnoreCase(header);
     }
 
 }
