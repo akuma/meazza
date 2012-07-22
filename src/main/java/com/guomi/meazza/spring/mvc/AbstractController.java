@@ -13,12 +13,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -59,9 +61,10 @@ public abstract class AbstractController implements ValidationSupport {
     private static final String EXCEPTION_STACKTRACE_ATTRIBUTE_NAME = "stackTrace";
 
     private String defaultErrorView = "error";
-    private Map<String, String> exceptionMappings = Collections.emptyMap();
 
-    @Autowired
+    protected Map<String, String> exceptionMappings = Collections.emptyMap();
+
+    @Resource
     protected MessageSource messageSource;
 
     @Override
@@ -285,6 +288,7 @@ public abstract class AbstractController implements ValidationSupport {
      *            默认的出错视图名称
      */
     @Autowired(required = false)
+    @Qualifier("defaultErrorView")
     public void setDefaultErrorView(String defaultErrorView) {
         this.defaultErrorView = defaultErrorView;
     }
@@ -295,7 +299,6 @@ public abstract class AbstractController implements ValidationSupport {
      * @param exceptionMappings
      *            the exceptionMappings to set
      */
-    @Autowired(required = false)
     public void setExceptionMappings(Map<String, String> exceptionMappings) {
         this.exceptionMappings = exceptionMappings;
     }
