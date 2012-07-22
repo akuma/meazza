@@ -60,8 +60,12 @@ public abstract class AbstractController implements ValidationSupport {
     private static final String EXCEPTION_MESSAGE_ATTRIBUTE_NAME = "message";
     private static final String EXCEPTION_STACKTRACE_ATTRIBUTE_NAME = "stackTrace";
 
+    // 默认的错误视图名称
     private String defaultErrorView = "error";
 
+    /**
+     * 异常类名称和错误视图名称的映射表。
+     */
     protected Map<String, String> exceptionMappings = Collections.emptyMap();
 
     @Resource
