@@ -5,6 +5,8 @@
 package com.guomi.meazza.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -365,6 +367,126 @@ public class SqlCreator {
         inSQL.append(")");
 
         return inSQL.toString();
+    }
+
+    /**
+     * 取得执行count的sql
+     * 
+     * @param sql
+     *            执行查询的sql
+     * @return 执行count的sql
+     */
+    public static String getCountSQL(String sql) {
+        String normalSql = sql;
+        String lowerCaseSql = sql.toLowerCase();
+
+        int index = lowerCaseSql.indexOf(" order ");
+        if (index != -1) {
+            normalSql = normalSql.substring(0, index);
+            lowerCaseSql = normalSql.toLowerCase();
+        }
+
+        int fromIndex = getFirstPairIndex(lowerCaseSql, "select ", " from ");
+        if (fromIndex == -1) {
+            throw new IllegalArgumentException("Could not get count sql[" + sql + "]");
+        }
+
+        int groupByIndex = getFirstPairIndex(lowerCaseSql, " group ", " by ");
+        if (groupByIndex != -1 || lowerCaseSql.contains(" union ")) {
+            return "SELECT COUNT(1) FROM (" + normalSql + ") temp_rs";
+        } else {
+            return "SELECT COUNT(1)" + normalSql.substring(fromIndex);
+        }
+    }
+
+    /**
+     * 获得成对出现的第一个关键字对应的关键字的位置。
+     * 
+     * @param str
+     * @param keyword
+     *            关键字，例如：select
+     * @param oppositeKeyword
+     *            对应的关键字，例如：from
+     * @return 第一个关键字对应的关键字的位置
+     */
+    public static int getFirstPairIndex(String str, String keyword, String oppositeKeyword) {
+        ArrayList<PairKeyword> keywordArray = new ArrayList<PairKeyword>();
+        int index = -1;
+        while ((index = str.indexOf(keyword, index)) != -1) {
+            keywordArray.add(new PairKeyword(keyword, index));
+            index += keyword.length();
+        }
+
+        index = -1;
+        while ((index = str.indexOf(oppositeKeyword, index)) != -1) {
+            keywordArray.add(new PairKeyword(oppositeKeyword, index));
+            index += oppositeKeyword.length();
+        }
+
+        if (keywordArray.size() < 2) {
+            return -1;
+        }
+
+        Collections.sort(keywordArray, new Comparator<PairKeyword>() {
+            @Override
+            public int compare(PairKeyword keyword0, PairKeyword keyword1) {
+                return keyword0.getIndex() > keyword1.getIndex() ? 1 : -1;
+            }
+        });
+
+        PairKeyword firstKeyword = keywordArray.get(0);
+        if (!firstKeyword.getName().equals(keyword)) {
+            return -1;
+        }
+
+        while (keywordArray.size() > 2) {
+            boolean hasOpposite = false;
+            for (int i = 2; i < keywordArray.size(); i++) {
+                PairKeyword keyword0 = keywordArray.get(i - 1);
+                PairKeyword keyword1 = keywordArray.get(i);
+                if (keyword0.getName().equals(keyword) && keyword1.getName().equals(oppositeKeyword)) {
+                    keywordArray.remove(i);
+                    keywordArray.remove(i - 1);
+                    hasOpposite = true;
+                    break;
+                }
+            }
+            if (!hasOpposite) {
+                return -1;
+            }
+        }
+
+        if (keywordArray.size() != 2) {
+            return -1;
+        }
+
+        PairKeyword lastKeyword = keywordArray.get(1);
+        if (!lastKeyword.getName().equals(oppositeKeyword)) {
+            return -1;
+        }
+
+        return lastKeyword.getIndex();
+    }
+
+    /**
+     * 关键字对，用于列表排序。
+     */
+    private static class PairKeyword {
+        private String name;
+        private int index;
+
+        public PairKeyword(String name, int index) {
+            this.name = name;
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
 }
