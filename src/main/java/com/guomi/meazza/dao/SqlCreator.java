@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
  * 
  * @author akuma
  */
-public abstract class SqlCreator {
+public class SqlCreator {
 
     private StringBuilder sql;
     private List<Object> args;
