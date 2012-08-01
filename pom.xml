@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.guomi.meazza</groupId>
     <artifactId>meazza</artifactId>
-    <version>0.0.11</version>
+    <version>0.0.12</version>
     <packaging>jar</packaging>
     <name>Meazza: Guomi Core Libraries for Java</name>
     <description>Meazza is a libraries that include utility classes, framework wrapper classes, and much more.</description>
@@ -28,6 +28,8 @@
         <struts.version>2.3.1.2</struts.version>
         <freemarker.version>2.3.19</freemarker.version>
         <ibatis.version>2.3.4.726</ibatis.version>
+        <mybatis.version>3.1.1</mybatis.version>
+        <mybatis-spring.version>1.1.1</mybatis-spring.version>
     </properties>
 
     <dependencies>
@@ -142,6 +144,20 @@
             <groupId>org.apache.ibatis</groupId>
             <artifactId>ibatis-sqlmap</artifactId>
             <version>${ibatis.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>${mybatis.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>${mybatis-spring.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
