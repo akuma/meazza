@@ -12,6 +12,7 @@ import java.io.Serializable;
  * @author akuma
  * @param <T>
  *            ID 的类型
+ * @since 0.0.15
  */
 public abstract class IdEntity<T> implements Serializable {
 
