@@ -13,66 +13,6 @@ package com.guomi.meazza.util;
 public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
-     * HTML 文本过滤，如果 value 为 <code>null</code> 或为空串，则返回 "&amp;nbsp;"。
-     * 
-     * <p>
-     * 转换的字符串关系如下：
-     * 
-     * <ul>
-     * <li>&amp; --> &amp;amp;</li>
-     * <li>&lt; --> &amp;lt;</li>
-     * <li>&gt; --> &amp;gt;</li>
-     * <li>&quot; --> &amp;quot;</li>
-     * <li>\n --> &lt;br/&gt;</li>
-     * <li>\t --> &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;</li>
-     * <li>空格 --> &amp;nbsp;</li>
-     * </ul>
-     * 
-     * <strong>此方法适用于在 HTML 页面上的非文本框元素（div、span、table 等）中显示文本时调用。</strong>
-     * 
-     * @param html
-     *            要过滤的文本
-     * @return 过滤后的 HTML 文本
-     */
-    public static String htmlFilter(String html) {
-        if (html == null || html.length() == 0) {
-            return "&nbsp;";
-        }
-
-        return html.replaceAll("&", "&amp;").replaceAll("\t", "    ").replaceAll(" ", "&nbsp;")
-                .replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("\n", "<br/>");
-    }
-
-    /**
-     * HTML 文本过滤，如果 value 为 <code>null</code> 或为空串，则返回空串。
-     * 
-     * <p>
-     * 转换的字符串关系如下：
-     * 
-     * <ul>
-     * <li>&amp; --> &amp;amp;</li>
-     * <li>&lt; --> &amp;lt;</li>
-     * <li>&gt; --> &amp;gt;</li>
-     * <li>&quot; --> &amp;quot;</li>
-     * <li>\n --> &lt;br/&gt;</li>
-     * </ul>
-     * 
-     * <strong>此方法适用于在 HTML 页面上的文本框（text、textarea）中显示文本时调用。</strong>
-     * 
-     * @param html
-     *            要过滤的文本
-     * @return 过滤后的 HTML 文本
-     */
-    public static String htmlFilterToEmpty(String html) {
-        if (html == null || html.length() == 0) {
-            return "";
-        }
-
-        return html.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-                .replaceAll("\"", "&quot;");
-    }
-
-    /**
      * 截取固定长度的字符串，超长部分用 <code>suffix</code> 代替，最终字符串真实长度不会超过 <code>maxLength</code>。
      * 
      * @param str
