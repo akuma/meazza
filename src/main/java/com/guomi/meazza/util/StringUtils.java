@@ -13,6 +13,108 @@ package com.guomi.meazza.util;
 public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
+     * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
+     * 
+     * @param str
+     *            需要操作的字符串
+     * @return 移除空白字符后的字符串
+     */
+    public static String strip(String str) {
+        if (isEmpty(str)) {
+            return str;
+        }
+
+        str = stripStart(str);
+        str = stripEnd(str);
+        return str;
+    }
+
+    /**
+     * 移除字符串首尾的空白字符。如果字符串为 null 则返回空串。
+     * 
+     * @param str
+     *            需要操作的字符串
+     * @return 移除空白字符后的字符串
+     */
+    public static String stripToEmpty(String str) {
+        return str == null ? EMPTY : strip(str);
+    }
+
+    /**
+     * 移除字符串首的空白字符。
+     * 
+     * @param str
+     * @return
+     */
+    public static String stripStart(String str) {
+        int strLen;
+        if (str == null || (strLen = str.length()) == 0) {
+            return str;
+        }
+
+        int start = 0;
+        while (start != strLen && isWhitespace(str.charAt(start))) {
+            start++;
+        }
+        return str.substring(start);
+    }
+
+    /**
+     * 移除字符串末尾的空白字符。
+     * 
+     * @param str
+     * @return
+     */
+    public static String stripEnd(String str) {
+        int end;
+        if (str == null || (end = str.length()) == 0) {
+            return str;
+        }
+
+        while (end != 0 && isWhitespace(str.charAt(end - 1))) {
+            end--;
+        }
+        return str.substring(0, end);
+    }
+
+    /**
+     * 和 {@link org.apache.commons.lang3.StringUtils#isBlank(CharSequence)} 的区别是认为 non-breaking space (
+     * {@code '\u005Cu00A0'}, {@code '\u005Cu2007'}, {@code '\u005Cu202F'}) 也是空白字符。
+     * 
+     * @param cs
+     *            字符串
+     * @return true/false
+     */
+    public static boolean isBlank(CharSequence cs) {
+        int strLen;
+        if (cs == null || (strLen = cs.length()) == 0) {
+            return true;
+        }
+
+        for (int i = 0; i < strLen; i++) {
+            char c = cs.charAt(i);
+            if (isWhitespace(c) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 判断字符是否是空白字符。
+     * <em>和 {@link Character#isWhitespace(char)} 的区别是认为 non-breaking space ( {@code '\u005Cu00A0'}, {@code '\u005Cu2007'},
+     * {@code '\u005Cu202F'}) 也是空白字符。</em>
+     * 
+     * @param ch
+     *            需要测试的字符
+     * @return true/false
+     */
+    public static boolean isWhitespace(char ch) {
+        // 添加对 '\u005Cu00A0', '\u005Cu2007', '\u005Cu202F' 的判断
+        return (Character.isWhitespace(ch) || ch == '\u00A0' || ch == '\u2007' || ch == '\u202F');
+    }
+
+    /**
      * 截取固定长度的字符串，超长部分用 <code>suffix</code> 代替，最终字符串真实长度不会超过 <code>maxLength</code>。
      * 
      * @param str

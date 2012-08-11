@@ -4,6 +4,20 @@
  */
 package com.guomi.meazza.util;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+import org.jsoup.parser.Tag;
+import org.jsoup.safety.Whitelist;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 包含处理 HTML 代码方法的工具类。
  * 
@@ -12,28 +26,45 @@ package com.guomi.meazza.util;
  */
 public abstract class HtmlUtils {
 
+    private static final Logger logger = LoggerFactory.getLogger(HtmlUtils.class);
+
+    private static final Pattern START_NBSP_REPLACE_REGEX = Pattern.compile("^(&nbsp;)+");
+
+    /**
+     * 默认在 jsoup 的 {@link org.jsoup.safety.Whitelist#basicWithImages()} 白名单的基础上添加 div、table 标签
+     */
+    private static final Whitelist whitelist = Whitelist.basicWithImages()
+            .addTags("div", "table", "tbody", "td", "tfoot", "th", "thead", "tr").addAttributes("div", "style")
+            .addAttributes("table", "width").addAttributes("td", "colspan", "rowspan", "width")
+            .addAttributes("th", "colspan", "rowspan", "width").preserveRelativeLinks(true);
+
+    private static final String DEFAULT_JSOUP_BASE_URI = "http://static.gm.com";
+
+    public static String stripHtml(String html) {
+        if (StringUtils.isBlank(html)) {
+            return html;
+        }
+
+        Document doc = Jsoup.parse(html);
+        String text = doc.body().text();
+        // jsoup 会把 &nbsp; 替换为 \u00A0 字符，这里再替换为普通空格
+        return StringUtils.strip(text).replaceAll("\u00A0", " ");
+    }
+
     /**
      * 将 HTML 代码中的标签、转义字符删除，只保留表示内容的文本。<br>
-     * <b>注意：script、style 等节点中的文字不会被过滤。</b>
+     * <em>注意：script、style 等节点中的文字不会被过滤。</em>
      * 
      * @param html
      *            HTML 代码
      * @return 移除 HTML 标签、转义字符之后的文本
      */
-    public static String stripHtml(String html) {
-        if (html == null || html.trim().length() == 0) {
-            return html;
+    public static String stripHtmlToEmpty(String html) {
+        if (StringUtils.isBlank(html)) {
+            return StringUtils.EMPTY;
         }
 
-        // 移除 html 标签
-        String noHtml = html.replaceAll("\\<.*?\\>", "");
-
-        // 移除 html 转义字符
-        noHtml = noHtml.replaceAll("&.*?;", "");
-
-        // 将回车、换行符号替换为空格
-        noHtml = noHtml.replaceAll("\r", " ").replaceAll("\n", " ");
-        return noHtml;
+        return stripHtml(html);
     }
 
     /**
@@ -91,6 +122,218 @@ public abstract class HtmlUtils {
         }
 
         return html.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
+    }
+
+    /**
+     * 判断 HTML 代码是否为空白。如果 {@code html} 只包含空串、空格、空的 html 标签则认为 HTML 代码为空白。
+     * 
+     * @param html
+     *            需要测试的 html 代码
+     * @return true/false
+     */
+    public static boolean isBlank(String html) {
+        if (StringUtils.isBlank(html)) {
+            return true;
+        }
+
+        String striped = stripHtmlToEmpty(html);
+        return StringUtils.isBlank(striped);
+    }
+
+    /**
+     * 判断 HTML 代码是否为空。如果 {@code html} 只包含空串、空格、&amp;nbsp; 则认为 HTML 代码为空。
+     * 
+     * @param html
+     *            需要测试的 html 代码
+     * @return true/false
+     */
+    public static boolean isEmpty(String html) {
+        if (StringUtils.isBlank(html)) {
+            return true;
+        }
+
+        return Pattern.matches("(&nbsp;| )+", html);
+    }
+
+    /**
+     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码。
+     * <p>
+     * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
+     * 
+     * @param html
+     *            需要处理的 HTML 代码
+     * @return 处理之后的 HTML 代码
+     */
+    public static String cleanEditorHtml(String html) {
+        if (StringUtils.isBlank(html)) {
+            return StringUtils.EMPTY;
+        }
+
+        // 移除首尾空白字符
+        String stripedHtml = StringUtils.stripToEmpty(html);
+
+        // 对 html 标签、标签属性进行白名单过滤，得到安全的 html 代码
+        String safeHtml = Jsoup.clean(stripedHtml, DEFAULT_JSOUP_BASE_URI, whitelist);
+        logger.trace("safeHtml: {}", safeHtml);
+
+        // 解析 html 代码
+        Document doc = Jsoup.parse(safeHtml);
+        // Document doc = Jsoup.parse(stripedHtml);
+
+        stripStartBlankTags(doc);
+        stripEndBlankTags(doc);
+        changePTagToDivTag(doc);
+
+        // 去掉行首的 &nbsp;
+        String result = doc.body().html();
+        return START_NBSP_REPLACE_REGEX.matcher(result).replaceAll("");
+
+        // // 对 html 标签、标签属性进行白名单过滤，得到安全的 html 代码
+        // String safeHtml = Jsoup.clean(doc.body().html(), DEFAULT_JSOUP_BASE_URI, whitelist);
+        // logger.trace("safeHtml: {}", safeHtml);
+        // return safeHtml;
+    }
+
+    /**
+     * 删除所有开头的空白字符、空标签。
+     */
+    private static void stripStartBlankTags(Document doc) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Body html (Before remove start blank tags):\n{}\n", doc.body().html());
+            logger.trace("Body children size (Before remove start blank tags): {}", doc.body().childNodes().size());
+        }
+
+        Elements allElements = doc.body().select("*");
+        for (Element e : allElements) {
+            // 忽略 body 标签
+            if ("body".equals(e.nodeName())) {
+                continue;
+            }
+
+            // 当发现第一个非空白的标签就停止删除操作
+            if (hasText(e)) {
+                logger.trace("First no blank tag: {}", e.nodeName());
+                discardBlockParent(e);
+                break;
+            }
+
+            // 删除 &nbsp;
+            Node node = e.nextSibling();
+            if (node instanceof TextNode) {
+                TextNode tn = (TextNode) node;
+                if (StringUtils.isBlank(tn.text())) {
+                    tn.remove();
+                }
+            }
+
+            e.remove();
+            logger.trace("Removed start blank tag: {}", e.nodeName());
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Body html (After removed start blank tags):\n{}\n", doc.body().html());
+            logger.trace("Body children size (After removed start blank tags): {}", doc.body().childNodes().size());
+        }
+    }
+
+    /**
+     * 删除所有末尾的空白字符、空标签。
+     */
+    private static void stripEndBlankTags(Document doc) {
+        Elements allElements = doc.body().select("*");
+        for (int i = allElements.size() - 1; i >= 0; i--) {
+            Element e = allElements.get(i);
+            // 忽略 body 标签
+            if ("body".equals(e.nodeName())) {
+                continue;
+            }
+
+            if (hasText(e)) {
+                break;
+            }
+
+            // 删除 &nbsp;
+            Node node = e.nextSibling();
+            if (node instanceof TextNode) {
+                TextNode tn = (TextNode) node;
+                if (StringUtils.isBlank(tn.text())) {
+                    tn.remove();
+                }
+            }
+
+            e.remove();
+            logger.trace("Removed end blank tag: {}", e.nodeName());
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Body html (After removed end blank tags):\n{}\n", doc.body().html());
+            logger.trace("Body children size (After removed end blank tags): {}", doc.body().childNodes().size());
+        }
+    }
+
+    /**
+     * 将所有 {@code <p>} 标签转换为 {@code <div>} 标签。
+     */
+    private static void changePTagToDivTag(Document doc) {
+        Elements elements = doc.select("p");
+        for (Element e : elements) {
+            Element div = new Element(Tag.valueOf("div"), "");
+            div.html(e.html());
+            // 尝试将 <p> 的样式复制到 <div>
+            if (!StringUtils.isBlank(e.attr("style"))) {
+                div.attr("style", e.attr("style"));
+            }
+            e.replaceWith(div);
+            logger.trace("Replaced {} with {}", e.nodeName(), div.nodeName());
+        }
+    }
+
+    /**
+     * 获取 jsoup 白名单对象。<em>修改该对象属性的时候需要注意线程安全问题。</em>
+     * 
+     * @return jsoup 白名单对象
+     */
+    public static Whitelist getWhitelist() {
+        return whitelist;
+    }
+
+    /**
+     * 和 jsoup 的 {@code Element#hasText()} 的区别是：对于字符串是否是空白字符的判断中，增加了 none-breaking space。
+     */
+    private static boolean hasText(Element element) {
+        List<Node> childNodes = element.childNodes();
+        for (Node child : childNodes) {
+            if (child instanceof TextNode) {
+                TextNode textNode = (TextNode) child;
+                if (!StringUtils.isBlank(textNode.text())) {
+                    return true;
+                }
+            } else if (child instanceof Element) {
+                Element el = (Element) child;
+                if (hasText(el)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 如果 {@code element} 是块元素并且有子元素，则将子元素剥离出父元素并丢弃父元素。如此反复尝试直到第一个子元素是非块元素为止。
+     * 这样做的目的是让最终的 HTML 代码不被块元素包含，以免引起在页面显示数据时第一行会换行的问题。
+     * 
+     * @param element
+     *            最外层元素
+     */
+    private static void discardBlockParent(Element element) {
+        Elements children = element.children();
+        while (element.isBlock() && !children.isEmpty()) {
+            element.before(element.html());
+            element.remove();
+
+            element = children.get(0);
+            children = element.children();
+        }
     }
 
 }
