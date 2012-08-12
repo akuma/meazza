@@ -35,8 +35,9 @@ public abstract class HtmlUtils {
      */
     private static final Whitelist whitelist = Whitelist.basicWithImages()
             .addTags("div", "table", "tbody", "td", "tfoot", "th", "thead", "tr").addAttributes("div", "style")
-            .addAttributes("table", "width").addAttributes("td", "colspan", "rowspan", "width")
-            .addAttributes("th", "colspan", "rowspan", "width").preserveRelativeLinks(true);
+            .addAttributes("p", "style").addAttributes("table", "width")
+            .addAttributes("td", "colspan", "rowspan", "width").addAttributes("th", "colspan", "rowspan", "width")
+            .preserveRelativeLinks(true);
 
     private static final String DEFAULT_JSOUP_BASE_URI = "http://static.gm.com";
 
@@ -182,7 +183,7 @@ public abstract class HtmlUtils {
 
         stripStartBlankTags(doc);
         stripEndBlankTags(doc);
-        changePTagToDivTag(doc);
+        convertNodePToDiv(doc);
 
         // 去掉行首的 &nbsp;
         String result = doc.body().html();
@@ -192,6 +193,108 @@ public abstract class HtmlUtils {
         // String safeHtml = Jsoup.clean(doc.body().html(), DEFAULT_JSOUP_BASE_URI, whitelist);
         // logger.trace("safeHtml: {}", safeHtml);
         // return safeHtml;
+    }
+
+    public static String cleanEditorHtmlV2(String html) {
+        if (StringUtils.isBlank(html)) {
+            return StringUtils.EMPTY;
+        }
+
+        // 移除首尾空白字符
+        String stripedHtml = StringUtils.stripToEmpty(html);
+
+        // 对 html 标签、标签属性进行白名单过滤，得到安全的 html 代码
+        String safeHtml = Jsoup.clean(stripedHtml, DEFAULT_JSOUP_BASE_URI, whitelist);
+        logger.trace("safeHtml: {}", safeHtml);
+
+        // 解析 html 代码
+        Document doc = Jsoup.parse(safeHtml);
+        stripStartBlankNodes(doc.body());
+        stripEndBlankNodes(doc.body());
+        convertNodePToDiv(doc);
+        unwrapFirstBlock(doc);
+
+        return doc.body().html();
+    }
+
+    /**
+     * 删除所有元素开头的空白字符、空节点。
+     */
+    private static boolean stripStartBlankNodes(Element element) {
+        List<Node> childNodes = element.childNodes();
+        for (Node node : childNodes) {
+            if (node instanceof TextNode) {
+                TextNode tn = (TextNode) node;
+                if (StringUtils.isBlank(tn.text())) { // 查找空白的文本节点并删除
+                    tn.text("");
+                } else { // 对于非空白的文本节点，将文字左边的空白字符删除
+                    tn.text(StringUtils.stripStart(tn.text()));
+                }
+            }
+        }
+
+        Elements children = element.children();
+        for (Element c : children) {
+            // Node node = c.nextSibling();
+            // if (node instanceof TextNode) {
+            // TextNode tn = (TextNode) node;
+            // if (StringUtils.isBlank(tn.text())) { // 查找空白的文本节点并删除
+            // tn.remove();
+            // } else { // 对于非空白的文本节点，将文字左边的空白字符删除
+            // tn.text(StringUtils.stripStart(tn.text()));
+            // }
+            // }
+
+            // 如果发现空节点则删除并检查下一个节点
+            if (isBlankElement(c)) {
+                c.remove();
+                continue;
+            }
+
+            // 如果节点不空白且无子节点，表明已经找到了 HTML 第一个非空节点，跳出本次循环并结束递归
+            if (c.children().isEmpty()) {
+                c.text(StringUtils.stripStart(c.text()));
+                // discardBlockParent(c);
+                return false;
+            }
+
+            // 递归子节点
+            return stripStartBlankNodes(c);
+        }
+
+        return true;
+    }
+
+    /**
+     * 删除节点中所有末尾的空白字符、空节点。
+     */
+    private static boolean stripEndBlankNodes(Element element) {
+        Elements children = element.children();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Element c = children.get(i);
+            // 如果发现空节点则删除掉
+            if (isBlankElement(c)) {
+                c.remove();
+                continue;
+            }
+
+            // 如果节点不空白且无子节点，表明已经找到了 HTML 最后一个非空节点，跳出本次循环并结束递归
+            if (c.children().isEmpty()) {
+                return false;
+            }
+
+            // 递归子节点
+            return stripEndBlankNodes(c);
+        }
+
+        return true;
+    }
+
+    /**
+     * 判断节点是否是空白的，图片节点不算空白。
+     */
+    private static boolean isBlankElement(Element element) {
+        return StringUtils.isBlank(element.text()) && element.select("img").isEmpty();
     }
 
     /**
@@ -274,7 +377,7 @@ public abstract class HtmlUtils {
     /**
      * 将所有 {@code <p>} 标签转换为 {@code <div>} 标签。
      */
-    private static void changePTagToDivTag(Document doc) {
+    private static void convertNodePToDiv(Document doc) {
         Elements elements = doc.select("p");
         for (Element e : elements) {
             Element div = new Element(Tag.valueOf("div"), "");
@@ -306,6 +409,7 @@ public abstract class HtmlUtils {
             if (child instanceof TextNode) {
                 TextNode textNode = (TextNode) child;
                 if (!StringUtils.isBlank(textNode.text())) {
+                    // textNode.text(StringUtils.stripStart(textNode.text()));
                     return true;
                 }
             } else if (child instanceof Element) {
@@ -326,13 +430,36 @@ public abstract class HtmlUtils {
      *            最外层元素
      */
     private static void discardBlockParent(Element element) {
+        logger.debug("discardBlockParent() element: {}", element.html());
         Elements children = element.children();
-        while (element.isBlock() && !children.isEmpty()) {
-            element.before(element.html());
+        logger.debug("discardBlockParent() children: {}", element.children().html());
+        while (element.isBlock()) {
+            // if (element.parent() == null) {
+            // continue;
+            // }
+            // element.before(element.html());
+            System.out.println("----------------" + element.html());
+            Document doc = element.ownerDocument();
+            Element body = doc.body();
+            System.out.println(doc == null);
+            body.prepend(element.html());
             element.remove();
+            // element.unwrap();
+
+            if (children.isEmpty()) {
+                break;
+            }
 
             element = children.get(0);
             children = element.children();
+        }
+    }
+
+    private static void unwrapFirstBlock(Element element) {
+        Element first = element.select("div").first();
+        if (first != null) {
+            // logger.debug("Unwrap element: {}", first);
+            // first.unwrap();
         }
     }
 
