@@ -88,6 +88,12 @@ public class HtmlUtilsTest {
 
     @Test
     public void testCleanEditorHtml() throws IOException {
+        assertEquals("test", HtmlUtils.cleanEditorHtml("test"));
+        assertEquals("test", HtmlUtils.cleanEditorHtml("  test  "));
+        assertEquals("test &nbsp;", HtmlUtils.cleanEditorHtml("  test &nbsp; "));
+        assertEquals("test &nbsp;", HtmlUtils.cleanEditorHtml(" &nbsp;   test &nbsp; "));
+        assertEquals("test", HtmlUtils.cleanEditorHtml("  <div>&nbsp;test</div>  "));
+        assertEquals("test", HtmlUtils.cleanEditorHtml(" test<br>  "));
         assertEquals("", HtmlUtils.cleanEditorHtml(null));
         assertEquals("", HtmlUtils.cleanEditorHtml(""));
         assertEquals("", HtmlUtils.cleanEditorHtml(" "));
@@ -97,26 +103,40 @@ public class HtmlUtilsTest {
         assertEquals("", HtmlUtils.cleanEditorHtml(" <p>&nbsp;</p> "));
         assertEquals("", HtmlUtils.cleanEditorHtml("&nbsp; <p>&nbsp;</p> <div></div> "));
         assertEquals("", HtmlUtils.cleanEditorHtml("<p>&nbsp;</p> <div></div> "));
-        assertEquals("test \n<div>\n  &nbsp;abc \n</div>",
-                HtmlUtils.cleanEditorHtml(" <div>&nbsp;test<div>&nbsp;abc</div></div> "));
-        assertEquals("<div style=\"color:red\">\n testb\n</div>",
-                HtmlUtils.cleanEditorHtml("<p style='color:red'>test<span>b</span></p>"));
+        assertEquals("a&nbsp;&nbsp;b&nbsp;", HtmlUtils.cleanEditorHtml("&nbsp;a&nbsp;&nbsp;b&nbsp;"));
 
-        String sample = "<div>&nbsp;</div>  &nbsp;<br>&nbsp;<br/></br><div>&nbsp;&nbsp;</div><p></p><span></span>"
-                + "<div><ul><li>1</li></ul></div><table><tr><td>tt</td></tr></table>"
-                + "<Div \n style='width:100px;'>1<span>test </span><p\n style='color:red'>11<DIV class='test'>111</diV>"
-                + "<div>112</div></p></p>不会丢失吗？<div>&nbsp;</div></div></div><div></div><div>&nbsp; </div>  ";
+        String html = "<!DOCTYPE html><html><head><meta charset='utf-8'><title><>html strip test</title></head>"
+                + "<body><b>test 测试</b><div style='color:red;'>伦敦奥运会开幕了！\n&nbsp;&nbsp;&nbsp;&nbsp;"
+                + "<font size=\"5\"><p>some text</p>看比赛吗？<br/>\n&nbsp;&nbsp;&nbsp;你想怎样？<br>\n</div></body></html>";
+        System.out.println(HtmlUtils.cleanEditorHtml(html));
 
-        // 对 html 标签、标签属性进行白名单过滤，得到安全的 html 代码
-        String safeHtml = HtmlUtils.cleanEditorHtml(sample);
-        System.out.println("safeHtml: \n" + safeHtml);
+        String sample = "&nbsp; &nbsp; &nbsp;<div>&nbsp;</div>&nbsp;<div>&nbsp;<div>&nbsp;</div><div>foo</div>"
+                + "<div>&nbsp;</div><div>&nbsp;<b>bb</b></div></div>"
+                + "<div>&nbsp;a</div><div></div><div><p>&nbsp;</p></div>&nbsp; &nbsp; ";
+        System.out.println("------------------ origin\n" + Jsoup.parse(sample).body().html());
+        System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtml(sample));
+
+        sample = "<div>&nbsp;a</div><div></div><div>&nbsp;</div>b<br><div>&nbsp;</div><div>c</div>";
+        System.out.println("------------------ origin\n" + Jsoup.parse(sample).body().html());
+        System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtml(sample));
+
+        assertEquals("testb", HtmlUtils.cleanEditorHtml("<p style='color:red'>test<span>b</span></p>"));
+
+        sample = "<p>体积为4&times;10<sup>-3</sup>m<sup>3</sup>的铜球．其质量为24 kg．试判断这个铜球是空心的还是实心的，"
+                + "(铜的密度是8．9&times;10<sup>3</sup>kg／m<sup>3</sup>)</p>";
+        System.out.println("cleaned html:\n" + HtmlUtils.cleanEditorHtml(sample));
+
+        sample = "<DIV><SPAN style=\"FONT-FAMILY: 宋体; FONT-SIZE: 10.5pt; mso-bidi-font-family: 'Times New Roman';"
+                + " mso-font-kerning: 1.0pt; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN;"
+                + " mso-bidi-language: AR-SA; mso-bidi-font-size: 10.0pt; mso-bidi-font-weight: bold\">"
+                + "</SPAN>如图3-43，正方形ABCD中，过点D作DP交AC于点M，交AB于点N，交CB的延长线于点P. 若MN = 1，PN = 3，"
+                + "则DM的长为{blank}.</DIV><DIV><IMG src=\"http://ilearn.gm.com/ilearn/upload/2012-08-10/"
+                + "ff808081390ab64d01390f29d5560891.jpg\"></DIV>";
+        System.out.println("safeHtml html:\n" + HtmlUtils.cleanEditorHtml(sample));
 
         // Simple Performance Test
         String largeSample = FileUtils.readFileToString(new File("src/test/java/com/guomi/meazza/util/htmlSample.txt"),
                 "utf-8");
-        safeHtml = HtmlUtils.cleanEditorHtml(largeSample);
-        System.out.println("safeHtml: \n" + safeHtml);
-
         int times = 100;
         StopWatch watch = new StopWatch("HtmlUtils.cleanEditorHtml(String) Performance Test (sample length: "
                 + largeSample.length() + ")");
@@ -129,64 +149,20 @@ public class HtmlUtilsTest {
     }
 
     @Test
-    public void testV2() throws IOException {
-        // assertEquals("test", HtmlUtils.cleanEditorHtmlV2("  <div>&nbsp;test</div>  "));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2(null));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2(""));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2(" "));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2("&nbsp;"));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2(" &nbsp; "));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2(" <br> "));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2(" <p>&nbsp;</p> "));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2("&nbsp; <p>&nbsp;</p> <div></div> "));
-        // assertEquals("", HtmlUtils.cleanEditorHtmlV2("<p>&nbsp;</p> <div></div> "));
-        // assertEquals("a&nbsp;&nbsp;b&nbsp;", HtmlUtils.cleanEditorHtmlV2("&nbsp;a&nbsp;&nbsp;b&nbsp;"));
+    public void testUnwrapBlockElement() throws IOException {
+        assertEquals("te \n<div>\n st \n</div>",
+                HtmlUtils.cleanEditorHtml("<div>&nbsp;<div>te</div>&nbsp;<div>st</div></div>"));
 
-        String html = "<!DOCTYPE html><html><head><meta charset='utf-8'><title><>html strip test</title></head>"
-                + "<body><b>test 测试</b><div style='color:red;'>伦敦奥运会开幕了！\n&nbsp;&nbsp;&nbsp;&nbsp;"
-                + "<font size=\"5\"><p>some text</p>看比赛吗？<br/>\n&nbsp;&nbsp;&nbsp;你想怎样？<br>\n</div></body></html>";
-        System.out.println(HtmlUtils.cleanEditorHtmlV2(html));
-
-        String sample = "&nbsp; &nbsp; &nbsp;<div>&nbsp;</div>&nbsp;<div>&nbsp;<div>&nbsp;</div><div>foo</div>"
-                + "<div>&nbsp;</div><div>&nbsp;<b>bb</b></div></div>"
+        String sample = "&nbsp; &nbsp; <div>&nbsp;</div>&nbsp;<div>&nbsp;<div>&nbsp;</div><img src='test.jsp' />"
+                + "<div>foo</div><div>&nbsp;</div><div>&nbsp;<b>bb</b></div></div>"
                 + "<div>&nbsp;a</div><div></div><div><p>&nbsp;</p></div>&nbsp; &nbsp; ";
-        System.out.println("------------------ origin\n" + Jsoup.parse(sample).body().html());
-        System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtmlV2(sample));
+        System.out.println("------------------ origin\n" + Jsoup.clean(sample, "http://a", HtmlUtils.getWhitelist()));
+        System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtml(sample));
 
-        sample = "<div>&nbsp;a</div><div></div><div>&nbsp;</div>b<br><div>&nbsp;</div><div>c</div>";
-        System.out.println("------------------ origin\n" + Jsoup.parse(sample).body().html());
-        System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtmlV2(sample));
-
-        // assertEquals("testb", HtmlUtils.cleanEditorHtmlV2("<p style='color:red'>test<span>b</span></p>"));
-
-        sample = "<p>体积为4&times;10<sup>-3</sup>m<sup>3</sup>的铜球．其质量为24 kg．试判断这个铜球是空心的还是实心的，"
-                + "(铜的密度是8．9&times;10<sup>3</sup>kg／m<sup>3</sup>)</p>";
-        System.out.println("cleaned html:\n" + HtmlUtils.cleanEditorHtmlV2(sample));
-
-        sample = "<DIV><SPAN style=\"FONT-FAMILY: 宋体; FONT-SIZE: 10.5pt; mso-bidi-font-family: 'Times New Roman';"
-                + " mso-font-kerning: 1.0pt; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN;"
-                + " mso-bidi-language: AR-SA; mso-bidi-font-size: 10.0pt; mso-bidi-font-weight: bold\">"
-                + "</SPAN>如图3-43，正方形ABCD中，过点D作DP交AC于点M，交AB于点N，交CB的延长线于点P. 若MN = 1，PN = 3，"
-                + "则DM的长为{blank}.</DIV><DIV><IMG src=\"http://ilearn.gm.com/ilearn/upload/2012-08-10/"
-                + "ff808081390ab64d01390f29d5560891.jpg\"></DIV>";
-        System.out.println("safeHtml html:\n" + HtmlUtils.cleanEditorHtmlV2(sample));
-
-        // Simple Performance Test
         String largeSample = FileUtils.readFileToString(new File("src/test/java/com/guomi/meazza/util/htmlSample.txt"),
                 "utf-8");
-        String safeHtml = HtmlUtils.cleanEditorHtmlV2(largeSample);
-        System.out.println("safeHtml:\n" + safeHtml);
-
-        // int times = 100;
-        // StopWatch watch = new StopWatch("HtmlUtils.cleanEditorHtml(String) Performance Test (sample length: "
-        // + largeSample.length() + ")");
-        // watch.start("Call HtmlUtils.cleanEditorHtml(String) " + times + " times");
-        // for (int i = 0; i < times; i++) {
-        // HtmlUtils.cleanEditorHtmlV2(largeSample);
-        // }
-        // watch.stop();
-        // System.out.println(watch.prettyPrint());
-
+        System.out.println("------------------ origin\n" + Jsoup.parse(largeSample).body().html());
+        System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtml(largeSample));
     }
 
 }

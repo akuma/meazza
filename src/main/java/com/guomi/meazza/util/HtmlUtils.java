@@ -28,7 +28,7 @@ public abstract class HtmlUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HtmlUtils.class);
 
-    private static final Pattern START_NBSP_REPLACE_REGEX = Pattern.compile("^(&nbsp;)+");
+    // private static final Pattern START_NBSP_REPLACE_REGEX = Pattern.compile("^(&nbsp;)+");
 
     /**
      * 默认在 jsoup 的 {@link org.jsoup.safety.Whitelist#basicWithImages()} 白名单的基础上添加 div、table 标签
@@ -179,94 +179,99 @@ public abstract class HtmlUtils {
 
         // 解析 html 代码
         Document doc = Jsoup.parse(safeHtml);
-        // Document doc = Jsoup.parse(stripedHtml);
 
-        stripStartBlankTags(doc);
-        stripEndBlankTags(doc);
-        convertNodePToDiv(doc);
-
-        // 去掉行首的 &nbsp;
-        String result = doc.body().html();
-        return START_NBSP_REPLACE_REGEX.matcher(result).replaceAll("");
-
-        // // 对 html 标签、标签属性进行白名单过滤，得到安全的 html 代码
-        // String safeHtml = Jsoup.clean(doc.body().html(), DEFAULT_JSOUP_BASE_URI, whitelist);
-        // logger.trace("safeHtml: {}", safeHtml);
-        // return safeHtml;
-    }
-
-    public static String cleanEditorHtmlV2(String html) {
-        if (StringUtils.isBlank(html)) {
-            return StringUtils.EMPTY;
+        if (logger.isTraceEnabled()) {
+            logger.trace("Body html (Before remove start blank tags):\n{}\n", doc.body().html());
+            logger.trace("Body children size (Before remove start blank tags): {}", doc.body().childNodes().size());
+        }
+        stripStartBlankNodes(doc.body());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Body html (After removed start blank tags):\n{}\n", doc.body().html());
+            logger.trace("Body children size (After removed start blank tags): {}", doc.body().childNodes().size());
         }
 
-        // 移除首尾空白字符
-        String stripedHtml = StringUtils.stripToEmpty(html);
-
-        // 对 html 标签、标签属性进行白名单过滤，得到安全的 html 代码
-        String safeHtml = Jsoup.clean(stripedHtml, DEFAULT_JSOUP_BASE_URI, whitelist);
-        logger.trace("safeHtml: {}", safeHtml);
-
-        // 解析 html 代码
-        Document doc = Jsoup.parse(safeHtml);
-        stripStartBlankNodes(doc.body());
         stripEndBlankNodes(doc.body());
-        convertNodePToDiv(doc);
-        unwrapFirstBlock(doc);
+        if (logger.isTraceEnabled()) {
+            logger.trace("Body html (After removed end blank tags):\n{}\n", doc.body().html());
+            logger.trace("Body children size (After removed end blank tags): {}", doc.body().childNodes().size());
+        }
+
+        convertNodePToDiv(doc.body());
+        unwrapFirstNotBlankBlock(doc.body());
 
         return doc.body().html();
     }
 
     /**
-     * 删除所有元素开头的空白字符、空节点。
+     * 获取 jsoup 白名单对象。<em>修改该对象属性的时候需要注意线程安全问题。</em>
+     * 
+     * @return jsoup 白名单对象
+     */
+    public static Whitelist getWhitelist() {
+        return whitelist;
+    }
+
+    /**
+     * 删除 HTML 元素左边所有连续的空白字符、空节点。
      */
     private static boolean stripStartBlankNodes(Element element) {
-        List<Node> childNodes = element.childNodes();
-        for (Node node : childNodes) {
-            if (node instanceof TextNode) {
-                TextNode tn = (TextNode) node;
-                if (StringUtils.isBlank(tn.text())) { // 查找空白的文本节点并删除
-                    tn.text("");
-                } else { // 对于非空白的文本节点，将文字左边的空白字符删除
-                    tn.text(StringUtils.stripStart(tn.text()));
-                }
+        // 查找直属于当前元素的空白文本节点并将内容设置为空串
+        // 对于非空白的文本节点，将文字左边的空白字符删除
+        List<TextNode> childNodes = element.textNodes();
+        for (TextNode tn : childNodes) {
+            if (StringUtils.isBlank(tn.text())) {
+                tn.text("");
+            } else {
+                tn.text(StringUtils.stripStart(tn.text()));
             }
         }
 
         Elements children = element.children();
         for (Element c : children) {
-            // Node node = c.nextSibling();
-            // if (node instanceof TextNode) {
-            // TextNode tn = (TextNode) node;
-            // if (StringUtils.isBlank(tn.text())) { // 查找空白的文本节点并删除
-            // tn.remove();
-            // } else { // 对于非空白的文本节点，将文字左边的空白字符删除
-            // tn.text(StringUtils.stripStart(tn.text()));
-            // }
-            // }
-
-            // 如果发现空节点则删除并检查下一个节点
+            // 如果发现空节点则标记为待删除
+            boolean canElementRemove = false;
             if (isBlankElement(c)) {
+                canElementRemove = true;
+            }
+
+            // 查找和当前元素相邻的空白文本节点并删除
+            // 对于非空白的文本节点，将文字左边的空白字符删除并结束递归
+            Node node = c.nextSibling();
+            if (node instanceof TextNode) {
+                TextNode tn = (TextNode) node;
+                if (StringUtils.isBlank(tn.text())) {
+                    tn.remove();
+                } else {
+                    logger.trace("Strip start on textNode: {}", tn);
+                    tn.text(StringUtils.stripStart(tn.text()));
+
+                    if (canElementRemove) {
+                        c.remove();
+                        logger.debug("Removed element:\n{}\n", c);
+                    }
+
+                    return true;
+                }
+            }
+
+            // 按需删除当前元素
+            if (canElementRemove) {
                 c.remove();
                 continue;
             }
 
-            // 如果节点不空白且无子节点，表明已经找到了 HTML 第一个非空节点，跳出本次循环并结束递归
-            if (c.children().isEmpty()) {
-                c.text(StringUtils.stripStart(c.text()));
-                // discardBlockParent(c);
-                return false;
-            }
-
             // 递归子节点
-            return stripStartBlankNodes(c);
+            if (stripStartBlankNodes(c)) {
+                return true;
+            }
         }
 
-        return true;
+        return false;
     }
 
     /**
-     * 删除节点中所有末尾的空白字符、空节点。
+     * 删除 HTMl 元素中右边所有连续的空白字符、空节点。
+     * TODO 目前对于直接位于 body 的空白文本不会删除，待完善
      */
     private static boolean stripEndBlankNodes(Element element) {
         Elements children = element.children();
@@ -280,14 +285,16 @@ public abstract class HtmlUtils {
 
             // 如果节点不空白且无子节点，表明已经找到了 HTML 最后一个非空节点，跳出本次循环并结束递归
             if (c.children().isEmpty()) {
-                return false;
+                return true;
             }
 
             // 递归子节点
-            return stripEndBlankNodes(c);
+            if (stripEndBlankNodes(c)) {
+                return true;
+            }
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -298,87 +305,10 @@ public abstract class HtmlUtils {
     }
 
     /**
-     * 删除所有开头的空白字符、空标签。
-     */
-    private static void stripStartBlankTags(Document doc) {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Body html (Before remove start blank tags):\n{}\n", doc.body().html());
-            logger.trace("Body children size (Before remove start blank tags): {}", doc.body().childNodes().size());
-        }
-
-        Elements allElements = doc.body().select("*");
-        for (Element e : allElements) {
-            // 忽略 body 标签
-            if ("body".equals(e.nodeName())) {
-                continue;
-            }
-
-            // 当发现第一个非空白的标签就停止删除操作
-            if (hasText(e)) {
-                logger.trace("First no blank tag: {}", e.nodeName());
-                discardBlockParent(e);
-                break;
-            }
-
-            // 删除 &nbsp;
-            Node node = e.nextSibling();
-            if (node instanceof TextNode) {
-                TextNode tn = (TextNode) node;
-                if (StringUtils.isBlank(tn.text())) {
-                    tn.remove();
-                }
-            }
-
-            e.remove();
-            logger.trace("Removed start blank tag: {}", e.nodeName());
-        }
-
-        if (logger.isTraceEnabled()) {
-            logger.trace("Body html (After removed start blank tags):\n{}\n", doc.body().html());
-            logger.trace("Body children size (After removed start blank tags): {}", doc.body().childNodes().size());
-        }
-    }
-
-    /**
-     * 删除所有末尾的空白字符、空标签。
-     */
-    private static void stripEndBlankTags(Document doc) {
-        Elements allElements = doc.body().select("*");
-        for (int i = allElements.size() - 1; i >= 0; i--) {
-            Element e = allElements.get(i);
-            // 忽略 body 标签
-            if ("body".equals(e.nodeName())) {
-                continue;
-            }
-
-            if (hasText(e)) {
-                break;
-            }
-
-            // 删除 &nbsp;
-            Node node = e.nextSibling();
-            if (node instanceof TextNode) {
-                TextNode tn = (TextNode) node;
-                if (StringUtils.isBlank(tn.text())) {
-                    tn.remove();
-                }
-            }
-
-            e.remove();
-            logger.trace("Removed end blank tag: {}", e.nodeName());
-        }
-
-        if (logger.isTraceEnabled()) {
-            logger.trace("Body html (After removed end blank tags):\n{}\n", doc.body().html());
-            logger.trace("Body children size (After removed end blank tags): {}", doc.body().childNodes().size());
-        }
-    }
-
-    /**
      * 将所有 {@code <p>} 标签转换为 {@code <div>} 标签。
      */
-    private static void convertNodePToDiv(Document doc) {
-        Elements elements = doc.select("p");
+    private static void convertNodePToDiv(Element element) {
+        Elements elements = element.select("p");
         for (Element e : elements) {
             Element div = new Element(Tag.valueOf("div"), "");
             div.html(e.html());
@@ -392,75 +322,40 @@ public abstract class HtmlUtils {
     }
 
     /**
-     * 获取 jsoup 白名单对象。<em>修改该对象属性的时候需要注意线程安全问题。</em>
-     * 
-     * @return jsoup 白名单对象
+     * 将块元素中的第一个非空白文本节点独立成 body 的第一个节点。
      */
-    public static Whitelist getWhitelist() {
-        return whitelist;
-    }
-
-    /**
-     * 和 jsoup 的 {@code Element#hasText()} 的区别是：对于字符串是否是空白字符的判断中，增加了 none-breaking space。
-     */
-    private static boolean hasText(Element element) {
-        List<Node> childNodes = element.childNodes();
+    private static boolean unwrapFirstNotBlankBlock(Node node) {
+        List<Node> childNodes = node.childNodes();
         for (Node child : childNodes) {
+            // 如果是文本节点，且节点内容为空白，则继续递归，否则结束递归
             if (child instanceof TextNode) {
-                TextNode textNode = (TextNode) child;
-                if (!StringUtils.isBlank(textNode.text())) {
-                    // textNode.text(StringUtils.stripStart(textNode.text()));
+                TextNode tn = (TextNode) child;
+                if (StringUtils.isBlank(tn.text())) {
+                    // tn.text("");
+                    continue;
+                }
+
+                return true;
+            }
+
+            if (child instanceof Element) {
+                Element e = (Element) child;
+                // 如果节点不是块元素，则结束递归
+                if (!e.isBlock()) {
                     return true;
                 }
-            } else if (child instanceof Element) {
-                Element el = (Element) child;
-                if (hasText(el)) {
+
+                // 将块元素节点内的内容独立出来，如果还有节点存在则继续递归
+                Node firstChild = e.unwrap();
+                logger.debug("Unwraped block element: {}, firstChild: {}", e.nodeName(), (firstChild == null ? null
+                        : firstChild.nodeName()));
+                if (firstChild == null || unwrapFirstNotBlankBlock(firstChild.parent())) {
                     return true;
                 }
             }
         }
+
         return false;
-    }
-
-    /**
-     * 如果 {@code element} 是块元素并且有子元素，则将子元素剥离出父元素并丢弃父元素。如此反复尝试直到第一个子元素是非块元素为止。
-     * 这样做的目的是让最终的 HTML 代码不被块元素包含，以免引起在页面显示数据时第一行会换行的问题。
-     * 
-     * @param element
-     *            最外层元素
-     */
-    private static void discardBlockParent(Element element) {
-        logger.debug("discardBlockParent() element: {}", element.html());
-        Elements children = element.children();
-        logger.debug("discardBlockParent() children: {}", element.children().html());
-        while (element.isBlock()) {
-            // if (element.parent() == null) {
-            // continue;
-            // }
-            // element.before(element.html());
-            System.out.println("----------------" + element.html());
-            Document doc = element.ownerDocument();
-            Element body = doc.body();
-            System.out.println(doc == null);
-            body.prepend(element.html());
-            element.remove();
-            // element.unwrap();
-
-            if (children.isEmpty()) {
-                break;
-            }
-
-            element = children.get(0);
-            children = element.children();
-        }
-    }
-
-    private static void unwrapFirstBlock(Element element) {
-        Element first = element.select("div").first();
-        if (first != null) {
-            // logger.debug("Unwrap element: {}", first);
-            // first.unwrap();
-        }
     }
 
 }
