@@ -90,10 +90,14 @@ public class HtmlUtilsTest {
     public void testCleanEditorHtml() throws IOException {
         assertEquals("test", HtmlUtils.cleanEditorHtml("test"));
         assertEquals("test", HtmlUtils.cleanEditorHtml("  test  "));
-        assertEquals("test &nbsp;", HtmlUtils.cleanEditorHtml("  test &nbsp; "));
-        assertEquals("test &nbsp;", HtmlUtils.cleanEditorHtml(" &nbsp;   test &nbsp; "));
+        assertEquals("test", HtmlUtils.cleanEditorHtml("  test &nbsp; "));
+        assertEquals("test", HtmlUtils.cleanEditorHtml(" &nbsp;   test &nbsp; "));
         assertEquals("test", HtmlUtils.cleanEditorHtml("  <div>&nbsp;test</div>  "));
         assertEquals("test", HtmlUtils.cleanEditorHtml(" test<br>  "));
+        assertEquals("test <b>test</b>test", HtmlUtils.cleanEditorHtml(" test<b>test</b>test  ", false));
+        assertEquals("test <br />\n <br />test",
+                HtmlUtils.cleanEditorHtml("&nbsp;<div>&nbsp; test<br><br/>test  ", false));
+        assertEquals("test \n<br /> \n<br />test", HtmlUtils.cleanEditorHtml(" test<br><br/>test  "));
         assertEquals("", HtmlUtils.cleanEditorHtml(null));
         assertEquals("", HtmlUtils.cleanEditorHtml(""));
         assertEquals("", HtmlUtils.cleanEditorHtml(" "));
@@ -103,7 +107,7 @@ public class HtmlUtilsTest {
         assertEquals("", HtmlUtils.cleanEditorHtml(" <p>&nbsp;</p> "));
         assertEquals("", HtmlUtils.cleanEditorHtml("&nbsp; <p>&nbsp;</p> <div></div> "));
         assertEquals("", HtmlUtils.cleanEditorHtml("<p>&nbsp;</p> <div></div> "));
-        assertEquals("a&nbsp;&nbsp;b&nbsp;", HtmlUtils.cleanEditorHtml("&nbsp;a&nbsp;&nbsp;b&nbsp;"));
+        assertEquals("a&nbsp;&nbsp;b", HtmlUtils.cleanEditorHtml("&nbsp;a&nbsp;&nbsp;b&nbsp;"));
 
         String html = "<!DOCTYPE html><html><head><meta charset='utf-8'><title><>html strip test</title></head>"
                 + "<body><b>test 测试</b><div style='color:red;'>伦敦奥运会开幕了！\n&nbsp;&nbsp;&nbsp;&nbsp;"
@@ -123,7 +127,7 @@ public class HtmlUtilsTest {
         assertEquals("testb", HtmlUtils.cleanEditorHtml("<p style='color:red'>test<span>b</span></p>"));
 
         sample = "<p>体积为4&times;10<sup>-3</sup>m<sup>3</sup>的铜球．其质量为24 kg．试判断这个铜球是空心的还是实心的，"
-                + "(铜的密度是8．9&times;10<sup>3</sup>kg／m<sup>3</sup>)</p>";
+                + "(铜的密度是8．9&times;10<sup>3</sup>kg／m<sup>3</sup>)</p>还有什么<br><br>没有了？";
         System.out.println("cleaned html:\n" + HtmlUtils.cleanEditorHtml(sample));
 
         sample = "<DIV><SPAN style=\"FONT-FAMILY: 宋体; FONT-SIZE: 10.5pt; mso-bidi-font-family: 'Times New Roman';"
@@ -142,7 +146,7 @@ public class HtmlUtilsTest {
                 + largeSample.length() + ")");
         watch.start("Call HtmlUtils.cleanEditorHtml(String) " + times + " times");
         for (int i = 0; i < times; i++) {
-            HtmlUtils.cleanEditorHtml(largeSample);
+            // HtmlUtils.cleanEditorHtml(largeSample);
         }
         watch.stop();
         System.out.println(watch.prettyPrint());
@@ -150,7 +154,7 @@ public class HtmlUtilsTest {
 
     @Test
     public void testUnwrapBlockElement() throws IOException {
-        assertEquals("te \n<div>\n st \n</div>",
+        assertEquals("te \n<div>\n  st \n</div>",
                 HtmlUtils.cleanEditorHtml("<div>&nbsp;<div>te</div>&nbsp;<div>st</div></div>"));
 
         String sample = "&nbsp; &nbsp; <div>&nbsp;</div>&nbsp;<div>&nbsp;<div>&nbsp;</div><img src='test.jsp' />"

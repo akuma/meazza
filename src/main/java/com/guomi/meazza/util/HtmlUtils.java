@@ -157,7 +157,7 @@ public abstract class HtmlUtils {
     }
 
     /**
-     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码。
+     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。默认输出的代码会经过格式化。
      * <p>
      * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
      * 
@@ -166,6 +166,21 @@ public abstract class HtmlUtils {
      * @return 处理之后的 HTML 代码
      */
     public static String cleanEditorHtml(String html) {
+        return cleanEditorHtml(html, true);
+    }
+
+    /**
+     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。
+     * <p>
+     * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
+     * 
+     * @param html
+     *            需要处理的 HTML 代码
+     * @param prettyPrint
+     *             是否输入格式化之后的 HTML 代码
+     * @return 处理之后的 HTML 代码
+     */
+    public static String cleanEditorHtml(String html, boolean prettyPrint) {
         if (StringUtils.isBlank(html)) {
             return StringUtils.EMPTY;
         }
@@ -199,6 +214,7 @@ public abstract class HtmlUtils {
         convertNodePToDiv(doc.body());
         unwrapFirstNotBlankBlock(doc.body());
 
+        doc.outputSettings().prettyPrint(prettyPrint);
         return doc.body().html();
     }
 
@@ -222,7 +238,12 @@ public abstract class HtmlUtils {
             if (StringUtils.isBlank(tn.text())) {
                 tn.text("");
             } else {
-                tn.text(StringUtils.stripStart(tn.text()));
+                Node previousSibling = tn.previousSibling();
+                logger.debug("stripStartBlankNodes() -> textNode' previous sibling: {}", previousSibling);
+                if (previousSibling == null) {
+                    tn.text(StringUtils.stripStart(tn.text()));
+                    return true;
+                }
             }
         }
 
@@ -240,14 +261,15 @@ public abstract class HtmlUtils {
             if (node instanceof TextNode) {
                 TextNode tn = (TextNode) node;
                 if (StringUtils.isBlank(tn.text())) {
+                    logger.debug("stripStartBlankNodes() -> Removed textNode: {}", tn.text());
                     tn.remove();
                 } else {
-                    logger.trace("Strip start on textNode: {}", tn);
+                    logger.trace("stripStartBlank() -> Strip start on textNode: {}", tn);
                     tn.text(StringUtils.stripStart(tn.text()));
 
                     if (canElementRemove) {
                         c.remove();
-                        logger.debug("Removed element:\n{}\n", c);
+                        logger.debug("stripStartBlankNodes() -> Removed element:\n{}\n", c);
                     }
 
                     return true;
@@ -257,6 +279,7 @@ public abstract class HtmlUtils {
             // 按需删除当前元素
             if (canElementRemove) {
                 c.remove();
+                logger.debug("stripStartBlankNodes() -> Removed element:\n{}\n", c);
                 continue;
             }
 
@@ -274,12 +297,30 @@ public abstract class HtmlUtils {
      * TODO 目前对于直接位于 body 的空白文本不会删除，待完善
      */
     private static boolean stripEndBlankNodes(Element element) {
+        // 查找直属于当前元素的空白文本节点并将内容设置为空串
+        // 对于非空白的文本节点，将文字左边的空白字符删除
+        List<TextNode> childNodes = element.textNodes();
+        for (int i = childNodes.size() - 1; i >= 0; i--) {
+            TextNode tn = childNodes.get(i);
+            if (StringUtils.isBlank(tn.text())) {
+                tn.text("");
+            } else {
+                Node nextSibling = tn.nextSibling();
+                logger.debug("stripEndBlankNodes() -> textNode' next sibling: {}", nextSibling);
+                if (nextSibling == null) {
+                    tn.text(StringUtils.stripEnd(tn.text()));
+                    return true;
+                }
+            }
+        }
+
         Elements children = element.children();
         for (int i = children.size() - 1; i >= 0; i--) {
             Element c = children.get(i);
             // 如果发现空节点则删除掉
             if (isBlankElement(c)) {
                 c.remove();
+                logger.debug("stripEndBlankNodes() -> Removed element:\n{}\n", c);
                 continue;
             }
 
