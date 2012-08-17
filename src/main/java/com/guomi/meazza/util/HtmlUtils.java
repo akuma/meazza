@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Tag;
+import org.jsoup.safety.Cleaner;
 import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -157,7 +158,7 @@ public abstract class HtmlUtils {
     }
 
     /**
-     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。默认输出的代码会经过格式化。
+     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。默认输出的代码不会经过格式化。
      * <p>
      * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
      * 
@@ -166,7 +167,7 @@ public abstract class HtmlUtils {
      * @return 处理之后的 HTML 代码
      */
     public static String cleanEditorHtml(String html) {
-        return cleanEditorHtml(html, true);
+        return cleanEditorHtml(html, false);
     }
 
     /**
@@ -189,11 +190,12 @@ public abstract class HtmlUtils {
         String stripedHtml = StringUtils.stripToEmpty(html);
 
         // 对 html 标签、标签属性进行白名单过滤，得到安全的 html 代码
-        String safeHtml = Jsoup.clean(stripedHtml, DEFAULT_JSOUP_BASE_URI, whitelist);
+        String safeHtml = clean(stripedHtml, DEFAULT_JSOUP_BASE_URI, whitelist, prettyPrint);
         logger.trace("safeHtml: {}", safeHtml);
 
         // 解析 html 代码
         Document doc = Jsoup.parse(safeHtml);
+        doc.outputSettings().prettyPrint(prettyPrint);
 
         if (logger.isTraceEnabled()) {
             logger.trace("Body html (Before remove start blank tags):\n{}\n", doc.body().html());
@@ -214,7 +216,6 @@ public abstract class HtmlUtils {
         convertNodePToDiv(doc.body());
         unwrapFirstNotBlankBlock(doc.body());
 
-        doc.outputSettings().prettyPrint(prettyPrint);
         return doc.body().html();
     }
 
@@ -397,6 +398,17 @@ public abstract class HtmlUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Jsoup 的 clean 方法会对代码进行格式化，所以自定义了一个方法，允许指定是否对代码格式化。
+     */
+    private static String clean(String bodyHtml, String baseUri, Whitelist whitelist, boolean pretty) {
+        Document dirty = Jsoup.parseBodyFragment(bodyHtml, baseUri);
+        Cleaner cleaner = new Cleaner(whitelist);
+        Document clean = cleaner.clean(dirty);
+        clean.outputSettings().prettyPrint(pretty);
+        return clean.body().html();
     }
 
 }

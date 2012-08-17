@@ -94,10 +94,11 @@ public class HtmlUtilsTest {
         assertEquals("test", HtmlUtils.cleanEditorHtml(" &nbsp;   test &nbsp; "));
         assertEquals("test", HtmlUtils.cleanEditorHtml("  <div>&nbsp;test</div>  "));
         assertEquals("test", HtmlUtils.cleanEditorHtml(" test<br>  "));
-        assertEquals("test <b>test</b>test", HtmlUtils.cleanEditorHtml(" test<b>test</b>test  ", false));
-        assertEquals("test <br />\n <br />test",
-                HtmlUtils.cleanEditorHtml("&nbsp;<div>&nbsp; test<br><br/>test  ", false));
-        assertEquals("test \n<br /> \n<br />test", HtmlUtils.cleanEditorHtml(" test<br><br/>test  "));
+        assertEquals("test<b>test</b>test", HtmlUtils.cleanEditorHtml(" test<b>test</b>test  ", false));
+        assertEquals("test<br /><br />test", HtmlUtils.cleanEditorHtml("&nbsp;<div>&nbsp; test<br><br/>test  ", false));
+        assertEquals("test<br /><br />test", HtmlUtils.cleanEditorHtml(" test<br><br/>test  "));
+        assertEquals("a<sub>3</sub> b<sup>4</sup>",
+                HtmlUtils.cleanEditorHtml("&nbsp; a<sub>3</sub> b<sup>4</sup> &nbsp;<p>", false));
         assertEquals("", HtmlUtils.cleanEditorHtml(null));
         assertEquals("", HtmlUtils.cleanEditorHtml(""));
         assertEquals("", HtmlUtils.cleanEditorHtml(" "));
@@ -154,8 +155,7 @@ public class HtmlUtilsTest {
 
     @Test
     public void testUnwrapBlockElement() throws IOException {
-        assertEquals("te \n<div>\n  st \n</div>",
-                HtmlUtils.cleanEditorHtml("<div>&nbsp;<div>te</div>&nbsp;<div>st</div></div>"));
+        assertEquals("te<div>st</div>", HtmlUtils.cleanEditorHtml("<div>&nbsp;<div>te</div>&nbsp;<div>st</div></div>"));
 
         String sample = "&nbsp; &nbsp; <div>&nbsp;</div>&nbsp;<div>&nbsp;<div>&nbsp;</div><img src='test.jsp' />"
                 + "<div>foo</div><div>&nbsp;</div><div>&nbsp;<b>bb</b></div></div>"
