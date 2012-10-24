@@ -382,7 +382,11 @@ public class SqlCreator {
 
         int index = lowerCaseSql.indexOf(" order ");
         if (index != -1) {
+            String orderSuffix = normalSql.substring(index);
             normalSql = normalSql.substring(0, index);
+            if (orderSuffix.contains(")")) {
+                normalSql = normalSql + ")";
+            }
             lowerCaseSql = normalSql.toLowerCase();
         }
 
@@ -391,12 +395,14 @@ public class SqlCreator {
             throw new IllegalArgumentException("Could not get count sql[" + sql + "]");
         }
 
+        String resultSql = null;
         int groupByIndex = getFirstPairIndex(lowerCaseSql, " group ", " by ");
         if (groupByIndex != -1 || lowerCaseSql.contains(" union ")) {
-            return "SELECT COUNT(1) FROM (" + normalSql + ") temp_rs";
+            resultSql = "SELECT COUNT(1) FROM (" + normalSql + ") temp_rs";
         } else {
-            return "SELECT COUNT(1)" + normalSql.substring(fromIndex);
+            resultSql = "SELECT COUNT(1)" + normalSql.substring(fromIndex);
         }
+        return resultSql;
     }
 
     /**
