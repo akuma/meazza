@@ -27,7 +27,7 @@ public class JsonViewHelper {
     private static final Logger logger = LoggerFactory.getLogger(JsonViewHelper.class);
 
     /**
-     * 将指定的 model 以 JSON 格式输出到 HTTP 响应中。
+     * 将指定的 model 以 JSON 格式输出到 HTTP 响应中。输出内容的 MIME 类型为 text/html。
      * 
      * @param model
      *            数据对象
@@ -36,15 +36,42 @@ public class JsonViewHelper {
      * @return 返回 null
      */
     public static ModelAndView render(Object model, HttpServletResponse response) {
+        return render(model, response, MediaType.TEXT_HTML);
+    }
+
+    /**
+     * 将指定的 model 以 JSON 格式输出到 HTTP 响应中。
+     * 
+     * @param model
+     *            数据对象
+     * @param response
+     *            HTTP Response
+     * @param mediaType
+     *            输出响应的 MIME 类型
+     * @return 返回 null
+     */
+    public static ModelAndView render(Object model, HttpServletResponse response, MediaType mediaType) {
         MappingJacksonHttpMessageConverter jsonConverter = new MappingJacksonHttpMessageConverter();
 
         try {
-            jsonConverter.write(model, MediaType.APPLICATION_JSON, new ServletServerHttpResponse(response));
+            jsonConverter.write(model, MediaType.TEXT_HTML, new ServletServerHttpResponse(response));
         } catch (HttpMessageNotWritableException | IOException e) {
             logger.error("Render jsonView error", e);
         }
 
         return null;
+    }
+
+    /**
+     * 将指定的 model 以 JSON 格式输出到 HTTP 响应中。此方法和 {@link #render(Object, HttpServletResponse)} 的区别是没有返回值。
+     * 
+     * @param model
+     *            数据对象
+     * @param response
+     *            HTTP Response
+     */
+    public static void renderJust(Object model, HttpServletResponse response) {
+        render(model, response, MediaType.TEXT_HTML);
     }
 
 }
