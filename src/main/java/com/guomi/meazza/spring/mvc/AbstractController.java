@@ -52,13 +52,13 @@ public abstract class AbstractController implements ValidationSupport {
 
     protected Logger logger = LoggerFactory.getLogger(getClass()); // 日志对象
 
-    private static final String ACTION_ERRORS = "actionErrors";
-    private static final String ACTION_MESSAGES = "actionMessages";
-    private static final String FIELD_ERRORS = "fieldErrors";
+    public static final String ACTION_ERRORS = "actionErrors";
+    public static final String ACTION_MESSAGES = "actionMessages";
+    public static final String FIELD_ERRORS = "fieldErrors";
 
-    private static final String EXCEPTION_ATTRIBUTE_NAME = "exception";
-    private static final String EXCEPTION_MESSAGE_ATTRIBUTE_NAME = "message";
-    private static final String EXCEPTION_STACKTRACE_ATTRIBUTE_NAME = "stackTrace";
+    public static final String EXCEPTION_ATTRIBUTE_NAME = "exception";
+    public static final String EXCEPTION_MESSAGE_ATTRIBUTE_NAME = "message";
+    public static final String EXCEPTION_STACKTRACE_ATTRIBUTE_NAME = "stackTrace";
 
     // 默认的错误视图名称
     private String defaultErrorView = "error";
