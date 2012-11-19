@@ -54,7 +54,7 @@ public class JsonViewHelper {
         MappingJacksonHttpMessageConverter jsonConverter = new MappingJacksonHttpMessageConverter();
 
         try {
-            jsonConverter.write(model, MediaType.TEXT_HTML, new ServletServerHttpResponse(response));
+            jsonConverter.write(model, mediaType, new ServletServerHttpResponse(response));
         } catch (HttpMessageNotWritableException | IOException e) {
             logger.error("Render jsonView error", e);
         }
@@ -64,6 +64,8 @@ public class JsonViewHelper {
 
     /**
      * 将指定的 model 以 JSON 格式输出到 HTTP 响应中。此方法和 {@link #render(Object, HttpServletResponse)} 的区别是没有返回值。
+     * <p>
+     * <strong>注意：</strong> 为了兼容 IE 系列浏览器，返回响应的 MIME 类型设置为 text/plain，而 Spring MVC 默认的是 application/json。
      * 
      * @param model
      *            数据对象
@@ -71,7 +73,7 @@ public class JsonViewHelper {
      *            HTTP Response
      */
     public static void renderJust(Object model, HttpServletResponse response) {
-        render(model, response, MediaType.TEXT_HTML);
+        render(model, response, MediaType.TEXT_PLAIN);
     }
 
 }
