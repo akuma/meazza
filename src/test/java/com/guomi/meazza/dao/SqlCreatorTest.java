@@ -74,7 +74,18 @@ public class SqlCreatorTest {
         countSql = SqlCreator.getCountSQL("select count(1) from (select b.regionid as regionId, b.name as schoolName,"
                 + " a.username as userName,  a.name as realName, d.score as score "
                 + "from jx_user a left join t_userinfo d on a.userid=d.id, jx_school b "
-                + "where a.schoolid = b.schoolid AND a.type = 2)");
+                + "where a.schoolid = b.schoolid AND a.type = 2) temp_rs");
+        assertTrue(countSql.equalsIgnoreCase(SqlCreator.getCountSQL(normalSql)));
+
+        normalSql = SqlCreator.getCountSQL("select t.*, rownum as rank from "
+                + "(select a.userid as userid, b.regionid as regionId, b.name as schoolName,"
+                + " a.username as userName,  a.name as realName, d.score as score from jx_user a"
+                + " left join t_userinfo d on a.userid=d.id, jx_school b "
+                + "where a.schoolid = b.schoolid AND a.type = 2 ORDER BY score desc nulls last) t");
+        countSql = "SELECT COUNT(1) from (select a.userid as userid, b.regionid as regionId, b.name as schoolName,"
+                + " a.username as userName,  a.name as realName, d.score as score from jx_user a"
+                + " left join t_userinfo d on a.userid=d.id, jx_school b "
+                + "where a.schoolid = b.schoolid AND a.type = 2) temp_rs";
         assertTrue(countSql.equalsIgnoreCase(SqlCreator.getCountSQL(normalSql)));
     }
 

@@ -385,7 +385,7 @@ public class SqlCreator {
             String orderSuffix = normalSql.substring(index);
             normalSql = normalSql.substring(0, index);
             if (orderSuffix.contains(")")) {
-                normalSql = normalSql + ")";
+                normalSql = normalSql + ") temp_rs";
             }
             lowerCaseSql = normalSql.toLowerCase();
         }
