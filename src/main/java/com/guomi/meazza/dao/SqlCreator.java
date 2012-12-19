@@ -4,6 +4,7 @@
  */
 package com.guomi.meazza.dao;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,7 +18,9 @@ import org.apache.commons.lang3.StringUtils;
  * 
  * @author akuma
  */
-public class SqlCreator implements Cloneable {
+public class SqlCreator implements Serializable {
+
+    private static final long serialVersionUID = 1541850729741678422L;
 
     private StringBuilder sql;
     private List<Object> args;
