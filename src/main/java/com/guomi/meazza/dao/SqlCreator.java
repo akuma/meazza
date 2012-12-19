@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
  * 
  * @author akuma
  */
-public class SqlCreator {
+public class SqlCreator implements Cloneable {
 
     private StringBuilder sql;
     private List<Object> args;
