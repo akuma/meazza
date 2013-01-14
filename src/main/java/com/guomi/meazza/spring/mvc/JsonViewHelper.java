@@ -27,7 +27,7 @@ public class JsonViewHelper {
     private static final Logger logger = LoggerFactory.getLogger(JsonViewHelper.class);
 
     /**
-     * 将指定的 model 以 JSON 格式输出到 HTTP 响应中。输出内容的 MIME 类型为 text/html。
+     * 将指定的 model 以 JSON 格式输出到 HTTP 响应中。输出内容的 MIME 类型为 text/plain。
      * 
      * @param model
      *            数据对象
@@ -36,7 +36,7 @@ public class JsonViewHelper {
      * @return 返回 null
      */
     public static ModelAndView render(Object model, HttpServletResponse response) {
-        return render(model, response, MediaType.TEXT_HTML);
+        return render(model, response, MediaType.TEXT_PLAIN);
     }
 
     /**
