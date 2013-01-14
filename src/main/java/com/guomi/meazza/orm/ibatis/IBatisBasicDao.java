@@ -448,10 +448,11 @@ public abstract class IBatisBasicDao {
     }
 
     /**
-     * 获取 iBATIS 的 SQL 语句的命名空间。默认为空，即不启用命名空间功能。如子类需要使用命名空间功能，请重载此方法。
+     * 获取 iBATIS 的 SQL 语句的命名空间（必须要开启 iBATIS 的命名空间功能）。<br>
+     * 该值默认情况下是继承此类的类全名，例如 foo.BarDao 继承了此类，则命名空间即为 foo.BarDao。<br>
+     * 如子类需要其他形式的命名空间，请重载此方法，例如：
      * 
-     * <p>
-     * 一个采用 "user" 命名空间的例子：
+     * 一个以 "user" 为命名空间的例子：
      * 
      * <pre>
      * &#064;Override
@@ -463,7 +464,7 @@ public abstract class IBatisBasicDao {
      * @return SQL 语句的命名空间
      */
     protected String statementNamespace() {
-        return null;
+        return getClass().getName();
     }
 
     /**
