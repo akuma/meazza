@@ -19,7 +19,6 @@ import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
 import com.guomi.meazza.util.ServletUtils;
 
-
 /**
  * 拦截 <code>Controller</code> 方法，将公共数据作为属性添加到 Spring <code>Model</code> 对象中的拦截器。 <br>
  * 主要用于页面上通用信息的展示，这些信息不适合交给 <code>Controller</code> 去设置。
