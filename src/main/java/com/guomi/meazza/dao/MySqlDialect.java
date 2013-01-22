@@ -18,14 +18,9 @@ public class MySqlDialect implements Dialect {
     public String getLimitSql(String aSql, int offset, int limit) {
         String sql = aSql.trim();
 
-        StringBuilder pagingSelect = new StringBuilder(sql.length() + 64);
-        pagingSelect.append("select * from (");
+        StringBuilder pagingSelect = new StringBuilder(sql.length() + 16);
         pagingSelect.append(sql);
-        pagingSelect.append(") temp_rs limit " + limit);
-
-        if (offset > 0) {
-            pagingSelect.append(" offset " + offset);
-        }
+        pagingSelect.append(String.format(" limit %d, %d", offset, limit));
 
         return pagingSelect.toString();
     }
