@@ -8,6 +8,6 @@ package com.guomi.meazza.orm.mybatis;
 /**
  * @author akuma
  */
-public class DemoDao extends MyBatisBasicDao {
+public class DemoDao extends DefaultMyBatisBasicDao {
 
 }
