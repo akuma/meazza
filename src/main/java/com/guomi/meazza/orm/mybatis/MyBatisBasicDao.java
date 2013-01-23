@@ -1,43 +1,47 @@
 /* 
- * @(#)MyBatisBasicDao.java    Created on 2012-8-1
- * Copyright (c) 2012 Guomi. All rights reserved.
+ * @(#)MyBatisBasicMapper.java    Created on 2013-1-23
+ * Copyright (c) 2013 Guomi. All rights reserved.
  */
 package com.guomi.meazza.orm.mybatis;
 
 import java.util.List;
+import java.util.Map;
 
-import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.apache.ibatis.annotations.MapKey;
 
-import com.guomi.meazza.dao.CrudDao;
+import com.guomi.meazza.util.Pagination;
 
 /**
+ * MyBatis 基础 DAO 接口。
+ * 
  * @author akuma
  */
-public class MyBatisBasicDao<E, PK> extends SqlSessionDaoSupport implements CrudDao<E, PK> {
+@MyBatisRepository
+public interface MyBatisBasicDao<T> {
 
-    @Override
-    public E find(PK id) {
-        return getSqlSession().selectOne("find", id);
-    }
+    <PK> T find(PK id);
 
-    @Override
-    public List<E> findAll() {
-        return getSqlSession().selectList("findAll");
-    }
+    List<T> findAll();
 
-    @Override
-    public void insert(E entity) {
-        getSqlSession().insert("insert", entity);
-    }
+    List<T> findByEntity(T entity);
 
-    @Override
-    public void update(E entity) {
-        getSqlSession().update("update", entity);
-    }
+    List<T> findByEntityWithPage(T entity, Pagination page);
 
-    @Override
-    public int delete(PK id) {
-        return getSqlSession().delete("delete", id);
-    }
+    List<T> findByParam(Object param);
+
+    List<T> findByParamWithPage(Object param, Pagination page);
+
+    @SuppressWarnings("unchecked")
+    @MapKey("id")
+    <PK> Map<PK, T> findMap(PK... ids);
+
+    void insert(T entity);
+
+    void update(T entity);
+
+    void updateIfPossible(T entity);
+
+    @SuppressWarnings("unchecked")
+    <PK> void delete(PK... ids);
 
 }
