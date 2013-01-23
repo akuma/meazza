@@ -1,5 +1,5 @@
 /* 
- * @(#)MyBatisBasicMapper.java    Created on 2013-1-23
+ * @(#)MyBatisBasicDao.java    Created on 2013-1-23
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
 package com.guomi.meazza.orm.mybatis;
