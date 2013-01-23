@@ -159,7 +159,7 @@ public class MyBatisPagePlugin implements Interceptor {
             return originSql;
         }
 
-        int offset = page.getCurrentRowNum() - 1;
+        int offset = (page.getCurrentRowNum() <= 0) ? 0 : (page.getCurrentRowNum() - 1);
         int limit = page.getPageSize();
         return dialect.getLimitSql(originSql, offset, limit);
     }
