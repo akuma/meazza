@@ -2,7 +2,7 @@
  * @(#)IdEntity.java    Created on 2012-8-2
  * Copyright (c) 2012 Guomi. All rights reserved.
  */
-package com.guomi.meazza.dao;
+package com.guomi.meazza.support;
 
 import java.io.Serializable;
 
