@@ -5,12 +5,13 @@
 package com.guomi.meazza.spring.mvc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Controller 操作的响应消息类，主要用在以 <code>ResponseBody</code> 方式返回结果的方法中。
+ * Controller 操作的响应消息类，主要用在以 <code>ResponseBody</code> 方式返回结果的方法中。<br>
  * 它包含了 Action 提示信息、Action 错误信息、字段错误信息以及其他响应数据。
  * 
  * @author akuma
@@ -19,10 +20,11 @@ public class ResponseMessage implements Serializable {
 
     private static final long serialVersionUID = 6725085407815077443L;
 
-    private Collection<String> actionMessages;
-    private Collection<String> actionErrors;
-    private Map<String, Collection<String>> fieldErrors;
-    private Map<String, Object> data = new HashMap<String, Object>(); // 其他响应数据
+    private Collection<String> actionMessages = new ArrayList<>(0);
+    private Collection<String> actionErrors = new ArrayList<>(0);
+    private Map<String, Collection<String>> fieldErrors = new HashMap<>(0);
+
+    private Map<String, Object> data = new HashMap<>(); // 其他需要返回的数据
 
     /**
      * 获取是否存在 Action 消息。
