@@ -24,6 +24,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.util.StopWatch;
 
 import com.guomi.meazza.dao.Dialect;
 import com.guomi.meazza.dao.MySqlDialect;
@@ -56,6 +57,10 @@ public class MyBatisPagePlugin implements Interceptor {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+        StopWatch stopWatch = new StopWatch("MyBatis Pagination Plugin");
+
+        stopWatch.start("Get page object");
+
         StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
         MetaObject metaObject = MetaObject.forObject(statementHandler);
 
@@ -74,21 +79,28 @@ public class MyBatisPagePlugin implements Interceptor {
             }
         }
 
+        stopWatch.stop();
+
         if (page == null) {
             return invocation.proceed();
         }
+
+        stopWatch.start("Count result");
 
         String originSql = statementHandler.getBoundSql().getSql();
         logger.debug("Original SQL: {}", originSql);
 
         // 查询总记录数
         Configuration configuration = (Configuration) metaObject.getValue(DELEGATE_CONFIGURATION);
-        Connection connection = configuration.getEnvironment().getDataSource().getConnection();
-        int rowCount = getCount(connection, statementHandler);
+        int rowCount = getQueryCount(configuration, statementHandler);
+
+        stopWatch.stop();
 
         // 根据查询得到的总记录数初始化分页对象
         page.setRowCount(rowCount);
         page.initialize();
+
+        stopWatch.start("Generate page sql");
 
         // 分页查询 本地化对象 修改数据库注意修改实现
         String pageSql = generatePageSql(originSql, page, dialect);
@@ -99,6 +111,10 @@ public class MyBatisPagePlugin implements Interceptor {
         metaObject.setValue(DELEGATE_BOUND_SQL, pageSql);
         metaObject.setValue(DELEGATE_ROW_BOUNDS_OFFSET, RowBounds.NO_ROW_OFFSET);
         metaObject.setValue(DELEGATE_ROW_BOUNDS_LIMIT, RowBounds.NO_ROW_LIMIT);
+
+        stopWatch.stop();
+
+        System.out.println(stopWatch.prettyPrint());
 
         return invocation.proceed();
     }
@@ -130,13 +146,14 @@ public class MyBatisPagePlugin implements Interceptor {
     /**
      * 获取 SQL 查询结果的记录数。
      */
-    private static int getCount(final Connection connection, final StatementHandler statementHandler)
+    private static int getQueryCount(final Configuration configuration, final StatementHandler statementHandler)
             throws SQLException {
         String originSql = statementHandler.getBoundSql().getSql();
         String countSql = String.format(COUNT_SQL_TEMPLATE, originSql);
         logger.debug("Count SQL: {}", countSql);
 
-        try (PreparedStatement countStmt = connection.prepareStatement(countSql)) {
+        try (Connection connection = configuration.getEnvironment().getDataSource().getConnection();
+                PreparedStatement countStmt = connection.prepareStatement(countSql)) {
             // 使用 parameterHandler 设置 count 语句中的参数
             statementHandler.getParameterHandler().setParameters(countStmt);
             ResultSet rs = countStmt.executeQuery();
