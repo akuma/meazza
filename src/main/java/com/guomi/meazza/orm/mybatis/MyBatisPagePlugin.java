@@ -23,7 +23,6 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.util.StopWatch;
 
 import com.guomi.meazza.dao.Dialect;
@@ -48,7 +47,7 @@ public class MyBatisPagePlugin implements Interceptor {
     private static final String DELEGATE_ROW_BOUNDS_LIMIT = "delegate.rowBounds.limit";
     private static final String DELEGATE_ROW_BOUNDS_OFFSET = "delegate.rowBounds.offset";
 
-    private static final String DEFAULT_DIALECT = Database.MYSQL.toString();
+    private static final String DEFAULT_DIALECT = "mysql";
 
     private static final String COUNT_SQL_TEMPLATE = "SELECT COUNT(1) FROM (%s) AS tmp_count_result";
 
@@ -132,11 +131,11 @@ public class MyBatisPagePlugin implements Interceptor {
         }
 
         String dialectType = StringUtils.defaultString(properties.getProperty("dialect"), DEFAULT_DIALECT);
-        if (dialectType.equalsIgnoreCase(Database.MYSQL.toString())) {
+        if (dialectType.equalsIgnoreCase("mysql")) {
             dialect = new MySqlDialect();
-        } else if (dialectType.equalsIgnoreCase(Database.ORACLE.toString())) {
+        } else if (dialectType.equalsIgnoreCase("oracle")) {
             dialect = new OracleDialect();
-        } else if (dialectType.equalsIgnoreCase(Database.SQL_SERVER.toString())) {
+        } else if (dialectType.equalsIgnoreCase("sqlserver")) {
             dialect = new SqlServerDialect();
         } else {
             throw new RuntimeException("dialect '" + dialectType + "' not supported");
