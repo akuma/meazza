@@ -18,7 +18,7 @@ public abstract class IdEntity<T> implements Serializable {
 
     private static final long serialVersionUID = 7685930087139789958L;
 
-    protected T id;
+    private T id;
 
     public IdEntity() {
     }
