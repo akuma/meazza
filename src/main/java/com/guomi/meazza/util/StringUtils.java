@@ -13,6 +13,16 @@ package com.guomi.meazza.util;
 public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
+     * 电子邮箱的正则表达式。
+     */
+    private static final String REGEX_EMAIL = ".+@.+\\.[a-z]+";
+
+    /**
+     * 手机号码的正则表达式。
+     */
+    private static final String REGEX_MOBILE = "1\\d{10}";
+
+    /**
      * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
      * 
      * @param str
@@ -112,6 +122,41 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     public static boolean isWhitespace(char ch) {
         // 添加对 '\u005Cu00A0', '\u005Cu2007', '\u005Cu202F' 的判断
         return (Character.isWhitespace(ch) || ch == '\u00A0' || ch == '\u2007' || ch == '\u202F');
+    }
+
+    /**
+     * 判断字符串是否是合法的电子邮箱地址。
+     * 
+     * @param str
+     *            字符串
+     * @return true/false
+     */
+    public static boolean isEmail(String str) {
+        return isRegexMatch(str, REGEX_EMAIL);
+    }
+
+    /**
+     * 是否为手机号码。此判断比较宽松，只要是以 1 开头的 11 位的数字，就认为是合法手机号码。
+     * 
+     * @param str
+     *            字符串
+     * @return 若是合法的手机号码返回 <code>true</code>, 否则返回 <code>false</code>.
+     */
+    public static boolean isMobile(String str) {
+        return isRegexMatch(str, REGEX_MOBILE);
+    }
+
+    /**
+     * 判断字符串是否匹配了正则表达式。
+     * 
+     * @param str
+     *            字符串
+     * @param regex
+     *            正则表达式
+     * @return true/false
+     */
+    public static boolean isRegexMatch(String str, String regex) {
+        return str != null && str.matches(regex);
     }
 
     /**
