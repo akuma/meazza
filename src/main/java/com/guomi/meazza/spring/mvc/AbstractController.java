@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -231,8 +233,9 @@ public abstract class AbstractController implements ValidationSupport {
                 fieldErrors = new ArrayList<String>();
                 fieldErrorsMap.put(error.getField(), fieldErrors);
             }
-            fieldErrors.add(messageSource.getMessage(error.getCode(), error.getArguments(), error.getDefaultMessage(),
-                    null));
+            String fieldError =
+                    messageSource.getMessage(error.getCode(), error.getArguments(), error.getDefaultMessage(), null);
+            fieldErrors.add(fieldError);
         }
         message.setFieldErrors(fieldErrorsMap);
 
@@ -259,30 +262,39 @@ public abstract class AbstractController implements ValidationSupport {
      *            Spring WebRequest
      * @param response
      *            HTTP 响应
-     * @return
-     *         对于 AJAX 请求，返回 <code>null</code>，而对于普通请求，返回错误视图对象。
+     * @return 对于 AJAX 请求，返回 <code>null</code>，而对于普通请求，返回错误视图对象。
      */
     @ExceptionHandler(Exception.class)
     public ModelAndView handleException(Exception ex, WebRequest request, HttpServletResponse response) {
         logger.error("Exception handler caught an exception", ex);
 
+        boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
+        logger.debug("Debug is {}", isDebug ? "on" : "off");
+
         StringWriter stackTrace = new StringWriter();
         ex.printStackTrace(new PrintWriter(stackTrace));
-        Map<String, String> exp = new LinkedHashMap<>();
-        exp.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, ex.getMessage());
-        exp.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
-        Map<String, Map<String, String>> exRsp = new LinkedHashMap<>();
-        exRsp.put(EXCEPTION_ATTRIBUTE_NAME, exp);
+
+        Map<String, String> exception = new HashMap<>();
+        exception.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, ex.getMessage());
+        exception.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put(EXCEPTION_ATTRIBUTE_NAME, exception);
+
+        // 如果开启 debug，则将 debug 标记写入 error response 中
+        if (isDebug) {
+            errorResponse.put("debug", true);
+        }
 
         // 如果是 AJAX 请求，以 JSON 格式返回
         if (isAjaxRequest(request)) {
-            return JsonViewHelper.render(exRsp, response);
+            return JsonViewHelper.render(errorResponse, response);
         }
 
         // 如果是普通请求，dispatch 到错误页面
         String exName = ex.getClass().getName();
         String exView = StringUtils.defaultString(exceptionMappings.get(exName), defaultErrorView);
-        return new ModelAndView(exView, exRsp);
+        return new ModelAndView(exView, errorResponse);
     }
 
     /**
