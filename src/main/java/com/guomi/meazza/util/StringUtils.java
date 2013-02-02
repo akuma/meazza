@@ -147,7 +147,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
-     * 判断是否是合法的邮编。
+     * 判断是否是合法的邮编，判断标准是 6 位全数字。
      * 
      * @param str
      *            字符串
@@ -158,11 +158,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
             return false;
         }
 
-        if (str.length() != 6 || !isNumeric(str)) {
-            return false;
-        }
-
-        return true;
+        return str.length() == 6 && isNumeric(str);
     }
 
     /**
