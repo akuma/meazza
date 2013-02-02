@@ -147,6 +147,25 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
+     * 判断是否是合法的邮编。
+     * 
+     * @param str
+     *            字符串
+     * @return true/false
+     */
+    public static boolean isPostcode(String str) {
+        if (isBlank(str)) {
+            return false;
+        }
+
+        if (str.length() != 6 || !isNumeric(str)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * 判断字符串是否匹配了正则表达式。
      * 
      * @param str
