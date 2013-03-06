@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNull;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 
@@ -34,6 +35,17 @@ public class CustomStringToDateConverterTest {
         assertNull(date);
         date = converter.convert("2012");
         assertNull(date);
+        date = converter.convert("2012-12");
+        assertNull(date);
+
+        date = converter.convert("2012-12-02");
+        assertEquals("2012-12-02", DateFormatUtils.format(date, "yyyy-MM-dd"));
+        date = converter.convert("2012-12-02 18");
+        assertEquals("2012-12-02 18", DateFormatUtils.format(date, "yyyy-MM-dd HH"));
+        date = converter.convert("2012-12-02 18:18");
+        assertEquals("2012-12-02 18:18", DateFormatUtils.format(date, "yyyy-MM-dd HH:mm"));
+        date = converter.convert(" 2012-12-02   18:18:59 ");
+        assertEquals("2012-12-02 18:18:59", DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss"));
     }
 
 }

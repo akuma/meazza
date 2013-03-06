@@ -16,6 +16,14 @@ import com.guomi.meazza.util.StringUtils;
 
 /**
  * 将字符串转换为日期对象的自定义转换器。
+ * <p>
+ * 默认支持的日期格式如下：
+ * <ul>
+ * <li>yyyy-MM-dd</li>
+ * <li>yyyy-MM-dd HH</li>
+ * <li>yyyy-MM-dd HH:mm</li>
+ * <li>yyyy-MM-dd HH:mm:ss</li>
+ * </ul>
  * 
  * @author akuma
  */
@@ -23,21 +31,43 @@ public class CustomStringToDateConverter implements Converter<String, Date> {
 
     private String datePattern = "yyyy-MM-dd";
 
+    // private final String DATE_PATTERN_REGEX = "\\d{4}\\-\\d{1,2}\\-\\d{1,2}";
+    private final String HOUR_PATTERN_REGEX = "\\d{1,2}";
+    private final String HOUR_MINUTE_PATTERN_REGEX = "\\d{1,2}:\\d{1,2}";
+    private final String HOUR_MINUTE_SECOND_PATTERN_REGEX = "\\d{1,2}:\\d{1,2}:\\d{1,2}";
+
     @Override
     public Date convert(String source) {
         if (StringUtils.isBlank(source)) {
             return null;
         }
 
-        DateFormat dateFormat = new SimpleDateFormat(datePattern);
+        DateFormat dateFormat = null;
 
-        Date target = null;
+        source = source.trim();
+        String[] parts = source.split(" +");
+        if (parts.length == 2) {
+            String timeParts = parts[1].trim();
+            if (StringUtils.isRegexMatch(timeParts, HOUR_PATTERN_REGEX)) {
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd HH");
+            } else if (StringUtils.isRegexMatch(timeParts, HOUR_MINUTE_PATTERN_REGEX)) {
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            } else if (StringUtils.isRegexMatch(timeParts, HOUR_MINUTE_SECOND_PATTERN_REGEX)) {
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            }
+        }
+
+        if (dateFormat == null) {
+            dateFormat = new SimpleDateFormat(datePattern);
+        }
+
+        Date retVal = null;
         try {
-            target = dateFormat.parse(source);
+            retVal = dateFormat.parse(source);
         } catch (ParseException e) {
             ; // Ignore
         }
-        return target;
+        return retVal;
     }
 
     /**
