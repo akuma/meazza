@@ -6,6 +6,9 @@ package com.guomi.meazza.support;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  *  统一定义 id 的 entity 基类。
  * 
@@ -29,6 +32,11 @@ public abstract class IdEntity<T> implements Serializable {
 
     public void setId(T id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
 }
