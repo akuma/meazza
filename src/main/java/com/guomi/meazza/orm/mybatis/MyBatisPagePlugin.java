@@ -19,6 +19,7 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class MyBatisPagePlugin implements Interceptor {
         stopWatch.start("Get page object");
 
         StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
-        MetaObject metaObject = MetaObject.forObject(statementHandler);
+        MetaObject metaObject = SystemMetaObject.forObject(statementHandler);
 
         Pagination page = null;
         ParameterHandler parameterHandler = statementHandler.getParameterHandler();
@@ -103,9 +104,7 @@ public class MyBatisPagePlugin implements Interceptor {
 
         // 分页查询 本地化对象 修改数据库注意修改实现
         String pageSql = generatePageSql(originSql, page, dialect);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Pagination SQL: {}", pageSql);
-        }
+        logger.debug("Pagination SQL: {}", pageSql);
 
         metaObject.setValue(DELEGATE_BOUND_SQL, pageSql);
         metaObject.setValue(DELEGATE_ROW_BOUNDS_OFFSET, RowBounds.NO_ROW_OFFSET);
@@ -113,7 +112,9 @@ public class MyBatisPagePlugin implements Interceptor {
 
         stopWatch.stop();
 
-        System.out.println(stopWatch.prettyPrint());
+        if (logger.isDebugEnabled()) {
+            logger.debug(stopWatch.prettyPrint());
+        }
 
         return invocation.proceed();
     }
