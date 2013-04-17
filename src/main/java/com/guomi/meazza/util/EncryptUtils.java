@@ -213,7 +213,7 @@ public abstract class EncryptUtils {
     /**
      * 带 secure、salt 参数的 SHA1 加密，计算方式为：sha1(secure + str + salt)。
      */
-    public String sha1Hex(String str, String secure, String salt) {
+    public static String sha1Hex(String str, String secure, String salt) {
         return DigestUtils.sha1Hex(secure + str + salt);
     }
 
