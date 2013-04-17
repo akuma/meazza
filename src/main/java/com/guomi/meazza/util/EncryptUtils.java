@@ -10,6 +10,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  * 加解密工具类。
@@ -207,6 +208,13 @@ public abstract class EncryptUtils {
         }
 
         return decoded;
+    }
+
+    /**
+     * 带 secure、salt 参数的 SHA1 加密，计算方式为：sha1(secure + str + salt)。
+     */
+    public String sha1Hex(String str, String secure, String salt) {
+        return DigestUtils.sha1Hex(secure + str + salt);
     }
 
     private static int sumSqual(byte[] b) {
