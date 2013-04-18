@@ -96,7 +96,7 @@ public abstract class HtmlUtils {
         }
 
         return html.replaceAll("&", "&amp;").replaceAll("\t", "    ").replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("\n", "<br/>");
+                .replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("\n", "<br>");
     }
 
     /**
@@ -134,12 +134,29 @@ public abstract class HtmlUtils {
      * @return true/false
      */
     public static boolean isBlank(String html) {
-        if (StringUtils.isBlank(html)) {
-            return true;
+        return isBlank(html, true);
+    }
+
+    /**
+     * 判断 HTML 代码是否为空白。如果 {@code html} 只包含空串、空格、空的 html 标签则认为 HTML 代码为空白。
+     * 
+     * @param html
+     *            需要测试的 html 代码
+     * @param isImageAsBlank
+     *              是否把 img 标签算作空，如果是的话则在 {@code html} 仅包含 img 标签时，也会返回 <code>true</code>
+     * @return true/false
+     */
+    public static boolean isBlank(String html, boolean isImageAsBlank) {
+        String striped = stripHtmlToEmpty(html);
+        boolean isBlank = StringUtils.isBlank(striped);
+
+        // 这种情况下，必须包含文字的 html 才不算空
+        if (isImageAsBlank) {
+            return isBlank;
         }
 
-        String striped = stripHtmlToEmpty(html);
-        return StringUtils.isBlank(striped);
+        // 这种情况下，仅包含图片的 html 不算空
+        return isBlank && Jsoup.parse(html).select("img").isEmpty();
     }
 
     /**
@@ -294,8 +311,7 @@ public abstract class HtmlUtils {
     }
 
     /**
-     * 删除 HTMl 元素中右边所有连续的空白字符、空节点。
-     * TODO 目前对于直接位于 body 的空白文本不会删除，待完善
+     * 删除 HTMl 元素中右边所有连续的空白字符、空节点。 TODO 目前对于直接位于 body 的空白文本不会删除，待完善
      */
     private static boolean stripEndBlankNodes(Element element) {
         // 查找直属于当前元素的空白文本节点并将内容设置为空串
