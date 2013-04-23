@@ -23,6 +23,9 @@ public interface MyBatisBasicDao<T> {
 
     List<T> findAll();
 
+    @SuppressWarnings("unchecked")
+    <PK> List<T> findByIds(PK... ids);
+
     List<T> findByEntity(T entity);
 
     List<T> findByEntityWithPage(T entity, Pagination page);

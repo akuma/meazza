@@ -8,7 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.apache.ibatis.annotations.MapKey;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 
 import com.guomi.meazza.util.Pagination;
@@ -18,6 +21,9 @@ import com.guomi.meazza.util.Pagination;
  */
 public class DefaultMyBatisBasicDao<T> extends SqlSessionDaoSupport implements MyBatisBasicDao<T> {
 
+    @Resource
+    protected SqlSessionTemplate sqlSessionTemplate;
+
     @Override
     public <PK> T find(PK id) {
         return getSqlSession().selectOne("find", id);
@@ -26,6 +32,12 @@ public class DefaultMyBatisBasicDao<T> extends SqlSessionDaoSupport implements M
     @Override
     public List<T> findAll() {
         return getSqlSession().selectList("findAll");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <PK> List<T> findByIds(PK... ids) {
+        return getSqlSession().selectList("findByIds", ids);
     }
 
     @Override
@@ -80,6 +92,13 @@ public class DefaultMyBatisBasicDao<T> extends SqlSessionDaoSupport implements M
     @Override
     public <PK> void delete(PK... ids) {
         getSqlSession().delete("delete", ids);
+    }
+
+    /**
+     * 刷新 mybatis 执行语句，可以用于提交批处理 SQL。
+     */
+    protected void flushStatements() {
+        sqlSessionTemplate.flushStatements();
     }
 
 }
