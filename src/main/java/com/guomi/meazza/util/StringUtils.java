@@ -15,12 +15,13 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * 电子邮箱的正则表达式。
      */
-    private static final String REGEX_EMAIL = ".+@.+\\.[a-z]+";
+    private static final String REGEX_EMAIL = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+            + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
     /**
      * 手机号码的正则表达式。
      */
-    private static final String REGEX_MOBILE = "1\\d{10}";
+    private static final String REGEX_MOBILE = "^1[3458]\\d{9}$";;
 
     /**
      * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
@@ -183,7 +184,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      *            处理返回的最大长度
      * @param suffix
      *            超出
-     * @return
+     * @return 截取长度后的字符串
      */
     public static String cutOut(String str, int maxLength, String suffix) {
         if (isEmpty(str)) {
