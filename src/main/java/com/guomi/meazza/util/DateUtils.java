@@ -69,6 +69,10 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
     }
 
     public static Date parse(String str, String pattern) {
+        if (StringUtils.isBlank(pattern)) {
+            return null;
+        }
+
         Date result = null;
         try {
             result = parseDate(str, pattern);
