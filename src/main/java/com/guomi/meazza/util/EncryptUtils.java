@@ -174,7 +174,7 @@ public abstract class EncryptUtils {
             byte[] cipherText = cipher.doFinal(str.getBytes());
             encoded = new String(Base64.encodeBase64(cipherText));
         } catch (Exception e) {
-            throw new RuntimeException("Could not encodeBy3DESAndBase64", e);
+            // Ignore error
         }
 
         return encoded;
@@ -204,7 +204,7 @@ public abstract class EncryptUtils {
             byte[] clearText = cipher.doFinal(Base64.decodeBase64(str.getBytes()));
             decoded = new String(clearText);
         } catch (Exception e) {
-            throw new RuntimeException("Could not decodeBy3DESAndBase64", e);
+            // Ignore error
         }
 
         return decoded;
