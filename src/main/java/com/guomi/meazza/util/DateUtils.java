@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * 对日期进行转换处理的工具类。
@@ -89,6 +90,13 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
     }
 
     /**
+     * 获取某天的开始时间和结束时间。
+     */
+    public static Pair<Date, Date> getDateBeginAndEnd(Date date) {
+        return Pair.of(getDateBegin(date), getDateEnd(date));
+    }
+
+    /**
      * 获取某天的结束时间。
      */
     public static Date getDateEnd(Date date) {
@@ -125,6 +133,20 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
     }
 
     /**
+     * 获取当前月的第一天的开始时间和最后一天的结束时间。
+     */
+    public static Pair<Date, Date> getMonthBeginAndEnd() {
+        return Pair.of(getMonthBegin(), getMonthEnd());
+    }
+
+    /**
+     * 获取某年中的某月的第一天的开始时间和最后一天的结束时间。
+     */
+    public static Pair<Date, Date> getMonthBeginAndEnd(int year, int month) {
+        return Pair.of(getMonthBegin(year, month), getMonthEnd(year, month));
+    }
+
+    /**
      * 获取当前月的最后一天的结束时间。
      */
     public static Date getMonthEnd() {
@@ -151,6 +173,13 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
     }
 
     /**
+     * 获取今天的开始时间和结束时间。
+     */
+    public static Pair<Date, Date> getTodayBeginAndEnd() {
+        return Pair.of(getTodayBegin(), getTodayEnd());
+    }
+
+    /**
      * 获取今天的结束时间。
      */
     public static Date getTodayEnd() {
@@ -163,6 +192,13 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
     public static Date getYestodyBegin() {
         Date todayBegin = getTodayBegin();
         return todayBegin == null ? null : DateUtils.addDays(todayBegin, -1);
+    }
+
+    /**
+     * 获取昨天的开始时间和结束时间。
+     */
+    public static Pair<Date, Date> getYestodyBeginAndEnd() {
+        return Pair.of(getYestodyBegin(), getYestodyEnd());
     }
 
     /**
