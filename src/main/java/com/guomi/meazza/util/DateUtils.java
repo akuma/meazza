@@ -18,6 +18,11 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
     /**
+     * 日期格式：yyyyMMdd
+     */
+    public static final String PATTERN_DATE_SHORT = "yyyyMMdd";
+
+    /**
      * 日期格式：yyyy-MM-dd
      */
     public static final String PATTERN_DATE = "yyyy-MM-dd";
@@ -32,28 +37,12 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
      */
     public static final String PATTERN_DATE_TIME_FULL = "yyyy-MM-dd HH:mm:ss.SSS";
 
-    public static String formatToDate(Date date) {
-        if (date == null) {
-            return null;
-        }
-
-        return DateFormatUtils.ISO_DATE_FORMAT.format(date);
-    }
-
-    public static String formatToDate(Calendar cal) {
+    public static String format(Calendar cal, String pattern) {
         if (cal == null) {
             return null;
         }
 
-        return DateFormatUtils.ISO_DATE_FORMAT.format(cal);
-    }
-
-    public static String formatToDateTime(Date date) {
-        return format(date, PATTERN_DATE_TIME);
-    }
-
-    public static String formatToDateTime(Calendar cal) {
-        return format(cal, PATTERN_DATE_TIME);
+        return DateFormatUtils.format(cal, pattern);
     }
 
     public static String format(Date date, String pattern) {
@@ -64,20 +53,124 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
         return DateFormatUtils.format(date, pattern);
     }
 
-    public static String format(Calendar cal, String pattern) {
+    public static String formatToDate(Calendar cal) {
         if (cal == null) {
             return null;
         }
 
-        return DateFormatUtils.format(cal, pattern);
+        return DateFormatUtils.ISO_DATE_FORMAT.format(cal);
     }
 
-    public static Date parseByDate(String str) {
-        return parse(str, PATTERN_DATE);
+    public static String formatToDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+
+        return DateFormatUtils.ISO_DATE_FORMAT.format(date);
     }
 
-    public static Date parseByDateTime(String str) {
-        return parse(str, PATTERN_DATE_TIME);
+    public static String formatToDateTime(Calendar cal) {
+        return format(cal, PATTERN_DATE_TIME);
+    }
+
+    public static String formatToDateTime(Date date) {
+        return format(date, PATTERN_DATE_TIME);
+    }
+
+    /**
+     * 获取某天的开始时间。
+     */
+    public static Date getDateBegin(Date date) {
+        if (date == null) {
+            return null;
+        }
+
+        return truncate(date, Calendar.DATE);
+    }
+
+    /**
+     * 获取某天的结束时间。
+     */
+    public static Date getDateEnd(Date date) {
+        if (date == null) {
+            return null;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+
+    /**
+     * 获取当前月的第一天的开始时间。
+     */
+    public static Date getMonthBegin() {
+        Calendar cal = Calendar.getInstance();
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH) + 1;
+        return getMonthBegin(year, month);
+    }
+
+    /**
+     * 获取某年中某月的第一天的开始时间。
+     */
+    public static Date getMonthBegin(int year, int month) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month - 1, 1);
+        return getDateBegin(cal.getTime());
+    }
+
+    /**
+     * 获取当前月的最后一天的结束时间。
+     */
+    public static Date getMonthEnd() {
+        Calendar cal = Calendar.getInstance();
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH) + 1;
+        return getMonthEnd(year, month);
+    }
+
+    /**
+     * 获取某年中某月的最后一天的结束时间。
+     */
+    public static Date getMonthEnd(int year, int month) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month - 1, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return getDateEnd(cal.getTime());
+    }
+
+    /**
+     * 获取今天开始时间。
+     */
+    public static Date getTodayBegin() {
+        return getDateBegin(new Date());
+    }
+
+    /**
+     * 获取今天的结束时间。
+     */
+    public static Date getTodayEnd() {
+        return getDateEnd(new Date());
+    }
+
+    /**
+     * 获取昨天开始时间。
+     */
+    public static Date getYestodyBegin() {
+        Date todayBegin = getTodayBegin();
+        return todayBegin == null ? null : DateUtils.addDays(todayBegin, -1);
+    }
+
+    /**
+     * 获取昨天的结束时间。
+     */
+    public static Date getYestodyEnd() {
+        Date todayEnd = getTodayEnd();
+        return todayEnd == null ? null : DateUtils.addDays(todayEnd, -1);
     }
 
     public static Date parse(String str, String pattern) {
@@ -94,46 +187,12 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
         return result;
     }
 
-    public static Date getBeginDate() {
-        return getBeginDate(new Date());
+    public static Date parseByDate(String str) {
+        return parse(str, PATTERN_DATE);
     }
 
-    public static Date getBeginDate(int year, int month) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(year, month - 1, 1);
-        return getBeginDate(cal.getTime());
-    }
-
-    public static Date getBeginDate(Date date) {
-        if (date == null) {
-            return null;
-        }
-
-        return truncate(date, Calendar.DATE);
-    }
-
-    public static Date getEndDate() {
-        return getEndDate(new Date());
-    }
-
-    public static Date getEndDate(int year, int month) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(year, month - 1, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
-        return getEndDate(cal.getTime());
-    }
-
-    public static Date getEndDate(Date date) {
-        if (date == null) {
-            return null;
-        }
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 999);
-        return cal.getTime();
+    public static Date parseByDateTime(String str) {
+        return parse(str, PATTERN_DATE_TIME);
     }
 
 }

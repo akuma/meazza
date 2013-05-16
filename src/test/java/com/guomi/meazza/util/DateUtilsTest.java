@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import org.junit.Test;
 
@@ -86,51 +85,58 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void testGetBeginDate() {
-        Date start = DateUtils.getBeginDate(new Date());
+    public void testGetDateBegin() {
+        Date start = DateUtils.getDateBegin(new Date());
         System.out.println(DateUtils.format(start, DateUtils.PATTERN_DATE_TIME_FULL));
 
-        final Calendar date = new GregorianCalendar();
-        date.clear();
-        date.set(2002, 3, 28, 13, 45, 01);
-        System.out.println(date.getTime());
-        System.out.println(DateUtils.ceiling(date, Calendar.HOUR).getTime());
-        System.out.println(DateUtils.ceiling(date.getTime(), Calendar.HOUR));
-        System.out.println(DateUtils.truncate(date, Calendar.HOUR).getTime());
-        System.out.println(DateUtils.truncate(date.getTime(), Calendar.HOUR));
+        Date today = DateUtils.getTodayBegin();
+        System.out.println(DateUtils.formatToDateTime(today));
+        Date yestoday = DateUtils.getYestodyBegin();
+        System.out.println(DateUtils.formatToDateTime(yestoday));
 
-        Date monthStart = DateUtils.getBeginDate(2013, 2);
+        Date monthStart = DateUtils.getMonthBegin(2013, 2);
         System.out.println(DateUtils.formatToDateTime(monthStart));
-        monthStart = DateUtils.getBeginDate(2013, 3);
+        monthStart = DateUtils.getMonthBegin(2013, 3);
         System.out.println(DateUtils.formatToDateTime(monthStart));
-        monthStart = DateUtils.getBeginDate(2013, 4);
+        monthStart = DateUtils.getMonthBegin(2013, 4);
         System.out.println(DateUtils.formatToDateTime(monthStart));
-        monthStart = DateUtils.getBeginDate(2013, 12);
+        monthStart = DateUtils.getMonthBegin(2013, 12);
+        System.out.println(DateUtils.formatToDateTime(monthStart));
+
+        monthStart = DateUtils.getMonthBegin();
         System.out.println(DateUtils.formatToDateTime(monthStart));
     }
 
     @Test
-    public void testGetEndDate() {
-        Date end = DateUtils.getEndDate(new Date());
+    public void testGetDateEnd() {
+        Date end = DateUtils.getDateEnd(new Date());
         System.out.println(DateUtils.format(end, DateUtils.PATTERN_DATE_TIME_FULL));
 
-        Date monthEnd = DateUtils.getEndDate(2011, 2);
+        Date today = DateUtils.getTodayEnd();
+        System.out.println(DateUtils.formatToDateTime(today));
+        Date yestoday = DateUtils.getYestodyEnd();
+        System.out.println(DateUtils.formatToDateTime(yestoday));
+
+        Date monthEnd = DateUtils.getMonthEnd(2011, 2);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(2012, 2);
+        monthEnd = DateUtils.getMonthEnd(2012, 2);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(2013, 2);
+        monthEnd = DateUtils.getMonthEnd(2013, 2);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(2014, 2);
+        monthEnd = DateUtils.getMonthEnd(2014, 2);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(2014, 7);
+        monthEnd = DateUtils.getMonthEnd(2014, 7);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(2014, 8);
+        monthEnd = DateUtils.getMonthEnd(2014, 8);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(2014, 11);
+        monthEnd = DateUtils.getMonthEnd(2014, 11);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(2014, 12);
+        monthEnd = DateUtils.getMonthEnd(2014, 12);
         System.out.println(DateUtils.formatToDateTime(monthEnd));
-        monthEnd = DateUtils.getEndDate(1, 4);
+        monthEnd = DateUtils.getMonthEnd(1, 4);
+        System.out.println(DateUtils.formatToDateTime(monthEnd));
+
+        monthEnd = DateUtils.getMonthEnd();
         System.out.println(DateUtils.formatToDateTime(monthEnd));
     }
 
