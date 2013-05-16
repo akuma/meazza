@@ -17,8 +17,20 @@ import org.apache.commons.lang3.time.DateFormatUtils;
  */
 public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
-    private static final String PATTERN_DATE = "yyyy-MM-dd";
-    private static final String PATTERN_DATE_TIME = "yyyy-MM-dd HH:mm:ss";
+    /**
+     * 日期格式：yyyy-MM-dd
+     */
+    public static final String PATTERN_DATE = "yyyy-MM-dd";
+
+    /**
+     * 日期格式：yyyy-MM-dd HH:mm:ss
+     */
+    public static final String PATTERN_DATE_TIME = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * 日期格式：yyyy-MM-dd HH:mm:ss.SSS
+     */
+    public static final String PATTERN_DATE_TIME_FULL = "yyyy-MM-dd HH:mm:ss.SSS";
 
     public static String formatToDate(Date date) {
         if (date == null) {
@@ -80,6 +92,48 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
             // ignore
         }
         return result;
+    }
+
+    public static Date getBeginDate() {
+        return getBeginDate(new Date());
+    }
+
+    public static Date getBeginDate(int year, int month) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month - 1, 1);
+        return getBeginDate(cal.getTime());
+    }
+
+    public static Date getBeginDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+
+        return truncate(date, Calendar.DATE);
+    }
+
+    public static Date getEndDate() {
+        return getEndDate(new Date());
+    }
+
+    public static Date getEndDate(int year, int month) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month - 1, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return getEndDate(cal.getTime());
+    }
+
+    public static Date getEndDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
     }
 
 }
