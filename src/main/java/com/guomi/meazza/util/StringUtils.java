@@ -21,7 +21,12 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * 手机号码的正则表达式。
      */
-    private static final String REGEX_MOBILE = "^1[3458]\\d{9}$";;
+    private static final String REGEX_MOBILE = "^1[3458]\\d{9}$";
+
+    /**
+     * UUID 的正则表达式。
+     */
+    private static final String REGEX_UUID = "^[0-9a-eA-E]{32}$";
 
     /**
      * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
@@ -160,6 +165,13 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
         }
 
         return str.length() == 6 && isNumeric(str);
+    }
+
+    /**
+     * 判断字符串是否是 UUID。
+     */
+    public static boolean isUuid(String str) {
+        return isRegexMatch(str, REGEX_UUID);
     }
 
     /**
