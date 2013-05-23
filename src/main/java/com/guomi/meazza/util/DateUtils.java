@@ -214,6 +214,39 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
         return todayEnd == null ? null : DateUtils.addDays(todayEnd, -1);
     }
 
+    /**
+     * 根据日期对象获取年份。如果 <code>date</code> 为 null，则返回 0。
+     */
+    public static int getYear(Date date) {
+        if (date == null) {
+            return 0;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.get(Calendar.YEAR);
+    }
+
+    /**
+     * 根据日期对象获取月份。
+     * 
+     * <p>
+     * <strong>返回值说明：</strong>
+     * <ul>
+     * <li>当 date 为 null 时，返回 0</li>
+     * <li>其他情况返回 1-12 的数字</li>
+     * </ul>
+     */
+    public static int getMonth(Date date) {
+        if (date == null) {
+            return 0;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.get(Calendar.MONTH) + 1;
+    }
+
     public static Date parse(String str, String pattern) {
         if (StringUtils.isBlank(str)) {
             return null;
