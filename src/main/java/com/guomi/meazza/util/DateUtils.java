@@ -38,6 +38,11 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
      */
     public static final String PATTERN_DATE_TIME_FULL = "yyyy-MM-dd HH:mm:ss.SSS";
 
+    /**
+     * 日期格式：yyyy-MM
+     */
+    public static final String PATTERN_YEAR_MONTH = "yyyy-MM";
+
     public static String format(Calendar cal, String pattern) {
         if (cal == null) {
             return null;
