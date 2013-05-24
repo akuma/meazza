@@ -233,8 +233,8 @@ public abstract class AbstractController implements ValidationSupport {
                 fieldErrors = new ArrayList<String>();
                 fieldErrorsMap.put(error.getField(), fieldErrors);
             }
-            String fieldError =
-                    messageSource.getMessage(error.getCode(), error.getArguments(), error.getDefaultMessage(), null);
+            String fieldError = messageSource.getMessage(error.getCode(), error.getArguments(),
+                    error.getDefaultMessage(), null);
             fieldErrors.add(fieldError);
         }
         message.setFieldErrors(fieldErrorsMap);
@@ -329,6 +329,13 @@ public abstract class AbstractController implements ValidationSupport {
     protected boolean isAjaxRequest(WebRequest request) {
         String header = request.getHeader(ServletUtils.AJAX_REQUEST_HEADER);
         return ServletUtils.AJAX_REQUEST_HEADER_VALUE.equalsIgnoreCase(header);
+    }
+
+    /**
+     * 返回 spring mvc 重定向结果，例如：redirect:login。
+     */
+    protected String redirectTo(String url) {
+        return "redirect:" + url;
     }
 
 }
