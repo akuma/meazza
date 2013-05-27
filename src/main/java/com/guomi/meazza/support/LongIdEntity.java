@@ -6,9 +6,6 @@ package com.guomi.meazza.support;
 
 import java.util.Date;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 /**
  * ID 为数字类型的 Entity 基类。
  * 
@@ -48,11 +45,6 @@ public abstract class LongIdEntity extends IdEntity<Long> {
 
     public void setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
 }
