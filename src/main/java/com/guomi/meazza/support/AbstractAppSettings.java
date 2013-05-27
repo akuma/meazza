@@ -6,6 +6,7 @@ package com.guomi.meazza.support;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
@@ -28,7 +29,7 @@ public abstract class AbstractAppSettings implements Serializable {
     private String assetsGlobalJs;
 
     @Value("#{appProperties['page.tracker.enable']}")
-    private boolean pageTrackerEnable;
+    private Boolean pageTrackerEnable;
     @Value("#{appProperties['page.tracker.id']}")
     private String pageTrackerId;
     @Value("#{appProperties['page.tracker.domain']}")
@@ -80,7 +81,7 @@ public abstract class AbstractAppSettings implements Serializable {
      * 判断是否启用网页访问分析脚本（比如 google analytics）。
      */
     public boolean isPageTrackerEnable() {
-        return pageTrackerEnable;
+        return BooleanUtils.isTrue(pageTrackerEnable);
     }
 
     /**
