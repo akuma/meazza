@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +29,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -259,13 +259,11 @@ public abstract class AbstractController implements ValidationSupport {
      * @param ex
      *            异常信息
      * @param request
-     *            Spring WebRequest
-     * @param response
-     *            HTTP 响应
+     *            Spring ServletWebRequest
      * @return 对于 AJAX 请求，返回 <code>null</code>，而对于普通请求，返回错误视图对象。
      */
     @ExceptionHandler(Exception.class)
-    public ModelAndView handleException(Exception ex, WebRequest request, HttpServletResponse response) {
+    public ModelAndView handleException(Exception ex, ServletWebRequest request) {
         logger.error("Exception handler caught an exception", ex);
 
         boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
@@ -288,7 +286,7 @@ public abstract class AbstractController implements ValidationSupport {
 
         // 如果是 AJAX 请求，以 JSON 格式返回
         if (isAjaxRequest(request)) {
-            return JsonViewHelper.render(errorResponse, response);
+            return JsonViewHelper.render(errorResponse, request);
         }
 
         // 如果是普通请求，dispatch 到错误页面

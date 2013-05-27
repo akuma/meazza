@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -31,12 +32,12 @@ public class JsonViewHelper {
      * 
      * @param model
      *            数据对象
-     * @param response
-     *            HTTP Response
+     * @param request
+     *            Spring ServletWebRequest
      * @return 返回 null
      */
-    public static ModelAndView render(Object model, HttpServletResponse response) {
-        return render(model, response, MediaType.TEXT_PLAIN);
+    public static ModelAndView render(Object model, ServletWebRequest request) {
+        return render(model, request, MediaType.TEXT_PLAIN);
     }
 
     /**
@@ -44,17 +45,17 @@ public class JsonViewHelper {
      * 
      * @param model
      *            数据对象
-     * @param response
-     *            HTTP Response
+     * @param request
+     *            Spring ServletWebRequest
      * @param mediaType
      *            输出响应的 MIME 类型
      * @return 返回 null
      */
-    public static ModelAndView render(Object model, HttpServletResponse response, MediaType mediaType) {
+    public static ModelAndView render(Object model, ServletWebRequest request, MediaType mediaType) {
         MappingJacksonHttpMessageConverter jsonConverter = new MappingJacksonHttpMessageConverter();
 
         try {
-            jsonConverter.write(model, mediaType, new ServletServerHttpResponse(response));
+            jsonConverter.write(model, mediaType, new ServletServerHttpResponse(request.getResponse()));
         } catch (HttpMessageNotWritableException | IOException e) {
             logger.error("Render jsonView error", e);
         }
@@ -69,11 +70,11 @@ public class JsonViewHelper {
      * 
      * @param model
      *            数据对象
-     * @param response
-     *            HTTP Response
+     * @param request
+     *            Spring ServletWebRequest
      */
-    public static void renderJust(Object model, HttpServletResponse response) {
-        render(model, response, MediaType.TEXT_PLAIN);
+    public static void renderJust(Object model, ServletWebRequest request) {
+        render(model, request, MediaType.TEXT_PLAIN);
     }
 
 }
