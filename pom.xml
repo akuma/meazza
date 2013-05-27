@@ -218,34 +218,13 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                    <classesDirectory>target/classes</classesDirectory>
-                    <includes>
-                        <include>**/*.class</include>
-                    </includes>
-                </configuration>
+                <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>sources-jar</id>
-                        <phase>package</phase>
+                        <id>attach-sources</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
-                        <configuration>
-                            <classifier>sources</classifier>
-                            <classesDirectory>src/main/java</classesDirectory>
-                            <includes>
-                                <include>**/*.java</include>
-                            </includes>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
