@@ -4,8 +4,11 @@
  */
 package com.guomi.meazza.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
 
 import org.junit.Test;
 
@@ -60,6 +63,18 @@ public class StringUtilsTest {
         assertFalse(StringUtils.isMobile("08688888888"));
         assertFalse(StringUtils.isMobile("a8688888888"));
         assertFalse(StringUtils.isMobile("1898888a888"));
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void testSplitToNumberList() {
+        List<Integer> a = StringUtils.splitToIntList(",1, ,3,, 4, , 5 , 7,8,", ",");
+        assertEquals("[1, 3, 4, 5, 7, 8]", a.toString());
+
+        List<Long> b = StringUtils.splitToLongList(",1, ,3,, 4, , 5 , 7,8 ,1234234", ",");
+        assertEquals("[1, 3, 4, 5, 7, 8, 1234234]", b.toString());
+
+        // throw NumberFormatException
+        StringUtils.splitToLongList(",1, ,3,, 4, , 5 , 7,8 ,1234234, a", ",");
     }
 
 }

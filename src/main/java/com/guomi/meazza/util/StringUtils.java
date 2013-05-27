@@ -4,6 +4,13 @@
  */
 package com.guomi.meazza.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.math.NumberUtils;
+
 /**
  * 继承自 {@code org.apache.commons.lang3.StringUtils} 的字符串处理工具类。
  * 
@@ -254,6 +261,64 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
             }
         }
         return realLength;
+    }
+
+    /**
+     * 对字符串以指定的 <code>separatorChars</code> 进行分割，然后转换为 <code>Integer</code> 数组。
+     * 
+     * @throws NumberFormatException
+     *             当数字转换出错时会抛出此异常
+     */
+    public static List<Integer> splitToIntList(String str, String separatorChars) {
+        if (isBlank(str)) {
+            return Collections.emptyList();
+        }
+
+        String[] array = split(str, separatorChars);
+        if (ArrayUtils.isEmpty(array)) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> result = new ArrayList<>();
+        for (String s : array) {
+            if (isBlank(s)) {
+                continue;
+            }
+            Integer i = NumberUtils.createInteger(s.trim());
+            if (i != null) {
+                result.add(i);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 对字符串以指定的 <code>separatorChars</code> 进行分割，然后转换为 <code>Long</code> 数组。
+     * 
+     * @throws NumberFormatException
+     *             当数字转换出错时会抛出此异常
+     */
+    public static List<Long> splitToLongList(String str, String separatorChars) {
+        if (isBlank(str)) {
+            return Collections.emptyList();
+        }
+
+        String[] array = split(str, separatorChars);
+        if (ArrayUtils.isEmpty(array)) {
+            return Collections.emptyList();
+        }
+
+        List<Long> result = new ArrayList<>();
+        for (String s : array) {
+            if (isBlank(s)) {
+                continue;
+            }
+            Long i = NumberUtils.createLong(s.trim());
+            if (i != null) {
+                result.add(i);
+            }
+        }
+        return result;
     }
 
 }
