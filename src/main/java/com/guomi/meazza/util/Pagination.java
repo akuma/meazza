@@ -4,7 +4,6 @@
  */
 package com.guomi.meazza.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,16 +16,19 @@ public class Pagination {
 
     private static final Logger logger = LoggerFactory.getLogger(Pagination.class);
 
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
     private String id = StringUtils.EMPTY; // 分页信息的标识，会作为参数的后缀，在多个pagination共存的时候有用
 
-    private int pageNum; // 当前是第几页
-    private int pageCount; // 一共有多少页
-    private int rowCount; // 一共有多少行
-    private int pageSize = 10; // 每页有多少行，默认10行
-    private int currentRowNum; // 当前起始记录序号
-    private boolean useCursor = false;
+    private Integer pageNum = 0; // 当前是第几页
+    private Integer pageCount = 0; // 一共有多少页
+    private Integer rowCount = 0; // 一共有多少行
+    private Integer pageSize = DEFAULT_PAGE_SIZE; // 每页有多少行，默认10行
+    private Integer currentRowNum = 0; // 当前起始记录序号
+
     private String orderBy;
     private boolean desc;
+    private boolean useCursor;
 
     /**
      * 构造方法。
@@ -39,11 +41,11 @@ public class Pagination {
      * 
      * @param pageSize
      *            每页多少行
-     * @param isUseCursor
+     * @param useCursor
      *            是否使用游标
      */
-    public Pagination(int pageSize, boolean isUseCursor) {
-        this(0, pageSize, isUseCursor);
+    public Pagination(Integer pageSize, boolean useCursor) {
+        this(0, pageSize, useCursor);
     }
 
     /**
@@ -53,13 +55,13 @@ public class Pagination {
      *            当前是第几页
      * @param pageSize
      *            每页多少行
-     * @param isUseCursor
+     * @param useCursor
      *            是否使用游标
      */
-    public Pagination(int pageIndex, int pageSize, boolean isUseCursor) {
-        pageNum = pageIndex;
-        this.pageSize = pageSize;
-        useCursor = isUseCursor;
+    public Pagination(Integer pageNum, Integer pageSize, boolean useCursor) {
+        this.pageNum = pageNum == null ? 0 : pageNum;
+        this.pageSize = pageSize == null ? 10 : pageSize;
+        this.useCursor = useCursor;
     }
 
     /**
@@ -118,7 +120,7 @@ public class Pagination {
      * 
      * @return 当前是第几页
      */
-    public int getPageNum() {
+    public Integer getPageNum() {
         return pageNum;
     }
 
@@ -128,8 +130,8 @@ public class Pagination {
      * @param pageNum
      *            当前是第几页
      */
-    public void setPageNum(int pageNum) {
-        this.pageNum = pageNum;
+    public void setPageNum(Integer pageNum) {
+        this.pageNum = pageNum == null ? 0 : pageNum;
     }
 
     /**
@@ -137,7 +139,7 @@ public class Pagination {
      * 
      * @return 每页有多少行
      */
-    public int getPageSize() {
+    public Integer getPageSize() {
         return pageSize;
     }
 
@@ -147,8 +149,8 @@ public class Pagination {
      * @param pageSize
      *            每页多少行
      */
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize == null ? DEFAULT_PAGE_SIZE : pageSize;
     }
 
     /**
@@ -156,7 +158,7 @@ public class Pagination {
      * 
      * @return 一共有多少页
      */
-    public int getPageCount() {
+    public Integer getPageCount() {
         return pageCount;
     }
 
@@ -165,7 +167,7 @@ public class Pagination {
      * 
      * @return 当前起始记录序号
      */
-    public int getCurrentRowNum() {
+    public Integer getCurrentRowNum() {
         return currentRowNum;
     }
 
@@ -174,7 +176,7 @@ public class Pagination {
      * 
      * @return 一共有多少行
      */
-    public int getRowCount() {
+    public Integer getRowCount() {
         return rowCount;
     }
 
@@ -184,8 +186,8 @@ public class Pagination {
      * @param rowCount
      *            一共有多少行
      */
-    public void setRowCount(int rowCount) {
-        this.rowCount = rowCount;
+    public void setRowCount(Integer rowCount) {
+        this.rowCount = rowCount == null ? 0 : rowCount;
     }
 
     /**
