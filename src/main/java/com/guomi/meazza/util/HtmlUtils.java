@@ -147,6 +147,10 @@ public abstract class HtmlUtils {
      * @return true/false
      */
     public static boolean isBlank(String html, boolean isImageAsBlank) {
+        if (StringUtils.isBlank(html)) {
+            return true;
+        }
+
         String striped = stripHtmlToEmpty(html);
         boolean isBlank = StringUtils.isBlank(striped);
 

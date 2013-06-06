@@ -5,6 +5,7 @@
 package com.guomi.meazza.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -55,18 +56,21 @@ public class HtmlUtilsTest {
     public void testIsBlank() {
         String[] blankSamples = { null, "", "   ", "&nbsp;", "<br>", "<div></div>", "<p></p>", "<div>&nbsp;</div>",
                 "<p>&nbsp; </p>", "<div>&nbsp;</div><br><p>&nbsp;</p>",
-                "<DIV>&nbsp;</DIV>\n<DIV> &nbsp;</DIV>\n<DIV>&nbsp; </dIv>",
-                "<p>&nbsp;</p><ul style='color:red'></ul>", "<div></div><div><image alt='test'></div>" };
+                "<DIV>&nbsp;</DIV>\n<DIV> &nbsp;</DIV>\n<DIV>&nbsp; </dIv>", "<p>&nbsp;</p><ul style='color:red'></ul>" };
         for (String s : blankSamples) {
             // System.out.println("isBlank: " + s);
             assertTrue(HtmlUtils.isBlank(s));
+            assertTrue(HtmlUtils.isBlank(s, false));
         }
+
+        assertTrue(HtmlUtils.isBlank("<div></div><div><image alt='test'></div>"));
+        assertFalse(HtmlUtils.isBlank("<div></div><div><image alt='test'></div>", false));
 
         String[] notBlankSamples = { "abc", "abc<div>test</div>", "  abc&nbsp; <div></div>",
                 "<div></div><div><image alt='test'></div>", "<image src='asdf' /><span></span><image title='asdf'>" };
         for (String s : notBlankSamples) {
             // System.out.println("isBlank: " + s);
-            assertTrue(!HtmlUtils.isBlank(s, false));
+            assertFalse(HtmlUtils.isBlank(s, false));
         }
 
         // Simple Performance Test
