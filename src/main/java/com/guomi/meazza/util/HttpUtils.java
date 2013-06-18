@@ -252,7 +252,8 @@ public abstract class HttpUtils {
             responseResult.statusCode = method.getStatusCode();
             responseResult.statusText = method.getStatusText();
             responseResult.headers = method.getResponseHeaders();
-            responseResult.responseBody = method.getResponseBodyAsString();
+            responseResult.responseBodyString = method.getResponseBodyAsString();
+            responseResult.responseBody = method.getResponseBody();
             return responseResult;
         } finally {
             if (method != null) {
@@ -273,7 +274,8 @@ public abstract class HttpUtils {
      */
     public static class ResponseResult {
         private Header[] headers;
-        private String responseBody;
+        private String responseBodyString;
+        private byte[] responseBody;
         private int statusCode;
         private String statusText;
 
@@ -297,6 +299,10 @@ public abstract class HttpUtils {
         }
 
         public String getResponseBody() {
+            return responseBodyString;
+        }
+
+        public byte[] getResponseBodyData() {
             return responseBody;
         }
 
@@ -310,18 +316,6 @@ public abstract class HttpUtils {
 
         public void setHeaders(Header[] headers) {
             this.headers = headers;
-        }
-
-        public void setResponseBody(String responseBody) {
-            this.responseBody = responseBody;
-        }
-
-        public void setStatusCode(int statusCode) {
-            this.statusCode = statusCode;
-        }
-
-        public void setStatusText(String statusText) {
-            this.statusText = statusText;
         }
     }
 
