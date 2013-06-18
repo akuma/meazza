@@ -31,14 +31,7 @@ public abstract class HtmlUtils {
 
     // private static final Pattern START_NBSP_REPLACE_REGEX = Pattern.compile("^(&nbsp;)+");
 
-    /**
-     * 默认在 jsoup 的 {@link org.jsoup.safety.Whitelist#basicWithImages()} 白名单的基础上添加 div、table 标签
-     */
-    private static final Whitelist whitelist = Whitelist.basicWithImages()
-            .addTags("div", "table", "tbody", "td", "tfoot", "th", "thead", "tr").addAttributes("div", "style")
-            .addAttributes("p", "style").addAttributes("table", "width")
-            .addAttributes("td", "colspan", "rowspan", "width").addAttributes("th", "colspan", "rowspan", "width")
-            .preserveRelativeLinks(true);
+    private static final Whitelist DEFAULT_WHITELIST = getWhitelist();
 
     private static final String DEFAULT_JSOUP_BASE_URI = "http://static.gm.com";
 
@@ -179,32 +172,18 @@ public abstract class HtmlUtils {
     }
 
     /**
-     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。默认输出的代码不会经过格式化。
-     * <p>
-     * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
-     * 
-     * @param html
-     *            需要处理的 HTML 代码
-     * @return 处理之后的 HTML 代码
+     * 根据 <code>html</code> 获取清理过的 jsoup 元素。
      */
-    public static String cleanEditorHtml(String html) {
-        return cleanEditorHtml(html, false);
+    public static Element getCleanBody(String html, boolean prettyPrint) {
+        return getCleanBody(html, prettyPrint, DEFAULT_WHITELIST);
     }
 
     /**
-     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。
-     * <p>
-     * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
-     * 
-     * @param html
-     *            需要处理的 HTML 代码
-     * @param prettyPrint
-     *             是否输入格式化之后的 HTML 代码
-     * @return 处理之后的 HTML 代码
+     * 根据 <code>html</code> 获取清理过的 jsoup 元素，白名单通过 <code>whitelist</code> 指定。
      */
-    public static String cleanEditorHtml(String html, boolean prettyPrint) {
+    public static Element getCleanBody(String html, boolean prettyPrint, Whitelist whitelist) {
         if (StringUtils.isBlank(html)) {
-            return StringUtils.EMPTY;
+            return null;
         }
 
         // 移除首尾空白字符
@@ -237,16 +216,50 @@ public abstract class HtmlUtils {
         convertNodePToDiv(doc.body());
         unwrapFirstNotBlankBlock(doc.body());
 
-        return doc.body().html();
+        return doc.body();
     }
 
     /**
-     * 获取 jsoup 白名单对象。<em>修改该对象属性的时候需要注意线程安全问题。</em>
+     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。默认输出的代码不会经过格式化。
+     * <p>
+     * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
+     * 
+     * @param html
+     *            需要处理的 HTML 代码
+     * @return 处理之后的 HTML 代码
+     */
+    public static String cleanEditorHtml(String html) {
+        return cleanEditorHtml(html, false);
+    }
+
+    /**
+     * 处理从编辑器输入的 HTML 代码，输出更加安全的代码（避免 XSS 等漏洞）。
+     * <p>
+     * 删除首尾的空白字符（空串、空格、回车、换行等）、空白标签、&amp;&nbsp;，并且过滤掉不包含在白名单的标签、标签属性。
+     * 
+     * @param html
+     *            需要处理的 HTML 代码
+     * @param prettyPrint
+     *             是否输入格式化之后的 HTML 代码
+     * @return 处理之后的 HTML 代码
+     */
+    public static String cleanEditorHtml(String html, boolean prettyPrint) {
+        Element doc = getCleanBody(html, prettyPrint);
+        return doc == null ? StringUtils.EMPTY : doc.html();
+    }
+
+    /**
+     * 获取 jsoup 白名单对象，在 {@link org.jsoup.safety.Whitelist#basicWithImages()} 白名单的基础上添加 div、table、p 等标签。
+     * <em>注意：对返回的对象的修改不会影响此类。</em>
      * 
      * @return jsoup 白名单对象
      */
     public static Whitelist getWhitelist() {
-        return whitelist;
+        return Whitelist.basicWithImages().addTags("div", "table", "thead", "tbody", "tfoot", "tr", "th", "td")
+                .addAttributes("div", "style", "class").addAttributes("p", "style")
+                .addAttributes("table", "width", "style").addAttributes("td", "colspan", "rowspan", "width", "style")
+                .addAttributes("th", "colspan", "rowspan", "width", "style").addAttributes("img", "style")
+                .preserveRelativeLinks(true);
     }
 
     /**
