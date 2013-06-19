@@ -23,6 +23,8 @@ public abstract class AbstractAppSettings implements Serializable {
 
     @Value("#{appProperties['assets.path']}")
     private String assetsPath;
+    @Value("#{appProperties['assets.realPath']}")
+    private String assetsRealPath;
     @Value("#{appProperties['assets.global.css']}")
     private String assetsGlobalCss;
     @Value("#{appProperties['assets.global.js']}")
@@ -61,6 +63,13 @@ public abstract class AbstractAppSettings implements Serializable {
      */
     public String getAssetsPath() {
         return assetsPath;
+    }
+
+    /**
+     * 获取资源文件物理路径前缀。例如：/opt/web-res/assets
+     */
+    public String getAssetsRealPath() {
+        return assetsRealPath;
     }
 
     /**
