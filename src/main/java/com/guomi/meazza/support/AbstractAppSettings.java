@@ -4,9 +4,18 @@
  */
 package com.guomi.meazza.support;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
@@ -18,13 +27,15 @@ public abstract class AbstractAppSettings implements Serializable {
 
     private static final long serialVersionUID = -8794135442659506482L;
 
+    protected Logger logger = LoggerFactory.getLogger(getClass());
+
     @Value("#{appProperties['app.environment']}")
     private String environment;
 
     @Value("#{appProperties['assets.path']}")
     private String assetsPath;
-    @Value("#{appProperties['assets.realPath']}")
-    private String assetsRealPath;
+    @Value("#{appProperties['assets.version']}")
+    private String assetsVersion;
     @Value("#{appProperties['assets.global.css']}")
     private String assetsGlobalCss;
     @Value("#{appProperties['assets.global.js']}")
@@ -36,6 +47,11 @@ public abstract class AbstractAppSettings implements Serializable {
     private String pageTrackerId;
     @Value("#{appProperties['page.tracker.domain']}")
     private String pageTrackerDomain;
+
+    @PostConstruct
+    public void init() {
+        setHashedAssets();
+    }
 
     /**
      * 是否是开发环境。
@@ -63,13 +79,6 @@ public abstract class AbstractAppSettings implements Serializable {
      */
     public String getAssetsPath() {
         return assetsPath;
-    }
-
-    /**
-     * 获取资源文件物理路径前缀。例如：/opt/web-res/assets
-     */
-    public String getAssetsRealPath() {
-        return assetsRealPath;
     }
 
     /**
@@ -105,6 +114,39 @@ public abstract class AbstractAppSettings implements Serializable {
      */
     public String getPageTrackerDomain() {
         return pageTrackerDomain;
+    }
+
+    /**
+     * 设置带有版本号的 assets。
+     */
+    private void setHashedAssets() {
+        if (StringUtils.isBlank(assetsVersion)) {
+            return;
+        }
+
+        File versionFile = new File(assetsVersion);
+        if (!versionFile.exists()) {
+            return;
+        }
+
+        Map<String, String> versions;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            versions = mapper.reader(Map.class).readValue(versionFile);
+        } catch (IOException e) {
+            logger.error("Read assets version file error", e);
+            return;
+        }
+
+        String hashedCss = versions.get(assetsGlobalCss);
+        if (!StringUtils.isBlank(hashedCss)) {
+            assetsGlobalCss = hashedCss;
+        }
+
+        String hashedJs = versions.get(assetsGlobalJs);
+        if (!StringUtils.isBlank(hashedJs)) {
+            assetsGlobalJs = hashedJs;
+        }
     }
 
 }
