@@ -4,7 +4,6 @@
  */
 package com.guomi.meazza.support;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
@@ -17,6 +16,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+
+import com.guomi.meazza.util.HttpUtils;
 
 /**
  * 封装了比较通用的系统配置参数的抽象类。
@@ -34,8 +35,6 @@ public abstract class AbstractAppSettings implements Serializable {
 
     @Value("#{appProperties['assets.path']}")
     private String assetsPath;
-    @Value("#{appProperties['assets.version']}")
-    private String assetsVersion;
     @Value("#{appProperties['assets.global.css']}")
     private String assetsGlobalCss;
     @Value("#{appProperties['assets.global.js']}")
@@ -120,19 +119,11 @@ public abstract class AbstractAppSettings implements Serializable {
      * 设置带有版本号的 assets。
      */
     private void setHashedAssets() {
-        if (StringUtils.isBlank(assetsVersion)) {
-            return;
-        }
-
-        File versionFile = new File(assetsVersion);
-        if (!versionFile.exists()) {
-            return;
-        }
-
         Map<String, String> versions;
         try {
+            String version = HttpUtils.httpGet(assetsPath + "/version.json");
             ObjectMapper mapper = new ObjectMapper();
-            versions = mapper.reader(Map.class).readValue(versionFile);
+            versions = mapper.reader(Map.class).readValue(version);
         } catch (IOException e) {
             logger.error("Read assets version file error", e);
             return;
