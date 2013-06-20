@@ -5,7 +5,9 @@
 package com.guomi.meazza.support;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -16,8 +18,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-
-import com.guomi.meazza.util.HttpUtils;
 
 /**
  * 封装了比较通用的系统配置参数的抽象类。
@@ -121,8 +121,8 @@ public abstract class AbstractAppSettings implements Serializable {
     private void setHashedAssets() {
         Map<String, String> versions;
         try {
-            String version = HttpUtils.httpGet(assetsPath + "/version.json");
             ObjectMapper mapper = new ObjectMapper();
+            InputStream version = new URL(assetsPath + "/version.json").openStream();
             versions = mapper.reader(Map.class).readValue(version);
         } catch (IOException e) {
             logger.error("Read assets version file error", e);
