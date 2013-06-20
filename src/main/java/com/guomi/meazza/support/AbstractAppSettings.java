@@ -132,11 +132,13 @@ public abstract class AbstractAppSettings implements Serializable {
         String hashedCss = versions.get(assetsGlobalCss);
         if (!StringUtils.isBlank(hashedCss)) {
             assetsGlobalCss = hashedCss;
+            logger.info("Got hashed global css: {}", assetsGlobalCss);
         }
 
         String hashedJs = versions.get(assetsGlobalJs);
         if (!StringUtils.isBlank(hashedJs)) {
             assetsGlobalJs = hashedJs;
+            logger.info("Got hashed global js: {}", assetsGlobalJs);
         }
     }
 
