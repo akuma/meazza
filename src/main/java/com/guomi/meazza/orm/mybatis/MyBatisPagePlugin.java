@@ -54,7 +54,8 @@ public class MyBatisPagePlugin implements Interceptor {
     // 获取 count sql 的相关常量定义
     private static final String SQL_SELECT_COUNT_PREFIX = "SELECT COUNT(1) FROM ";
     private static final Pattern SQL_FIRST_SELECT_PREFIX_PATTERN = Pattern.compile(
-            "^( |\t|\r|\n)*select( |\t|\r|\n)+.+( |\t|\r|\n)+from( |\t|\r|\n)+?", Pattern.CASE_INSENSITIVE);
+            "^( |\t|\r|\n)*select( |\t|\r|\n)+.+?( |\t|\r|\n)+from( |\t|\r|\n)+", Pattern.CASE_INSENSITIVE
+                    | Pattern.DOTALL);
 
     private String sqlPattern;
     private Dialect dialect;
