@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -50,7 +51,11 @@ public class MyBatisPagePlugin implements Interceptor {
 
     private static final String DEFAULT_DIALECT = "mysql";
 
-    private static final String COUNT_SQL_TEMPLATE = "SELECT COUNT(1) FROM (%s) AS tmp_count_result";
+    // 获取 count sql 的相关常量定义
+    private static final String SQL_SELECT_COUNT_PREFIX = "SELECT COUNT(1) FROM ";
+    private static final String SQL_FIRST_SELECT_PREFIX_REGEX = "^( |\t|\r|\n)+select( |\t|\r|\n)+.+( |\t|\r|\n)+from( |\t|\r|\n)+?";
+    private static final Pattern SQL_FIRST_SELECT_PREFIX_PATTERN = Pattern.compile(SQL_FIRST_SELECT_PREFIX_REGEX,
+            Pattern.CASE_INSENSITIVE);
 
     private String sqlPattern;
     private Dialect dialect;
@@ -149,8 +154,7 @@ public class MyBatisPagePlugin implements Interceptor {
     private static int getQueryCount(final Configuration configuration, final StatementHandler statementHandler)
             throws SQLException {
         String originSql = statementHandler.getBoundSql().getSql();
-        String countSql = String.format(COUNT_SQL_TEMPLATE, originSql);
-        logger.debug("Count SQL: {}", countSql);
+        String countSql = generateCountSql(originSql);
 
         try (Connection connection = configuration.getEnvironment().getDataSource().getConnection();
                 PreparedStatement countStmt = connection.prepareStatement(countSql)) {
@@ -176,6 +180,15 @@ public class MyBatisPagePlugin implements Interceptor {
         int offset = (page.getCurrentRowNum() <= 0) ? 0 : (page.getCurrentRowNum() - 1);
         int limit = page.getPageSize();
         return dialect.getLimitSql(originSql, offset, limit);
+    }
+
+    /**
+     * 根据原始 SQL 生成 count SQL。
+     */
+    private static String generateCountSql(String originSql) {
+        String countSql = SQL_FIRST_SELECT_PREFIX_PATTERN.matcher(originSql).replaceFirst(SQL_SELECT_COUNT_PREFIX);
+        logger.debug("Count SQL: {}", countSql);
+        return countSql;
     }
 
 }
