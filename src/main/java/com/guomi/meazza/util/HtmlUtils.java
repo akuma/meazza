@@ -174,14 +174,14 @@ public abstract class HtmlUtils {
     /**
      * 根据 <code>html</code> 获取清理过的 jsoup 元素。
      */
-    public static Element getCleanBody(String html, boolean prettyPrint) {
-        return getCleanBody(html, prettyPrint, DEFAULT_WHITELIST);
+    public static Document getCleanDoc(String html, boolean prettyPrint) {
+        return getCleanDoc(html, prettyPrint, DEFAULT_WHITELIST);
     }
 
     /**
      * 根据 <code>html</code> 获取清理过的 jsoup 元素，白名单通过 <code>whitelist</code> 指定。
      */
-    public static Element getCleanBody(String html, boolean prettyPrint, Whitelist whitelist) {
+    public static Document getCleanDoc(String html, boolean prettyPrint, Whitelist whitelist) {
         if (StringUtils.isBlank(html)) {
             return null;
         }
@@ -216,7 +216,7 @@ public abstract class HtmlUtils {
         convertNodePToDiv(doc.body());
         unwrapFirstNotBlankBlock(doc.body());
 
-        return doc.body();
+        return doc;
     }
 
     /**
@@ -244,8 +244,8 @@ public abstract class HtmlUtils {
      * @return 处理之后的 HTML 代码
      */
     public static String cleanEditorHtml(String html, boolean prettyPrint) {
-        Element doc = getCleanBody(html, prettyPrint);
-        return doc == null ? StringUtils.EMPTY : doc.html();
+        Element body = getCleanDoc(html, prettyPrint).body();
+        return body == null ? StringUtils.EMPTY : body.html();
     }
 
     /**
