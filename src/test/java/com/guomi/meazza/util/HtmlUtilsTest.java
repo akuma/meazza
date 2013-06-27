@@ -35,7 +35,7 @@ public class HtmlUtilsTest {
                 + "<body><b>test 测试</b><div style='color:red;'>伦敦奥运会开幕了！\n&nbsp;&nbsp;&nbsp;&nbsp;"
                 + "<font size=\"5\"><p>some text</p>看比赛吗？<br/>\n&nbsp;&nbsp;&nbsp;你想怎样？<br>\n</div></body></html>";
         assertEquals("test 测试 伦敦奥运会开幕了！      some text看比赛吗？    你想怎样？", HtmlUtils.stripHtmlToEmpty(html));
-        System.out.println(HtmlUtils.stripHtmlToEmpty(html));
+        //        System.out.println(HtmlUtils.stripHtmlToEmpty(html));
 
         // Simple Performance Test
         String largeSample = FileUtils.readFileToString(new File("src/test/java/com/guomi/meazza/util/htmlSample.txt"),
@@ -49,7 +49,7 @@ public class HtmlUtilsTest {
             HtmlUtils.stripHtmlToEmpty(largeSample);
         }
         watch.stop();
-        System.out.println(watch.prettyPrint());
+        //        System.out.println(watch.prettyPrint());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class HtmlUtilsTest {
             HtmlUtils.isBlank(largeSample);
         }
         watch.stop();
-        System.out.println(watch.prettyPrint());
+        //        System.out.println(watch.prettyPrint());
     }
 
     @Test
@@ -147,16 +147,16 @@ public class HtmlUtilsTest {
         // Simple Performance Test
         String largeSample = FileUtils.readFileToString(new File("src/test/java/com/guomi/meazza/util/htmlSample.txt"),
                 "utf-8");
-        int times = 100;
+        int times = 20;
         StopWatch watch = new StopWatch("HtmlUtils.cleanEditorHtml(String) Performance Test (sample length: "
                 + largeSample.length()
                 + ")");
         watch.start("Call HtmlUtils.cleanEditorHtml(String) " + times + " times");
         for (int i = 0; i < times; i++) {
-            // HtmlUtils.cleanEditorHtml(largeSample);
+            HtmlUtils.cleanEditorHtml(largeSample);
         }
         watch.stop();
-        System.out.println(watch.prettyPrint());
+        //        System.out.println(watch.prettyPrint());
     }
 
     @Test
@@ -173,6 +173,12 @@ public class HtmlUtilsTest {
                 "utf-8");
         System.out.println("------------------ origin\n" + Jsoup.parse(largeSample).body().html());
         System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtml(largeSample));
+    }
+
+    @Test
+    public void testImg() {
+        String html = "<img src='test.jpg' style='float:right' alt='test' />";
+        System.out.println(HtmlUtils.cleanEditorHtml(html));
     }
 
 }

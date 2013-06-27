@@ -244,7 +244,8 @@ public abstract class HtmlUtils {
      * @return 处理之后的 HTML 代码
      */
     public static String cleanEditorHtml(String html, boolean prettyPrint) {
-        Element body = getCleanDoc(html, prettyPrint).body();
+        Document doc = getCleanDoc(html, prettyPrint);
+        Element body = doc == null ? null : doc.body();
         return body == null ? StringUtils.EMPTY : body.html();
     }
 
