@@ -417,7 +417,7 @@ public abstract class HtmlUtils {
             if (child instanceof Element) {
                 Element e = (Element) child;
                 // 如果节点不是块元素，则结束递归
-                if (!e.isBlock()) {
+                if (!e.isBlock() || e.hasAttr("class") || e.hasAttr("style")) {
                     return true;
                 }
 

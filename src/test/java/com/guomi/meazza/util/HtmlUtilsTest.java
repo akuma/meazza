@@ -130,7 +130,8 @@ public class HtmlUtilsTest {
         System.out.println("------------------ origin\n" + Jsoup.parse(sample).body().html());
         System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtml(sample));
 
-        assertEquals("testb", HtmlUtils.cleanEditorHtml("<p style='color:red'>test<span>b</span></p>"));
+        assertEquals("<div style=\"color:red\">testb</div>",
+                HtmlUtils.cleanEditorHtml("<p style='color:red'>test<span>b</span></p>"));
 
         sample = "<p>体积为4&times;10<sup>-3</sup>m<sup>3</sup>的铜球．其质量为24 kg．试判断这个铜球是空心的还是实心的，"
                 + "(铜的密度是8．9&times;10<sup>3</sup>kg／m<sup>3</sup>)</p>还有什么<br><br>没有了？";
@@ -179,6 +180,21 @@ public class HtmlUtilsTest {
     public void testImg() {
         String html = "<img src='test.jpg' style='float:right' alt='test' />";
         System.out.println(HtmlUtils.cleanEditorHtml(html));
+    }
+
+    @Test
+    public void testUnwrap() {
+        String html = "<div class='equation-wrapper'><table><tbody><tr>"
+                + "<td style='border-bottom:1px solid black;padding-bottom:1px;font-size:90%'>3"
+                + "<table><tbody><tr><td style='font-size: 0px'><div"
+                + "><div style='width:6px;background: url(http://assets.clearn.com/equation/2df00e39.png) "
+                + "repeat-y; height: 1px;overflow: hidden'></div><div style='width:6px;background: "
+                + "url(http://assets.clearn.com/equation/4ef41bb5.png) no-repeat; height: 7px; "
+                + "overflow: hidden'></div></div></td><td style='padding:0;padding-left: 2px; "
+                + "border-top: black 1px solid;line-height:normal'>14</td></tr></tbody></table>"
+                + "</td></tr><tr><td>7</td></tr></tbody></table></div>";
+        String result = HtmlUtils.cleanEditorHtml(html);
+        assertTrue(result.length() == html.length());
     }
 
 }
