@@ -119,6 +119,10 @@ public abstract class AbstractAppSettings implements Serializable {
      * 设置带有版本号的 assets。
      */
     private void setHashedAssets() {
+        if (StringUtils.isBlank(assetsPath)) {
+            return;
+        }
+
         Map<String, String> versions;
         try {
             ObjectMapper mapper = new ObjectMapper();
