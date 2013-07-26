@@ -4,6 +4,7 @@
  */
 package com.guomi.meazza.support;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -124,12 +125,18 @@ public abstract class AbstractAppSettings implements Serializable {
         }
 
         Map<String, String> versions;
+        String versionUrl = assetsPath + "/version.json";
+
         try {
             ObjectMapper mapper = new ObjectMapper();
-            InputStream version = new URL(assetsPath + "/version.json").openStream();
+            InputStream version = new URL(versionUrl).openStream();
             versions = mapper.reader(Map.class).readValue(version);
         } catch (IOException e) {
-            logger.error("Read assets version file error", e);
+            if (e instanceof FileNotFoundException) {
+                logger.info("Assets version file not found: {}", versionUrl);
+            } else {
+                logger.error("Read assets version file error", e);
+            }
             return;
         }
 
@@ -145,5 +152,4 @@ public abstract class AbstractAppSettings implements Serializable {
             logger.info("Got hashed global js: {}", assetsGlobalJs);
         }
     }
-
 }
