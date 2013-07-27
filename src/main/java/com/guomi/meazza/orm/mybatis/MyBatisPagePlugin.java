@@ -147,6 +147,8 @@ public class MyBatisPagePlugin implements Interceptor {
      */
     private static int getQueryCount(final Configuration configuration, final StatementHandler statementHandler)
             throws SQLException {
+        long start = System.currentTimeMillis();
+
         String originSql = statementHandler.getBoundSql().getSql();
         String countSql = SqlUtils.generateCountSql(originSql);
 
@@ -160,6 +162,9 @@ public class MyBatisPagePlugin implements Interceptor {
                 count = rs.getInt(1);
             }
             return count;
+        } finally {
+            long elapsed = System.currentTimeMillis() - start;
+            logger.debug("Query page count elapsed {} ms.", elapsed);
         }
     }
 
