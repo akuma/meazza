@@ -148,7 +148,6 @@ public class MyBatisPagePlugin implements Interceptor {
     private static int getQueryCount(final Configuration configuration, final StatementHandler statementHandler)
             throws SQLException {
         long start = System.currentTimeMillis();
-
         String originSql = statementHandler.getBoundSql().getSql();
         String countSql = SqlUtils.generateCountSql(originSql);
 

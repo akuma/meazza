@@ -32,21 +32,41 @@ public class SqlUtilsTest {
                 + "( select a from bb)\n aaa,  \t test a, \ntest1 b where a.id = b.id "
                 + "and exists (select 1 \nfrom c where c.id = a.id) order by id", countSql);
 
-        String origninSql = "select id, count(1) num from t where name = ? group by id order by id desc";
-        countSql = SqlUtils.generateCountSql(origninSql);
-        assertEquals("SELECT COUNT(1) FROM (" + origninSql + ") AS tmp_count_result", countSql);
+        String originSql = "select id, count(1) num from t where name = ? group by id order by id desc";
+        countSql = SqlUtils.generateCountSql(originSql);
+        assertEquals("SELECT COUNT(1) FROM (" + originSql + ") AS tmp_count_result", countSql);
 
-        origninSql = "select id, count(1) num from t where name = ?   group    by id order by id desc";
-        countSql = SqlUtils.generateCountSql(origninSql);
-        assertEquals("SELECT COUNT(1) FROM (" + origninSql + ") AS tmp_count_result", countSql);
+        originSql = "select id, count(1) num from t where name = ?   group    by id order by id desc";
+        countSql = SqlUtils.generateCountSql(originSql);
+        assertEquals("SELECT COUNT(1) FROM (" + originSql + ") AS tmp_count_result", countSql);
 
-        origninSql = "select id, count(1) num from t where name = ?   \ngroup  \n  by id order by id desc";
-        countSql = SqlUtils.generateCountSql(origninSql);
-        assertEquals("SELECT COUNT(1) FROM (" + origninSql + ") AS tmp_count_result", countSql);
+        originSql = "select id, count(1) num from t where name = ?   \ngroup  \n  by id order by id desc";
+        countSql = SqlUtils.generateCountSql(originSql);
+        assertEquals("SELECT COUNT(1) FROM (" + originSql + ") AS tmp_count_result", countSql);
 
-        origninSql = "select id, count(1) num from t where name = ?   \n  group \t \n  by\nid order by id desc";
-        countSql = SqlUtils.generateCountSql(origninSql);
-        assertEquals("SELECT COUNT(1) FROM (" + origninSql + ") AS tmp_count_result", countSql);
+        originSql = "select id, count(1) num from t where name = ?   \n  group \t \n  by\nid order by id desc";
+        countSql = SqlUtils.generateCountSql(originSql);
+        assertEquals("SELECT COUNT(1) FROM (" + originSql + ") AS tmp_count_result", countSql);
+
+        originSql = "select"
+                + "            id as id,"
+                + "            name as name,"
+                + "            subject as subject,"
+                + "            grade as grade,"
+                + "            paper_type_id as paperTypeId"
+                + "        from exam_paper\n           \n      \n   \n    \n      \n    \n    \n            \n"
+                + "         WHERE  subject = 102\n               \n     \n     \n    \n     \n  \n     \n   \n    \n"
+                + "                and grade = 11\n      \n     \n     \n    \n    \n       \n       \n     \n"
+                + "                and school_id = 10002\n             \n\n             \n                   "
+                + "\n             \n             \n             \n             \n             \n             "
+                + "\n             \n             \n             \n             \n             \n             "
+                + "\n             \n             \n             \n             \n             \n             "
+                + "                and paper_type_id = '1'";
+
+        long start = System.currentTimeMillis();
+        countSql = SqlUtils.generateCountSql(originSql);
+        long elapsed = System.currentTimeMillis() - start;
+        System.out.println(elapsed);
     }
 
 }
