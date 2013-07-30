@@ -23,12 +23,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -193,8 +196,6 @@ public abstract class AbstractController implements ValidationSupport {
     /**
      * 从 Spring 的 <code>org.springframework.ui.Model</code> 对象中获取错误消息，封装成响应对象，用于页面错误提示。
      * 
-     * @param errors
-     *            Spring Model
      * @return 响应消息，一般最终以 JSON 格式返回给客户端
      */
     public ResponseMessage getResponseMessage(Model model) {
@@ -208,8 +209,6 @@ public abstract class AbstractController implements ValidationSupport {
     /**
      * 从 Spring 的 <code>org.springframework.validation.Errors</code> 对象中获取错误消息，封装成响应对象，用于页面错误提示。
      * 
-     * @param errors
-     *            Spring Errors
      * @return 响应消息，一般最终以 JSON 格式返回给客户端
      */
     public ResponseMessage getResponseMessage(Errors errors) {
@@ -255,16 +254,13 @@ public abstract class AbstractController implements ValidationSupport {
      * <li>允许通过 {@link #setDefaultErrorView(String)} 修改默认的错误视图名称</li>
      * <li>允许通过 {@link #setExceptionMappings(Map)} 指定不同的异常类型使用不同的错误视图</li>
      * </ul>
-     * 
-     * @param ex
-     *            异常信息
-     * @param request
-     *            Spring ServletWebRequest
-     * @return 对于 AJAX 请求，返回 <code>null</code>，而对于普通请求，返回错误视图对象。
      */
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ModelAndView handleException(Exception ex, ServletWebRequest request) {
         logger.error("Exception handler caught an exception", ex);
+
+        //request.getResponse().setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
         boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
         logger.debug("Debug is {}", isDebug ? "on" : "off");
@@ -291,15 +287,41 @@ public abstract class AbstractController implements ValidationSupport {
 
         // 如果是普通请求，dispatch 到错误页面
         String exName = ex.getClass().getName();
-        String exView = StringUtils.defaultString(exceptionMappings.get(exName), defaultErrorView);
+        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
+        return new ModelAndView(exView, errorResponse);
+    }
+
+    /**
+     * 拦截 {@link UnauthorizedException} 异常。
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseBody
+    public Object handleException(UnauthorizedException e, ServletWebRequest request) {
+        StringWriter stackTrace = new StringWriter();
+        e.printStackTrace(new PrintWriter(stackTrace));
+
+        Map<String, String> exception = new HashMap<>();
+        exception.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, e.getMessage());
+        exception.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put(EXCEPTION_ATTRIBUTE_NAME, exception);
+
+        // 如果是 AJAX 请求，以 JSON 格式返回
+        if (isAjaxRequest(request)) {
+            request.getResponse().setStatus(HttpStatus.UNAUTHORIZED.value());
+            return JsonViewHelper.render(errorResponse, request);
+        }
+
+        // 如果是普通请求，dispatch 到错误页面
+        String exName = e.getClass().getName();
+        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
         return new ModelAndView(exView, errorResponse);
     }
 
     /**
      * 设置默认的出错视图名称，默认为 'error'。
-     * 
-     * @param defaultErrorView
-     *            默认的出错视图名称
      */
     @Autowired(required = false)
     @Qualifier("defaultErrorView")
@@ -308,10 +330,14 @@ public abstract class AbstractController implements ValidationSupport {
     }
 
     /**
+     * 返回默认的出错视图名称。
+     */
+    public String getDefaultErrorView() {
+        return defaultErrorView;
+    }
+
+    /**
      * 设置异常和出错视图名称的映射表。可以根据这个实现针对不同的异常显示不同的出错页面。
-     * 
-     * @param exceptionMappings
-     *            the exceptionMappings to set
      */
     public void setExceptionMappings(Map<String, String> exceptionMappings) {
         this.exceptionMappings = exceptionMappings;
@@ -319,10 +345,6 @@ public abstract class AbstractController implements ValidationSupport {
 
     /**
      * 判断请求是否是 Ajax 请求。
-     * 
-     * @param request
-     *            Spring WebRequest
-     * @return true/false
      */
     protected boolean isAjaxRequest(WebRequest request) {
         String header = request.getHeader(ServletUtils.AJAX_REQUEST_HEADER);
