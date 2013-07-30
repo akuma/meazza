@@ -310,6 +310,7 @@ public abstract class AbstractController implements ValidationSupport {
 
         // 如果是 AJAX 请求，以 JSON 格式返回
         if (isAjaxRequest(request)) {
+            // AJAX 请求需要手工指定 status
             request.getResponse().setStatus(HttpStatus.UNAUTHORIZED.value());
             return JsonViewHelper.render(errorResponse, request);
         }
