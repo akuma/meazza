@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * 客户端请求未授权异常。
- *
+ * 表示客户端的请求未授权的异常。
+ * 
  * @author akuma
  */
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -17,10 +17,14 @@ public class UnauthorizedException extends RuntimeException {
 
     private static final long serialVersionUID = -7505326482876250758L;
 
-    private int code;
+    private int code = HttpStatus.UNAUTHORIZED.value();
 
     public UnauthorizedException() {
         super();
+    }
+
+    public UnauthorizedException(String message) {
+        super(message);
     }
 
     public UnauthorizedException(int code, String message) {
