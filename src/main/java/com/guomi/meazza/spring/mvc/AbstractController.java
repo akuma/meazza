@@ -257,23 +257,13 @@ public abstract class AbstractController implements ValidationSupport {
      */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ModelAndView handleException(Exception ex, ServletWebRequest request) {
-        logger.error("Exception handler caught an exception", ex);
-
-        //request.getResponse().setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+    public ModelAndView handleException(Exception e, ServletWebRequest request) {
+        logger.error("Exception handler caught an exception", e);
 
         boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
         logger.debug("Debug is {}", isDebug ? "on" : "off");
 
-        StringWriter stackTrace = new StringWriter();
-        ex.printStackTrace(new PrintWriter(stackTrace));
-
-        Map<String, String> exception = new HashMap<>();
-        exception.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, ex.getMessage());
-        exception.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
-
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(EXCEPTION_ATTRIBUTE_NAME, exception);
+        Map<String, Object> errorResponse = getErrorResponse(e);
 
         // 如果开启 debug，则将 debug 标记写入 error response 中
         if (isDebug) {
@@ -282,11 +272,13 @@ public abstract class AbstractController implements ValidationSupport {
 
         // 如果是 AJAX 请求，以 JSON 格式返回
         if (isAjaxRequest(request)) {
+            // AJAX 请求需要手工指定 status
+            request.getResponse().setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             return JsonViewHelper.render(errorResponse, request);
         }
 
         // 如果是普通请求，dispatch 到错误页面
-        String exName = ex.getClass().getName();
+        String exName = e.getClass().getName();
         String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
         return new ModelAndView(exView, errorResponse);
     }
@@ -298,20 +290,34 @@ public abstract class AbstractController implements ValidationSupport {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ResponseBody
     public Object handleException(UnauthorizedException e, ServletWebRequest request) {
-        StringWriter stackTrace = new StringWriter();
-        e.printStackTrace(new PrintWriter(stackTrace));
-
-        Map<String, String> exception = new HashMap<>();
-        exception.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, e.getMessage());
-        exception.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
-
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(EXCEPTION_ATTRIBUTE_NAME, exception);
+        Map<String, Object> errorResponse = getErrorResponse(e);
 
         // 如果是 AJAX 请求，以 JSON 格式返回
         if (isAjaxRequest(request)) {
             // AJAX 请求需要手工指定 status
             request.getResponse().setStatus(HttpStatus.UNAUTHORIZED.value());
+            return JsonViewHelper.render(errorResponse, request);
+        }
+
+        // 如果是普通请求，dispatch 到错误页面
+        String exName = e.getClass().getName();
+        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
+        return new ModelAndView(exView, errorResponse);
+    }
+
+    /**
+     * 拦截 {@link ForbiddenException} 异常。
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseBody
+    public Object handleException(ForbiddenException e, ServletWebRequest request) {
+        Map<String, Object> errorResponse = getErrorResponse(e);
+
+        // 如果是 AJAX 请求，以 JSON 格式返回
+        if (isAjaxRequest(request)) {
+            // AJAX 请求需要手工指定 status
+            request.getResponse().setStatus(HttpStatus.FORBIDDEN.value());
             return JsonViewHelper.render(errorResponse, request);
         }
 
@@ -357,6 +363,22 @@ public abstract class AbstractController implements ValidationSupport {
      */
     protected String redirectTo(String url) {
         return "redirect:" + url;
+    }
+
+    /**
+     * 根据异常创建出错后的响应对象。
+     */
+    private Map<String, Object> getErrorResponse(Exception e) {
+        StringWriter stackTrace = new StringWriter();
+        e.printStackTrace(new PrintWriter(stackTrace));
+
+        Map<String, String> exception = new HashMap<>();
+        exception.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, e.getMessage());
+        exception.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put(EXCEPTION_ATTRIBUTE_NAME, exception);
+        return errorResponse;
     }
 
 }
