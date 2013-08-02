@@ -328,6 +328,28 @@ public abstract class AbstractController implements ValidationSupport {
     }
 
     /**
+     * 拦截 {@link NotFoundException} 异常。
+     */
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseBody
+    public Object handleException(NotFoundException e, ServletWebRequest request) {
+        Map<String, Object> errorResponse = getErrorResponse(e);
+
+        // 如果是 AJAX 请求，以 JSON 格式返回
+        if (isAjaxRequest(request)) {
+            // AJAX 请求需要手工指定 status
+            request.getResponse().setStatus(HttpStatus.NOT_FOUND.value());
+            return JsonViewHelper.render(errorResponse, request);
+        }
+
+        // 如果是普通请求，dispatch 到错误页面
+        String exName = e.getClass().getName();
+        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
+        return new ModelAndView(exView, errorResponse);
+    }
+
+    /**
      * 设置默认的出错视图名称，默认为 'error'。
      */
     @Autowired(required = false)
