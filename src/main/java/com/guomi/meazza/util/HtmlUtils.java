@@ -257,7 +257,7 @@ public abstract class HtmlUtils {
      */
     public static Whitelist getWhitelist() {
         return Whitelist.basicWithImages().addTags("div", "table", "thead", "tbody", "tfoot", "tr", "th", "td")
-                .addAttributes("div", "style", "class").addAttributes("p", "style")
+                .addAttributes("div", "style", "class", "data-sqth").addAttributes("p", "style")
                 .addAttributes("table", "width", "style").addAttributes("td", "colspan", "rowspan", "width", "style")
                 .addAttributes("th", "colspan", "rowspan", "width", "style").addAttributes("img", "style")
                 .preserveRelativeLinks(true);
