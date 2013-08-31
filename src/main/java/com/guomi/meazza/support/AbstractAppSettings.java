@@ -9,10 +9,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -28,6 +33,9 @@ import org.springframework.beans.factory.annotation.Value;
 public abstract class AbstractAppSettings implements Serializable {
 
     private static final long serialVersionUID = -8794135442659506482L;
+
+    private static final String EXTENSION_CSS = "css";
+    private static final String EXTENSION_JS = "js";
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -48,9 +56,35 @@ public abstract class AbstractAppSettings implements Serializable {
     @Value("#{appProperties['page.tracker.domain']}")
     private String pageTrackerDomain;
 
+    // global css、js 的初始值
+    private String originGlobalCss;
+    private String originGlobalJs;
+
+    private Map<String, String> assetsVersion = new HashMap<>(); // 资源版本映射表
+    private ScheduledExecutorService executor;
+
     @PostConstruct
     public void init() {
-        setHashedAssets();
+        originGlobalCss = assetsGlobalCss;
+        originGlobalJs = assetsGlobalJs;
+
+        final String assetsVersionUrl = getAssetsVersionUrl();
+        if (assetsVersionUrl == null) {
+            return;
+        }
+
+        initAssetsVersion(assetsVersionUrl);
+
+        // 如果是测试环境，则开启定时读取 assets version 文件的任务
+        if (isTest()) {
+            executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleWithFixedDelay(new Runnable() {
+                @Override
+                public void run() {
+                    initAssetsVersion(assetsVersionUrl);
+                }
+            }, 60, 10, TimeUnit.SECONDS);
+        }
     }
 
     /**
@@ -117,20 +151,76 @@ public abstract class AbstractAppSettings implements Serializable {
     }
 
     /**
-     * 设置带有版本号的 assets。
+     * 从资源版本映射表中获取带有版本号的资源路径（相对路径），如果获取不到，则返回原始路径。
+     * <p>
+     * 例如：js/global.min.js -> js/global.min.78b76e3e.js
      */
-    private void setHashedAssets() {
-        if (StringUtils.isBlank(assetsPath)) {
-            return;
+    public String versionedAsset(String originAssetPath) {
+        return versionedAsset(originAssetPath, null);
+    }
+
+    /**
+     * 从资源版本映射表中获取带有版本号的资源路径（相对路径），如果获取不到，则返回带有 css/、js/ 前缀的原始路径。
+     * <p>
+     * 例如：js/global.min.js -> js/global.min.78b76e3e.js
+     */
+    private String versionedAsset(String originAsset, String preVersionedAsset) {
+        if (StringUtils.isEmpty(originAsset)) {
+            return StringUtils.EMPTY;
         }
 
-        Map<String, String> versions;
-        String versionUrl = assetsPath + "/version.json";
+        // 如果资源以 / 开头，则删除该字符
+        if (originAsset.startsWith("/")) {
+            originAsset = originAsset.substring(1);
+        }
 
+        // 获取资源后缀名
+        String extension = FilenameUtils.getExtension(originAsset);
+
+        // 尝试给资源添加 css/、js/ 这样的前缀目录
+        String prefix = StringUtils.EMPTY;
+        if (EXTENSION_CSS.equalsIgnoreCase(extension)) {
+            prefix = "css/";
+        } else if (EXTENSION_JS.equalsIgnoreCase(extension)) {
+            prefix = "js/";
+        }
+        if (!originAsset.startsWith(prefix)) {
+            originAsset = prefix + originAsset;
+        }
+
+        // 获取带版本号的资源
+        String versionedAsset = getVersionedAsset(originAsset, preVersionedAsset);
+        if (!StringUtils.isEmpty(versionedAsset)) {
+            return versionedAsset;
+        }
+
+        // 如果没有获取到，则再尝试根据压缩版本的名称去获取资源（e.g. xxx.min.js）
+        if (!originAsset.contains(".min.")) {
+            String path = FilenameUtils.getPath(originAsset);
+            String basename = FilenameUtils.getBaseName(originAsset);
+            String minAssetPath = path + basename + ".min." + extension;
+            versionedAsset = getVersionedAsset(minAssetPath, preVersionedAsset);
+        }
+
+        return StringUtils.isEmpty(versionedAsset) ? originAsset : versionedAsset;
+    }
+
+    private String getVersionedAsset(String originAsset, String preVersionedAsset) {
+        String versionedAsset = assetsVersion.get(originAsset);
+        if (!StringUtils.isEmpty(versionedAsset) && !versionedAsset.equals(preVersionedAsset)) {
+            logger.debug("Got versioned asset: {} -> {}", originAsset, versionedAsset);
+        }
+        return versionedAsset;
+    }
+
+    /**
+     * 初始化资源版本映射表。
+     */
+    private void initAssetsVersion(String versionUrl) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             InputStream version = new URL(versionUrl).openStream();
-            versions = mapper.reader(Map.class).readValue(version);
+            assetsVersion = mapper.reader(Map.class).readValue(version);
         } catch (IOException e) {
             if (e instanceof FileNotFoundException) {
                 logger.info("Assets version file not found: {}", versionUrl);
@@ -140,16 +230,12 @@ public abstract class AbstractAppSettings implements Serializable {
             return;
         }
 
-        String hashedCss = versions.get("css/" + assetsGlobalCss);
-        if (!StringUtils.isBlank(hashedCss)) {
-            assetsGlobalCss = hashedCss;
-            logger.info("Got hashed global css: {}", assetsGlobalCss);
-        }
-
-        String hashedJs = versions.get("js/" + assetsGlobalJs);
-        if (!StringUtils.isBlank(hashedJs)) {
-            assetsGlobalJs = hashedJs;
-            logger.info("Got hashed global js: {}", assetsGlobalJs);
-        }
+        assetsGlobalCss = versionedAsset(originGlobalCss, assetsGlobalCss);
+        assetsGlobalJs = versionedAsset(originGlobalJs, assetsGlobalJs);
     }
+
+    private String getAssetsVersionUrl() {
+        return StringUtils.isBlank(assetsPath) ? null : assetsPath + "/version.json";
+    }
+
 }
