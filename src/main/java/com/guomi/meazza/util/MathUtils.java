@@ -33,6 +33,22 @@ public abstract class MathUtils {
     }
 
     /**
+     * 提供精确的加法运算。
+     * 
+     * @param v1
+     *            被加数
+     * @param v2
+     *            加数
+     * @return 两个参数的和
+     */
+    public static float add(float v1, float v2) {
+        BigDecimal b1 = createBigDecimal(v1);
+        BigDecimal b2 = createBigDecimal(v2);
+
+        return b1.add(b2).floatValue();
+    }
+
+    /**
      * 提供（相对）精确的除法运算，当发生除不尽的情况时，精确到小数点以后10位，以后的数字四舍五入。
      * 
      * @param v1
@@ -79,6 +95,17 @@ public abstract class MathUtils {
     }
 
     /**
+     * 判断 float 值是否非法，值为 Infinite 或者 NaN 即表示非法。
+     * 
+     * @param v
+     *            doube 值
+     * @return 如果值为 Infinite 或者 NaN 则返回 <code>true</code>，否则返回 <code>false</code>。
+     */
+    public static boolean isInvalidFloat(float v) {
+        return Float.isInfinite(v) || Float.isNaN(v);
+    }
+
+    /**
      * 提供精确的乘法运算。
      * 
      * @param v1
@@ -117,6 +144,28 @@ public abstract class MathUtils {
     }
 
     /**
+     * 提供精确的小数位四舍五入处理。如果 v 是非法的，则原样返回。
+     * 
+     * @param v
+     *            需要四舍五入的数字
+     * @param scale
+     *            小数点后保留几位
+     * @return 四舍五入后的结果
+     */
+    public static float round(float v, int scale) {
+        if (scale < 0) {
+            throw new IllegalArgumentException("The scale must be a positive integer or zero");
+        }
+
+        if (isInvalidFloat(v)) {
+            return v;
+        }
+
+        BigDecimal b = createBigDecimal(v);
+        return b.divide(BigDecimal.ONE, scale, BigDecimal.ROUND_HALF_UP).floatValue();
+    }
+
+    /**
      * 提供精确的减法运算。
      * 
      * @param v1
@@ -140,7 +189,18 @@ public abstract class MathUtils {
      * @return BigDecimal 对象
      */
     private static BigDecimal createBigDecimal(double v) {
-        return new BigDecimal(Double.toString(v));
+        return new BigDecimal(String.valueOf(v));
+    }
+
+    /**
+     * 采用 BigDecimal 的字符串构造器进行初始化。
+     * 
+     * @param v
+     *            float 值
+     * @return BigDecimal 对象
+     */
+    private static BigDecimal createBigDecimal(float v) {
+        return new BigDecimal(String.valueOf(v));
     }
 
 }
