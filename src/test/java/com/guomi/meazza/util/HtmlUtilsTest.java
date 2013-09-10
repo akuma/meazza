@@ -130,8 +130,8 @@ public class HtmlUtilsTest {
         System.out.println("------------------ origin\n" + Jsoup.parse(sample).body().html());
         System.out.println("------------------ cleaned\n" + HtmlUtils.cleanEditorHtml(sample));
 
-        assertEquals("<div style=\"color:red\">testb</div>",
-                HtmlUtils.cleanEditorHtml("<p style='color:red'>test<span>b</span></p>"));
+        assertEquals("<div style=\"color:red\">testb<span>b</span></div>",
+                HtmlUtils.cleanEditorHtml("<p style='color:red'>testb<span>b</span></p>"));
 
         sample = "<p>体积为4&times;10<sup>-3</sup>m<sup>3</sup>的铜球．其质量为24 kg．试判断这个铜球是空心的还是实心的，"
                 + "(铜的密度是8．9&times;10<sup>3</sup>kg／m<sup>3</sup>)</p>还有什么<br><br>没有了？";
