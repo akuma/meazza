@@ -250,7 +250,7 @@ public abstract class HtmlUtils {
     }
 
     /**
-     * 获取 jsoup 白名单对象，在 {@link org.jsoup.safety.Whitelist#basicWithImages()} 白名单的基础上添加 div、table、p 等标签。
+     * 获取 jsoup 白名单对象，在 {@link org.jsoup.safety.Whitelist#basicWithImages()} 白名单的基础上添加 div、table、p、span 等标签。
      * <em>注意：对返回的对象的修改不会影响此类。</em>
      * 
      * @return jsoup 白名单对象
@@ -258,7 +258,8 @@ public abstract class HtmlUtils {
     public static Whitelist getWhitelist() {
         return Whitelist.basicWithImages().addTags("div", "table", "thead", "tbody", "tfoot", "tr", "th", "td")
                 .addAttributes("div", "style", "class", "data-sqth").addAttributes("p", "style")
-                .addAttributes("table", "width", "style").addAttributes("td", "colspan", "rowspan", "width", "style")
+                .addAttributes("span", "style").addAttributes("table", "width", "style")
+                .addAttributes("td", "colspan", "rowspan", "width", "style")
                 .addAttributes("th", "colspan", "rowspan", "width", "style").addAttributes("img", "style")
                 .preserveRelativeLinks(true);
     }
