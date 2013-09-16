@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)AbstractAppSettings.java    Created on 2013-5-27
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
@@ -177,15 +177,19 @@ public abstract class AbstractAppSettings implements Serializable {
         // 获取资源后缀名
         String extension = FilenameUtils.getExtension(originAsset);
 
-        // 尝试给资源添加 css/、js/ 这样的前缀目录
-        String prefix = StringUtils.EMPTY;
-        if (EXTENSION_CSS.equalsIgnoreCase(extension)) {
-            prefix = "css/";
-        } else if (EXTENSION_JS.equalsIgnoreCase(extension)) {
-            prefix = "js/";
-        }
-        if (!originAsset.startsWith(prefix)) {
-            originAsset = prefix + originAsset;
+        // 如果资源不是 http、https 开头的地址，则尝试给资源添加 css/、js/ 这样的前缀目录
+        if (!originAsset.startsWith("http://") && !originAsset.startsWith("https://")) {
+
+            String prefix = StringUtils.EMPTY;
+            if (EXTENSION_CSS.equalsIgnoreCase(extension)) {
+                prefix = "css/";
+            } else if (EXTENSION_JS.equalsIgnoreCase(extension)) {
+                prefix = "js/";
+            }
+
+            if (!originAsset.startsWith(prefix)) {
+                originAsset = prefix + originAsset;
+            }
         }
 
         // 获取带版本号的资源
