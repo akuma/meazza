@@ -178,7 +178,7 @@ public abstract class AbstractAppSettings implements Serializable {
         String extension = FilenameUtils.getExtension(originAsset);
 
         // 如果资源不是 http、https 开头的地址，则尝试给资源添加 css/、js/ 这样的前缀目录
-        if (!originAsset.startsWith("http://") && !originAsset.startsWith("https://")) {
+        if (!originAsset.startsWith("http://") || !originAsset.startsWith("https://")) {
 
             String prefix = StringUtils.EMPTY;
             if (EXTENSION_CSS.equalsIgnoreCase(extension)) {
