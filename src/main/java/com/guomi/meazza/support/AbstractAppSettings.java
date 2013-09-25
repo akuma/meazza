@@ -44,10 +44,6 @@ public abstract class AbstractAppSettings implements Serializable {
 
     @Value("#{appProperties['assets.path']}")
     private String assetsPath;
-    @Value("#{appProperties['assets.global.css']}")
-    private String assetsGlobalCss;
-    @Value("#{appProperties['assets.global.js']}")
-    private String assetsGlobalJs;
 
     @Value("#{appProperties['page.tracker.enable']}")
     private Boolean pageTrackerEnable;
@@ -56,18 +52,11 @@ public abstract class AbstractAppSettings implements Serializable {
     @Value("#{appProperties['page.tracker.domain']}")
     private String pageTrackerDomain;
 
-    // global css、js 的初始值
-    private String originGlobalCss;
-    private String originGlobalJs;
-
     private Map<String, String> assetsVersion = new HashMap<>(); // 资源版本映射表
     private ScheduledExecutorService executor;
 
     @PostConstruct
     public void init() {
-        originGlobalCss = assetsGlobalCss;
-        originGlobalJs = assetsGlobalJs;
-
         final String assetsVersionUrl = getAssetsVersionUrl();
         if (assetsVersionUrl == null) {
             return;
@@ -113,20 +102,6 @@ public abstract class AbstractAppSettings implements Serializable {
      */
     public String getAssetsPath() {
         return assetsPath;
-    }
-
-    /**
-     * 获取非开发环境下公共 css 文件名。一般是一个压缩和合并过的文件。
-     */
-    public String getAssetsGlobalCss() {
-        return assetsGlobalCss;
-    }
-
-    /**
-     * 获取非开发环境下公共 js 文件名。一般是一个压缩和合并过的文件。
-     */
-    public String getAssetsGlobalJs() {
-        return assetsGlobalJs;
     }
 
     /**
@@ -233,9 +208,6 @@ public abstract class AbstractAppSettings implements Serializable {
             }
             return;
         }
-
-        assetsGlobalCss = versionedAsset(originGlobalCss, assetsGlobalCss);
-        assetsGlobalJs = versionedAsset(originGlobalJs, assetsGlobalJs);
     }
 
     private String getAssetsVersionUrl() {
