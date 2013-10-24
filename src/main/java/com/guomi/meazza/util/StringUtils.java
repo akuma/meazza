@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)StringUtils.java    Created on 2012-8-2
  * Copyright (c) 2012 Guomi. All rights reserved.
  */
@@ -33,7 +33,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * UUID 的正则表达式。
      */
-    private static final String REGEX_UUID = "^[0-9a-eA-E]{32}$";
+    private static final String REGEX_UUID = "^[0-9a-fA-F]{32}$";
 
     /**
      * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
