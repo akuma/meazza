@@ -187,7 +187,7 @@ public abstract class AbstractAppSettings implements Serializable {
     private String getVersionedAsset(String originAsset, String preVersionedAsset) {
         String versionedAsset = assetsVersion.get(originAsset);
         if (!StringUtils.isEmpty(versionedAsset) && !versionedAsset.equals(preVersionedAsset)) {
-            logger.debug("Got versioned asset: {} -> {}", originAsset, versionedAsset);
+            logger.trace("Got versioned asset: {} -> {}", originAsset, versionedAsset);
         }
         return versionedAsset;
     }
