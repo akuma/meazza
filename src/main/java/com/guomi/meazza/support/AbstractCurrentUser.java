@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)AbstractCurrentUser.java    Created on 2013-4-17
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
@@ -45,7 +45,7 @@ public class AbstractCurrentUser<T> implements Serializable {
      * 从 Session 中删除 CurrentUser 并销毁当前 Session。
      */
     public void destorySession(ServletWebRequest request) {
-        request.removeAttribute(SESSION_KEY, RequestAttributes.SCOPE_SESSION);
+        //request.removeAttribute(SESSION_KEY, RequestAttributes.SCOPE_SESSION);
         request.getRequest().getSession().invalidate();
     }
 
