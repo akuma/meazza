@@ -24,7 +24,7 @@ public class AbstractCurrentUser<T> implements Serializable {
 
     private static final long serialVersionUID = -9090439224327688149L;
 
-    private T id;
+    protected T id;
 
     public T getId() {
         return id;
@@ -42,7 +42,7 @@ public class AbstractCurrentUser<T> implements Serializable {
     }
 
     /**
-     * 从 Session 中删除 CurrentUser 并销毁当前 Session。
+     * 销毁当前 Session。
      */
     public void destorySession(ServletWebRequest request) {
         //request.removeAttribute(SESSION_KEY, RequestAttributes.SCOPE_SESSION);
