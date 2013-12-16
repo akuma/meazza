@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)ServletUtils.java    Created on 2012-05-31
  * Copyright (c) 2012 Guomi, Inc. All rights reserved.
  */
@@ -10,20 +10,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -35,10 +30,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -110,7 +101,6 @@ public abstract class ServletUtils {
     private static final int NONE_FLAG = -1;
 
     private static String charSet = "GBK";
-    private static int fileItemSizeThreshold = ONE_KB * ONE_KB * 10; // Default 10M
 
     /**
      * 增加 cookie，cookie 的 path 为"/"。
@@ -392,83 +382,6 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 取得http请求中的参数，如果是文件上传可以包含FileItem。
-     * 
-     * @param request
-     *            http请求
-     * @return 参数Map
-     */
-    @SuppressWarnings("unchecked")
-    public static Map<String, Object[]> getParameters(HttpServletRequest request) {
-        if (!isMultipart(request)) {
-            return request.getParameterMap();
-        }
-
-        DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
-        fileItemFactory.setSizeThreshold(fileItemSizeThreshold);
-        ServletFileUpload fileUpload = new ServletFileUpload(fileItemFactory);
-        fileUpload.setHeaderEncoding(charSet);
-
-        List<FileItem> fileItems = null;
-
-        try {
-            fileItems = fileUpload.parseRequest(request);
-        } catch (FileUploadException e) {
-            throw new RuntimeException("Could not upload", e);
-        }
-
-        HashMap<String, List<Object>> valueListMap = new HashMap<String, List<Object>>();
-        for (int i = 0; i < fileItems.size(); i++) {
-            FileItem fileItem = fileItems.get(i);
-
-            List<Object> valueList = valueListMap.get(fileItem.getFieldName());
-            if (valueList == null) {
-                valueList = new ArrayList<Object>();
-                valueListMap.put(fileItem.getFieldName(), valueList);
-            }
-
-            if (fileItem.isFormField()) {
-                try {
-                    valueList.add(fileItem.getString(charSet));
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-            } else {
-                valueList.add(fileItem);
-            }
-            logger.debug("Read parameter[{}]", fileItem.getFieldName());
-        }
-
-        HashMap<String, Object[]> parameters = new HashMap<String, Object[]>();
-        Iterator<Entry<String, List<Object>>> iterator = valueListMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Entry<String, List<Object>> entry = iterator.next();
-            String paramName = entry.getKey();
-            List<Object> valueList = entry.getValue();
-
-            if (valueList.get(0) instanceof String) {
-                List<String> valList = new ArrayList<String>();
-                for (Object o : valueList) {
-                    valList.add(o.toString());
-                }
-                parameters.put(paramName, valList.toArray(new String[valList.size()]));
-            } else {
-                parameters.put(paramName, valueList.toArray(new FileItem[valueList.size()]));
-            }
-        }
-
-        // 追加request内的普通参数
-        Enumeration<String> enumeration = request.getParameterNames();
-        while (enumeration.hasMoreElements()) {
-            String paramName = enumeration.nextElement();
-            String[] paramValues = request.getParameterValues(paramName);
-            parameters.put(paramName, paramValues);
-        }
-
-        return parameters;
-    }
-
-    /**
      * 在服务器使用反向代理（例如 Nginx、Squid ）的情况下，直接调用 {@link HttpServletRequest#getRemoteAddr()} 方法将无法获取客户端真实的 IP 地址。<br>
      * 在代理服务器配置支持的情况下，使用此方法可以获取到发起原始请求的客户端的真实 IP 地址。
      * 
@@ -644,7 +557,10 @@ public abstract class ServletUtils {
      */
     public static String getWebsiteRoot(HttpServletRequest request) {
         int serverPort = request.getServerPort();
-        return request.getScheme() + "://" + request.getServerName() + (serverPort == 80 ? "" : ":" + serverPort)
+        return request.getScheme()
+                + "://"
+                + request.getServerName()
+                + (serverPort == 80 ? "" : ":" + serverPort)
                 + request.getContextPath();
     }
 
@@ -752,16 +668,6 @@ public abstract class ServletUtils {
      */
     public static void setCharSet(String charSet) {
         ServletUtils.charSet = charSet;
-    }
-
-    /**
-     * 设置fileItem的文件保存到硬盘的大小限制, 操作此限制则保存到磁盘, 否则保存在内存中.
-     * 
-     * @param fileItemSizeThreshold
-     *            文件大小限制
-     */
-    public static void setFileItemSizeThreshold(int fileItemSizeThreshold) {
-        ServletUtils.fileItemSizeThreshold = fileItemSizeThreshold;
     }
 
     /**

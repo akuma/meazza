@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)JsonViewHelper.java    Created on 2012-7-17
  * Copyright (c) 2012 Guomi. All rights reserved.
  */
@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -52,7 +52,7 @@ public class JsonViewHelper {
      * @return 返回 null
      */
     public static ModelAndView render(Object model, ServletWebRequest request, MediaType mediaType) {
-        MappingJacksonHttpMessageConverter jsonConverter = new MappingJacksonHttpMessageConverter();
+        MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
 
         try {
             jsonConverter.write(model, mediaType, new ServletServerHttpResponse(request.getResponse()));
