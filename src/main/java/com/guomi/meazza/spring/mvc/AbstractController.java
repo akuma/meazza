@@ -1,77 +1,40 @@
-/* 
+/*
  * @(#)AbstractController.java    Created on 2012-6-6
  * Copyright (c) 2012 Guomi, Inc. All rights reserved.
  */
 package com.guomi.meazza.spring.mvc;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.guomi.meazza.util.ServletUtils;
-
 /**
- * <code>Controller</code> 抽象类，可供业务 <code>Controller</code> 继承。
- * <p>
- * 主要提供了以下功能：
- * 
- * <ul>
- * <li>提供了添加错误信息、提示信息的相关方法。</li>
- * <li>对异常进行统一拦截，如果是 AJAX 请求会直接返回 JSON 格式的出错响应，否则 dispatch 到出错视图。</li>
- * <li>对于非 AJAX 的请求，默认的出错视图名称为 'error'，可以使用 {@link #setDefaultErrorView(String)} 修改默认值，也可以使用
- * {@link #setExceptionMappings(Map)} 给不同的异常指定不同的出错视图。</li>
- * </ul>
+ * Spring {@code Controller} 抽象类，可供业务 {@code Controller} 继承。 提供了添加错误信息、提示信息的相关方法。
  * 
  * @author akuma
  */
 public abstract class AbstractController implements ValidationSupport {
 
-    protected Logger logger = LoggerFactory.getLogger(getClass()); // 日志对象
-
     public static final String ACTION_ERRORS = "actionErrors";
     public static final String ACTION_MESSAGES = "actionMessages";
     public static final String FIELD_ERRORS = "fieldErrors";
 
-    public static final String EXCEPTION_ATTRIBUTE_NAME = "exception";
-    public static final String EXCEPTION_MESSAGE_ATTRIBUTE_NAME = "message";
-    public static final String EXCEPTION_STACKTRACE_ATTRIBUTE_NAME = "stackTrace";
-
-    // 默认的错误视图名称
-    private String defaultErrorView = "error";
-
-    /**
-     * 异常类名称和错误视图名称的映射表。
-     */
-    protected Map<String, String> exceptionMappings = Collections.emptyMap();
+    protected Logger logger = LoggerFactory.getLogger(getClass()); // 日志对象
 
     @Resource
     protected MessageSource messageSource;
@@ -242,165 +205,10 @@ public abstract class AbstractController implements ValidationSupport {
     }
 
     /**
-     * 拦截 Controller 中抛出的 {@link Exception}，将异常信息记录到日志并添加到 HTTP 响应中。<br>
-     * 对于不同的请求，对异常反馈方式有所不同：
-     * <ul>
-     * <li>对于 AJAX 请求，异常信息会以 JSON 格式的报文返回，格式为：{"exception":{"message":"foo","stackTrace":"bar"}</li>
-     * <li>对于普通请求，异常信息会添加到 Request Attribute 中（属性名为 exception），并 dispatch 到错误视图（默认为 error）</li>
-     * </ul>
-     * 
-     * 另外，还有两个可以修改的设置：
-     * <ul>
-     * <li>允许通过 {@link #setDefaultErrorView(String)} 修改默认的错误视图名称</li>
-     * <li>允许通过 {@link #setExceptionMappings(Map)} 指定不同的异常类型使用不同的错误视图</li>
-     * </ul>
-     */
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ModelAndView handleException(Exception e, ServletWebRequest request) {
-        logger.error("Exception handler caught an exception", e);
-
-        boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
-        logger.debug("Debug is {}", isDebug ? "on" : "off");
-
-        Map<String, Object> errorResponse = getErrorResponse(e);
-
-        // 如果开启 debug，则将 debug 标记写入 error response 中
-        if (isDebug) {
-            errorResponse.put("debug", true);
-        }
-
-        // 如果是 AJAX 请求，以 JSON 格式返回
-        if (isAjaxRequest(request)) {
-            // AJAX 请求需要手工指定 status
-            request.getResponse().setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            return JsonViewHelper.render(errorResponse, request);
-        }
-
-        // 如果是普通请求，dispatch 到错误页面
-        String exName = e.getClass().getName();
-        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
-        return new ModelAndView(exView, errorResponse);
-    }
-
-    /**
-     * 拦截 {@link UnauthorizedException} 异常。
-     */
-    @ExceptionHandler(UnauthorizedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    @ResponseBody
-    public Object handleException(UnauthorizedException e, ServletWebRequest request) {
-        Map<String, Object> errorResponse = getErrorResponse(e);
-
-        // 如果是 AJAX 请求，以 JSON 格式返回
-        if (isAjaxRequest(request)) {
-            // AJAX 请求需要手工指定 status
-            request.getResponse().setStatus(HttpStatus.UNAUTHORIZED.value());
-            return JsonViewHelper.render(errorResponse, request);
-        }
-
-        // 如果是普通请求，dispatch 到错误页面
-        String exName = e.getClass().getName();
-        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
-        return new ModelAndView(exView, errorResponse);
-    }
-
-    /**
-     * 拦截 {@link ForbiddenException} 异常。
-     */
-    @ExceptionHandler(ForbiddenException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ResponseBody
-    public Object handleException(ForbiddenException e, ServletWebRequest request) {
-        Map<String, Object> errorResponse = getErrorResponse(e);
-
-        // 如果是 AJAX 请求，以 JSON 格式返回
-        if (isAjaxRequest(request)) {
-            // AJAX 请求需要手工指定 status
-            request.getResponse().setStatus(HttpStatus.FORBIDDEN.value());
-            return JsonViewHelper.render(errorResponse, request);
-        }
-
-        // 如果是普通请求，dispatch 到错误页面
-        String exName = e.getClass().getName();
-        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
-        return new ModelAndView(exView, errorResponse);
-    }
-
-    /**
-     * 拦截 {@link NotFoundException} 异常。
-     */
-    @ExceptionHandler(NotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ResponseBody
-    public Object handleException(NotFoundException e, ServletWebRequest request) {
-        Map<String, Object> errorResponse = getErrorResponse(e);
-
-        // 如果是 AJAX 请求，以 JSON 格式返回
-        if (isAjaxRequest(request)) {
-            // AJAX 请求需要手工指定 status
-            request.getResponse().setStatus(HttpStatus.NOT_FOUND.value());
-            return JsonViewHelper.render(errorResponse, request);
-        }
-
-        // 如果是普通请求，dispatch 到错误页面
-        String exName = e.getClass().getName();
-        String exView = StringUtils.defaultString(exceptionMappings.get(exName), getDefaultErrorView());
-        return new ModelAndView(exView, errorResponse);
-    }
-
-    /**
-     * 设置默认的出错视图名称，默认为 'error'。
-     */
-    @Autowired(required = false)
-    @Qualifier("defaultErrorView")
-    public void setDefaultErrorView(String defaultErrorView) {
-        this.defaultErrorView = defaultErrorView;
-    }
-
-    /**
-     * 返回默认的出错视图名称。
-     */
-    public String getDefaultErrorView() {
-        return defaultErrorView;
-    }
-
-    /**
-     * 设置异常和出错视图名称的映射表。可以根据这个实现针对不同的异常显示不同的出错页面。
-     */
-    public void setExceptionMappings(Map<String, String> exceptionMappings) {
-        this.exceptionMappings = exceptionMappings;
-    }
-
-    /**
-     * 判断请求是否是 Ajax 请求。
-     */
-    protected boolean isAjaxRequest(WebRequest request) {
-        String header = request.getHeader(ServletUtils.AJAX_REQUEST_HEADER);
-        return ServletUtils.AJAX_REQUEST_HEADER_VALUE.equalsIgnoreCase(header);
-    }
-
-    /**
      * 返回 spring mvc 重定向结果，例如：redirect:login。
      */
     protected String redirectTo(String url) {
         return "redirect:" + url;
-    }
-
-    /**
-     * 根据异常创建出错后的响应对象。
-     */
-    private Map<String, Object> getErrorResponse(Exception e) {
-        StringWriter stackTrace = new StringWriter();
-        e.printStackTrace(new PrintWriter(stackTrace));
-
-        Map<String, String> exception = new HashMap<>();
-        exception.put(EXCEPTION_MESSAGE_ATTRIBUTE_NAME, e.getMessage());
-        exception.put(EXCEPTION_STACKTRACE_ATTRIBUTE_NAME, stackTrace.toString());
-
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(EXCEPTION_ATTRIBUTE_NAME, exception);
-        return errorResponse;
     }
 
 }
