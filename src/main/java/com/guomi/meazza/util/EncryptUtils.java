@@ -4,6 +4,8 @@
  */
 package com.guomi.meazza.util;
 
+import java.io.UnsupportedEncodingException;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -24,6 +26,8 @@ public abstract class EncryptUtils {
 
     // DES加密算法, 可用DES, DESede, Blowfish
     private static final String DES_ALGORITHM = "DESede";
+
+    private static final String DEFAULT_CHARSET = "UTF-8";
 
     /**
      * 自身混淆加密，最多只能加密 30 个字节长度的字符串。
@@ -211,10 +215,41 @@ public abstract class EncryptUtils {
     }
 
     /**
-     * 带 secure、salt 参数的 SHA1 加密，计算方式为：sha1(secure + str + salt)。
+     * 带 secure、salt 参数的字符串 SHA1 签名。加密算法为：sha1(secure + str + salt)
      */
     public static String sha1Hex(String str, String secure, String salt) {
         return DigestUtils.sha1Hex(secure + str + salt);
+    }
+
+    /**
+     * 带 secure 参数的字符串 MD5 签名。加密算法为：md5(str + secure)
+     * 
+     * @param str
+     *            需要签名的字符串
+     * @param secure
+     *            密钥
+     * @return 签名结果
+     */
+    public static String md5Hex(String str, String secure) {
+        String secureStr = str + secure;
+        return DigestUtils.md5Hex(getBytes(secureStr, DEFAULT_CHARSET));
+    }
+
+    /**
+     * 验证字符串签名是否匹配。加密算法为：md5(str + secure)
+     * 
+     * @param str
+     *            需要签名的字符串
+     * @param secure
+     *            密钥
+     * @param expectSign
+     *            期望签名结果
+     * @return true/false
+     */
+    public static boolean verifyMd5Hex(String str, String secure, String expectSign) {
+        String secureStr = str + secure;
+        String actualSign = DigestUtils.md5Hex(getBytes(secureStr, DEFAULT_CHARSET));
+        return actualSign.equals(expectSign);
     }
 
     private static int sumSqual(byte[] b) {
@@ -253,6 +288,18 @@ public abstract class EncryptUtils {
 
     private static int getIntFrom32(int hi, int low) {
         return hi * 32 + low;
+    }
+
+    private static byte[] getBytes(String str, String charset) {
+        if (StringUtils.isBlank(charset)) {
+            return str.getBytes();
+        }
+
+        try {
+            return str.getBytes(charset);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
 }
