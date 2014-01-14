@@ -7,7 +7,9 @@ package com.guomi.meazza.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -319,6 +321,36 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * 把所有参数按照 key 的字典顺序排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串。
+     * 
+     * @param params
+     *            需要排序并参与字符拼接的参数
+     * @return 拼接后的字符串
+     */
+    public static String createSortedQueryString(Map<String, String> params) {
+        if (MapUtils.isEmpty(params)) {
+            return StringUtils.EMPTY;
+        }
+
+        List<String> keys = new ArrayList<String>(params.keySet());
+        Collections.sort(keys);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            String value = params.get(key);
+
+            if (i == keys.size() - 1) { // 拼接时，不包括最后一个&字符
+                sb.append(key + "=" + value);
+            } else {
+                sb.append(key + "=" + value + "&");
+            }
+        }
+
+        return sb.toString();
     }
 
 }
