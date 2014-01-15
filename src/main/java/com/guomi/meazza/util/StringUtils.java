@@ -37,6 +37,12 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      */
     private static final String REGEX_UUID = "^[0-9a-fA-F]{32}$";
 
+    // 表示 true、false 的字符串
+    private static final String BOOLEAN_TRUE_STRING = "true";
+    private static final String BOOLEAN_FALSE_STRING = "false";
+    private static final String BOOLEAN_TRUE_NUMBER = "1";
+    private static final String BOOLEAN_FALSE_NUMBER = "0";
+
     /**
      * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
      * 
@@ -351,6 +357,48 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * 判断 value 的值是否表示条件为真。例子：
+     * 
+     * <ul>
+     * <li>"1" -> true</li>
+     * <li>"true" -> true</li>
+     * <li>"True" -> true</li>
+     * <li>"TRUE" -> true</li>
+     * <li>"2" -> false</li>
+     * <li>"false" -> false</li>
+     * <li>"test" -> false</li>
+     * </ul>
+     * 
+     * @param str
+     *            字符串
+     * @return 如果 value 等于 “1” 或者 “true”（大小写无关） 返回 <code>true</code>，否则返回 <code>false</code>。
+     */
+    public static boolean isValueTrue(String str) {
+        return BOOLEAN_TRUE_NUMBER.equals(str) || BOOLEAN_TRUE_STRING.equalsIgnoreCase(str);
+    }
+
+    /**
+     * 判断 value 的值是否表示条件为假。例子：
+     * 
+     * <ul>
+     * <li>"0" -> true</li>
+     * <li>"false" -> true</li>
+     * <li>"False" -> true</li>
+     * <li>"FALSE" -> true</li>
+     * <li>"1" -> false</li>
+     * <li>"true" -> false</li>
+     * <li>"test" -> false</li>
+     * </ul>
+     * 
+     * @param str
+     *            字符串
+     * @return 如果 value 等于 “0” 或者 “false”（大小写无关） 返回 <code>true</code>，否则返回 <code>false</code>。
+     */
+    public static boolean isValueFalse(String str) {
+        return BOOLEAN_FALSE_NUMBER.equals(str) || BOOLEAN_FALSE_STRING.equalsIgnoreCase(str);
     }
 
 }
