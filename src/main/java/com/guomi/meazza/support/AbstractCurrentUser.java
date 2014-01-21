@@ -44,6 +44,10 @@ public class AbstractCurrentUser<T> implements Serializable {
         return initiativeLogout;
     }
 
+    public void setInitiativeLogout(boolean initiativeLogout) {
+        this.initiativeLogout = initiativeLogout;
+    }
+
     /**
      * 将 CurrentUser 保存到 Session 中，用于保持回话。
      */
