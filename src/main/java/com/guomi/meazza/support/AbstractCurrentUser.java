@@ -22,9 +22,10 @@ public class AbstractCurrentUser<T> implements Serializable {
      */
     public static final String SESSION_KEY = "currentUser";
 
-    private static final String INITIATIVE_LOGOUT_KEY = "initiativeLogout";
-
     private static final long serialVersionUID = -9090439224327688149L;
+
+    // 用户是否主动退出系统，被动退出的情况就是 session 超时
+    private boolean initiativeLogout;
 
     protected T id;
 
@@ -39,9 +40,8 @@ public class AbstractCurrentUser<T> implements Serializable {
     /**
      * 判断用户是否已经主动退出了。
      */
-    public boolean isInitiativeLogout(ServletWebRequest request) {
-        Boolean result = (Boolean) request.getRequest().getSession().getAttribute(INITIATIVE_LOGOUT_KEY);
-        return result != null && result;
+    public boolean isInitiativeLogout() {
+        return initiativeLogout;
     }
 
     /**
@@ -56,7 +56,7 @@ public class AbstractCurrentUser<T> implements Serializable {
      */
     public void destorySession(ServletWebRequest request) {
         //  将标记用户为主动退出并销毁 Session
-        request.getRequest().getSession().setAttribute(INITIATIVE_LOGOUT_KEY, true);
+        initiativeLogout = true;
         request.getRequest().getSession().invalidate();
     }
 
