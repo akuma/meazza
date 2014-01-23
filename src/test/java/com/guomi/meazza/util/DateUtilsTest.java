@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)DateUtilsTest.java    Created on 2013-5-6
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
@@ -138,6 +138,35 @@ public class DateUtilsTest {
 
         monthEnd = DateUtils.getMonthEnd();
         System.out.println(DateUtils.formatToDateTime(monthEnd));
+    }
+
+    @Test
+    public void testGetWeek() {
+        assertEquals(0, DateUtils.getWeek(null));
+
+        Date date = DateUtils.parseByDateTime("2013-12-28 04:25:47");
+        assertEquals(6, DateUtils.getWeek(date));
+
+        date = DateUtils.parseByDateTime("2014-01-23 04:25:47");
+        assertEquals(4, DateUtils.getWeek(date));
+
+        date = DateUtils.parseByDateTime("2014-01-24 04:25:47");
+        assertEquals(5, DateUtils.getWeek(date));
+
+        date = DateUtils.parseByDateTime("2014-01-25 04:25:47");
+        assertEquals(6, DateUtils.getWeek(date));
+
+        date = DateUtils.parseByDateTime("2014-01-26 04:25:47");
+        assertEquals(7, DateUtils.getWeek(date));
+
+        date = DateUtils.parseByDateTime("2014-01-27 04:25:47");
+        assertEquals(1, DateUtils.getWeek(date));
+
+        date = DateUtils.parseByDateTime("2014-01-28 04:25:47");
+        assertEquals(2, DateUtils.getWeek(date));
+
+        date = DateUtils.parseByDateTime("2014-01-29 04:25:47");
+        assertEquals(3, DateUtils.getWeek(date));
     }
 
 }

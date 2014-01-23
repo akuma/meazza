@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)DateUtils.java    Created on 2013-5-6
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
@@ -245,6 +245,28 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         return cal.get(Calendar.MONTH) + 1;
+    }
+
+    /**
+     * 根据日期对象获取星期几，根据中国人的传统将星期一作为星期的第一天。
+     * 
+     * <p>
+     * <strong>返回值说明：</strong>
+     * <ul>
+     * <li>当 date 为 null 时，返回 0</li>
+     * <li>其他情况返回 1-7 的数字</li>
+     * <li>其中，星期一是 1，星期天是 7</li>
+     * </ul>
+     */
+    public static int getWeek(Date date) {
+        if (date == null) {
+            return 0;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+        return dayOfWeek == 1 ? 7 : dayOfWeek - 1;
     }
 
     public static Date parse(String str, String pattern) {
