@@ -10,9 +10,10 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -20,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import com.guomi.meazza.support.LongIdEntity;
 import com.guomi.meazza.support.StringIdEntity;
 import com.guomi.meazza.util.Pagination;
+import com.guomi.meazza.util.StringUtils;
 import com.mongodb.WriteResult;
 
 /**
@@ -63,6 +65,11 @@ public abstract class BasicMongoService {
 
         // 只获取分页下的数据
         query.skip(page.getCurrentRowNum() - 1).limit(page.getPageSize());
+
+        // 处理排序方式
+        if (!StringUtils.isBlank(page.getOrderBy())) {
+            query.with(new Sort(page.isDesc() ? Direction.DESC : Direction.ASC, page.getOrderBy()));
+        }
 
         return mongoOps.find(query, entityClass);
     }
