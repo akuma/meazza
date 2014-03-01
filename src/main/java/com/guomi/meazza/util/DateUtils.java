@@ -258,7 +258,7 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
      * <li>其中，星期一是 1，星期天是 7</li>
      * </ul>
      */
-    public static int getWeek(Date date) {
+    public static int getChineseWeek(Date date) {
         if (date == null) {
             return 0;
         }
@@ -267,6 +267,27 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
         cal.setTime(date);
         int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
         return dayOfWeek == 1 ? 7 : dayOfWeek - 1;
+    }
+
+    /**
+     * 根据日期对象获取当周是一年中的第几周，根据中国人的传统将星期一作为星期的第一天。
+     * 
+     * <p>
+     * <strong>返回值说明：</strong>
+     * <ul>
+     * <li>当 date 为 null 时，返回 0</li>
+     * <li>其他情况返回周次的数字</li>
+     * </ul>
+     */
+    public static int getChineseWeekOfYear(Date date) {
+        if (date == null) {
+            return 0;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.setTime(date);
+        return cal.get(Calendar.WEEK_OF_YEAR);
     }
 
     public static Date parse(String str, String pattern) {

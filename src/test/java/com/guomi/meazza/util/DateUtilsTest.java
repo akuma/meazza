@@ -141,32 +141,44 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void testGetWeek() {
-        assertEquals(0, DateUtils.getWeek(null));
+    public void testGetChineseWeek() {
+        assertEquals(0, DateUtils.getChineseWeek(null));
 
         Date date = DateUtils.parseByDateTime("2013-12-28 04:25:47");
-        assertEquals(6, DateUtils.getWeek(date));
+        assertEquals(6, DateUtils.getChineseWeek(date));
 
         date = DateUtils.parseByDateTime("2014-01-23 04:25:47");
-        assertEquals(4, DateUtils.getWeek(date));
+        assertEquals(4, DateUtils.getChineseWeek(date));
 
         date = DateUtils.parseByDateTime("2014-01-24 04:25:47");
-        assertEquals(5, DateUtils.getWeek(date));
+        assertEquals(5, DateUtils.getChineseWeek(date));
 
         date = DateUtils.parseByDateTime("2014-01-25 04:25:47");
-        assertEquals(6, DateUtils.getWeek(date));
+        assertEquals(6, DateUtils.getChineseWeek(date));
 
         date = DateUtils.parseByDateTime("2014-01-26 04:25:47");
-        assertEquals(7, DateUtils.getWeek(date));
+        assertEquals(7, DateUtils.getChineseWeek(date));
 
         date = DateUtils.parseByDateTime("2014-01-27 04:25:47");
-        assertEquals(1, DateUtils.getWeek(date));
+        assertEquals(1, DateUtils.getChineseWeek(date));
 
         date = DateUtils.parseByDateTime("2014-01-28 04:25:47");
-        assertEquals(2, DateUtils.getWeek(date));
+        assertEquals(2, DateUtils.getChineseWeek(date));
 
         date = DateUtils.parseByDateTime("2014-01-29 04:25:47");
-        assertEquals(3, DateUtils.getWeek(date));
+        assertEquals(3, DateUtils.getChineseWeek(date));
+    }
+
+    @Test
+    public void testGetChineseWeekOfYear() {
+        Date date = DateUtils.parseByDateTime("2014-3-1 04:25:47");
+        assertEquals(9, DateUtils.getChineseWeekOfYear(date));
+
+        date = DateUtils.parseByDateTime("2014-3-2 04:25:47");
+        assertEquals(9, DateUtils.getChineseWeekOfYear(date));
+
+        date = DateUtils.parseByDateTime("2014-3-3 04:25:47");
+        assertEquals(10, DateUtils.getChineseWeekOfYear(date));
     }
 
 }
