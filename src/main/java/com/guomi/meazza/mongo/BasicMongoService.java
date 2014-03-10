@@ -62,6 +62,20 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 查找满足 {@code query} 条件的第一个文档并修改。
+     */
+    public <T> T findAndModify(Query query, Update update, Class<T> entityClass) {
+        return mongoOps.findAndModify(query, update, entityClass);
+    }
+
+    /**
+     * 查找满足 {@code query} 条件的第一个文档并删除。
+     */
+    public <T> T findAndRemove(Query query, Class<T> entityClass) {
+        return mongoOps.findAndRemove(query, entityClass);
+    }
+
+    /**
      * 根据 {@code Query} 条件以分页方式获取文档列表。
      */
     public <T> List<T> find(Query query, Pagination page, Class<T> entityClass) {
