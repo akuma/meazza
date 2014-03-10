@@ -36,6 +36,9 @@ public abstract class BasicMongoService {
     @Resource
     protected MongoOperations mongoOps;
 
+    /**
+     * 根据 ID 查询文档。
+     */
     public <T> T findById(Object id, Class<T> entityClass) {
         if (id == null) {
             return null;
@@ -52,7 +55,14 @@ public abstract class BasicMongoService {
     }
 
     /**
-     * 以分页方式获取查询结果。
+     * 根据 {@code Query} 条件查询满足条件的第一个文档。
+     */
+    public <T> T findOne(Query query, Class<T> entityClass) {
+        return mongoOps.findOne(query, entityClass);
+    }
+
+    /**
+     * 根据 {@code Query} 条件以分页方式获取文档列表。
      */
     public <T> List<T> find(Query query, Pagination page, Class<T> entityClass) {
         // 先获取结果集数量
@@ -74,15 +84,27 @@ public abstract class BasicMongoService {
         return mongoOps.find(query, entityClass);
     }
 
+    /**
+     * 保存对象到文档中。<br>
+     * <b>注意：</b> 如果文档已经存在，则会以新对象替换掉整个文档。
+     */
     public void save(Object object) {
         mongoOps.save(object);
     }
 
+    /**
+     * 将对象作为一个新文档添加到集合中。<br>
+     * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
+     */
     public void insert(Object object) {
         setCreationTimeIfPossible(object);
         mongoOps.insert(object);
     }
 
+    /**
+     * 将多个对象作为新文档添加到集合中。<br>
+     * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
+     */
     public <T> void insert(Collection<T> objects, Class<T> entityClass) {
         for (T object : objects) {
             setCreationTimeIfPossible(object);
@@ -90,18 +112,30 @@ public abstract class BasicMongoService {
         mongoOps.insert(objects, entityClass);
     }
 
+    /**
+     * 更新满足 {@code query} 条件的第一个文档。
+     */
     public <T> WriteResult updateFirst(Query query, Update update, Class<T> entityClass) {
         return mongoOps.updateFirst(query, update, entityClass);
     }
 
+    /**
+     * 更新满足 {@code query} 条件的所有文档。
+     */
     public <T> WriteResult updateMulti(Query query, Update update, Class<T> entityClass) {
         return mongoOps.updateMulti(query, update, entityClass);
     }
 
+    /**
+     * 根据对象中的 {@code id} 来删除匹配的文档。
+     */
     public void remove(Object object) {
         mongoOps.remove(object);
     }
 
+    /**
+     * 删除所有满足 {@code query} 条件的文档。
+     */
     public <T> void remove(Query query, Class<T> entityClass) {
         mongoOps.remove(query, entityClass);
     }
