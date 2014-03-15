@@ -418,4 +418,31 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
         return BOOLEAN_FALSE_NUMBER.equals(str) || BOOLEAN_FALSE_STRING.equalsIgnoreCase(str);
     }
 
+    /**
+     * 根据数字返回一个数字文件路径前缀，路径中的文件夹由除末两位外的其他数字按序组成。例如：
+     * 
+     * <ul>
+     * <li>-1:</li>
+     * <li>0:</li>
+     * <li>1:</li>
+     * <li>1001: /10</li>
+     * <li>101101: /10/11</li>
+     * <li>1101101: 1/10/11</li>
+     * <li>12101101: 12/10/11</li>
+     * </ul>
+     */
+    public static String getNumberPrefixPath(long number) {
+        if (number <= 0) {
+            return EMPTY;
+        }
+
+        StringBuilder dir = new StringBuilder();
+        long subdir = number;
+        while (subdir > 100) {
+            subdir = subdir / 100;
+            dir.insert(0, "/" + subdir % 100);
+        }
+        return dir.toString();
+    }
+
 }
