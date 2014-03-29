@@ -36,6 +36,8 @@ public abstract class BasicMongoService {
     @Resource
     protected MongoOperations mongoOps;
 
+    //    public abstract String getCollectionName();
+
     /**
      * 根据 ID 查询文档。
      */
@@ -73,6 +75,13 @@ public abstract class BasicMongoService {
      */
     public <T> T findAndRemove(Query query, Class<T> entityClass) {
         return mongoOps.findAndRemove(query, entityClass);
+    }
+
+    /**
+     * 根据 {@code Query} 条件获取文档列表。
+     */
+    public <T> List<T> find(Query query, Class<T> entityClass) {
+        return mongoOps.find(query, entityClass);
     }
 
     /**
