@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)LongIdEntity.java    Created on 2013-1-12
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
@@ -11,7 +11,7 @@ import java.util.Date;
  * 
  * @author akuma
  */
-public abstract class LongIdEntity extends IdEntity<Long> {
+public abstract class LongIdEntity extends IdEntity {
 
     private static final long serialVersionUID = -8056033887637038214L;
 
@@ -21,12 +21,10 @@ public abstract class LongIdEntity extends IdEntity<Long> {
     private Date modifyTime;
     private Date creationTime;
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }

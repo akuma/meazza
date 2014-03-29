@@ -15,26 +15,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *  统一定义 id 的 entity 基类。
  * 
  * @author akuma
- * @param <T>
- *            ID 的类型
  * @since 0.0.15
  */
-public abstract class IdEntity<T> implements Serializable {
+public abstract class IdEntity implements Serializable {
 
     private static final long serialVersionUID = 7685930087139789958L;
-
-    private T id;
-
-    public IdEntity() {
-    }
-
-    public T getId() {
-        return id;
-    }
-
-    public void setId(T id) {
-        this.id = id;
-    }
 
     @Override
     public boolean equals(Object obj) {
