@@ -15,6 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.data.mongodb.core.mapreduce.GroupBy;
+import org.springframework.data.mongodb.core.mapreduce.GroupByResults;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
@@ -105,6 +111,36 @@ public abstract class BasicMongoService {
         }
 
         return mongoOps.find(query, entityClass);
+    }
+
+    public <T> long count(Query query, Class<T> entityClass) {
+        return mongoOps.count(query, entityClass);
+    }
+
+    public <T> GroupByResults<T> group(String inputCollectionName, GroupBy groupBy, Class<T> entityClass) {
+        return mongoOps.group(inputCollectionName, groupBy, entityClass);
+    }
+
+    public <T> GroupByResults<T> group(Criteria criteria, String inputCollectionName, GroupBy groupBy,
+            Class<T> entityClass) {
+        return mongoOps.group(criteria, inputCollectionName, groupBy, entityClass);
+    }
+
+    public <O> AggregationResults<O> aggregate(TypedAggregation<?> aggregation, Class<O> outputType) {
+        return mongoOps.aggregate(aggregation, outputType);
+    }
+
+    public <O> AggregationResults<O> aggregate(TypedAggregation<?> aggregation, String collectionName,
+            Class<O> outputType) {
+        return mongoOps.aggregate(aggregation, collectionName, outputType);
+    }
+
+    public <O> AggregationResults<O> aggregate(Aggregation aggregation, Class<?> inputType, Class<O> outputType) {
+        return mongoOps.aggregate(aggregation, inputType, outputType);
+    }
+
+    public <O> AggregationResults<O> aggregate(Aggregation aggregation, String collectionName, Class<O> outputType) {
+        return mongoOps.aggregate(aggregation, collectionName, outputType);
     }
 
     /**
