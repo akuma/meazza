@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)ResponseMessage.java    Created on 2012-6-6
  * Copyright (c) 2012 Guomi, Inc. All rights reserved.
  */
@@ -43,30 +43,12 @@ public class ResponseMessage implements Serializable {
         this.actionMessages = actionMessages;
     }
 
-    /**
-     * 获取是否存在 Action 错误。
-     * 
-     * @return true/false
-     */
-    public boolean getHasActionErrors() {
-        return !actionErrors.isEmpty();
-    }
-
     public Collection<String> getActionErrors() {
         return actionErrors;
     }
 
     public void setActionErrors(Collection<String> actionErrors) {
         this.actionErrors = actionErrors;
-    }
-
-    /**
-     * 获取是否存在字段错误。
-     * 
-     * @return true/false
-     */
-    public boolean getHasFieldErrors() {
-        return !getFieldErrors().isEmpty();
     }
 
     public Map<String, Collection<String>> getFieldErrors() {
@@ -101,6 +83,33 @@ public class ResponseMessage implements Serializable {
      */
     public void addAttributes(Map<String, Object> data) {
         this.data.putAll(data);
+    }
+
+    /**
+     * 获取是否存在 Action 或者 Field 错误。
+     * 
+     * @return true/false
+     */
+    public boolean getHasErrors() {
+        return getHasActionErrors() || getHasFieldErrors();
+    }
+
+    /**
+     * 获取是否存在 Action 错误。
+     * 
+     * @return true/false
+     */
+    public boolean getHasActionErrors() {
+        return !actionErrors.isEmpty();
+    }
+
+    /**
+     * 获取是否存在 Field 错误。
+     * 
+     * @return true/false
+     */
+    public boolean getHasFieldErrors() {
+        return !getFieldErrors().isEmpty();
     }
 
 }
