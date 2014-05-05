@@ -6,6 +6,7 @@ package com.guomi.meazza.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,12 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     private static final String BOOLEAN_FALSE_STRING = "false";
     private static final String BOOLEAN_TRUE_NUMBER = "1";
     private static final String BOOLEAN_FALSE_NUMBER = "0";
+
+    private static final Map<String, String> EMAIL_WEBSITES = new HashMap<>();
+    static {
+        EMAIL_WEBSITES.put("gmail.com", "http://gmail.com");
+        EMAIL_WEBSITES.put("hotmail.com", "http://hotmail.com");
+    }
 
     /**
      * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
@@ -443,6 +450,30 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
             dir.insert(0, "/" + subdir % 100);
         }
         return dir.toString();
+    }
+
+    /**
+     * 根据邮箱获取邮箱所在的网站网址。例如：
+     * <ul>
+     * <li>foo@qq.com => http://mail.qq.com</li>
+     * <li>foo@163.com => http://mail.163.com</li>
+     * <li>foo@zuihuixue.com => http://mail.zuihuixue.com</li>
+     * <li>foo@msn.com => http://mail.msn.com</li>
+     * <li>foo@hotmail.com => http://hotmail.com</li>
+     * <li>foo@gmail.com => http://gmail.com</li>
+     * <li>test.com => null</li>
+     * <li>"" => null</li>
+     * <li>null => null</li>
+     * </ul>
+     */
+    public static String getEmailWebsite(String email) {
+        if (!isEmail(email)) {
+            return null;
+        }
+
+        String domain = email.substring(email.indexOf("@") + 1);
+        String website = EMAIL_WEBSITES.get(domain);
+        return website != null ? website : "http://mail." + domain;
     }
 
 }

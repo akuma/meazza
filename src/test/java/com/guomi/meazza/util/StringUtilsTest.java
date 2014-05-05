@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)StringUtilsTest.java    Created on 2012-8-11
  * Copyright (c) 2012 Guomi. All rights reserved.
  */
@@ -6,6 +6,7 @@ package com.guomi.meazza.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -75,6 +76,21 @@ public class StringUtilsTest {
 
         // throw NumberFormatException
         StringUtils.splitToLongList(",1, ,3,, 4, , 5 , 7,8 ,1234234, a", ",");
+    }
+
+    @Test
+    public void testGetEmailWebsite() {
+        assertEquals("http://mail.163.com", StringUtils.getEmailWebsite("foo@163.com"));
+        assertEquals("http://mail.126.com", StringUtils.getEmailWebsite("foo@126.com"));
+        assertEquals("http://mail.139.com", StringUtils.getEmailWebsite("foo@139.com"));
+        assertEquals("http://gmail.com", StringUtils.getEmailWebsite("foo@gmail.com"));
+        assertEquals("http://hotmail.com", StringUtils.getEmailWebsite("foo@hotmail.com"));
+        assertEquals("http://mail.qq.com", StringUtils.getEmailWebsite("foo@qq.com"));
+        assertEquals("http://mail.msn.com", StringUtils.getEmailWebsite("foo@msn.com"));
+        assertEquals("http://mail.yahoo.com", StringUtils.getEmailWebsite("foo@yahoo.com"));
+        assertNull(StringUtils.getEmailWebsite("fooyahoo.com"));
+        assertNull(StringUtils.getEmailWebsite(""));
+        assertNull(StringUtils.getEmailWebsite(null));
     }
 
 }
