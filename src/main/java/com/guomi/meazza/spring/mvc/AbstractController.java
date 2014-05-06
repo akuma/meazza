@@ -208,6 +208,7 @@ public abstract class AbstractController implements ValidationSupport {
      * 返回 spring mvc 重定向结果，例如：redirect:login。
      */
     protected String redirectTo(String url) {
+        logger.debug("Redirect to {}", url);
         return "redirect:" + url;
     }
 
