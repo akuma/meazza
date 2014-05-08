@@ -106,26 +106,76 @@ public abstract class ServletUtils {
      * 增加 cookie，cookie 的 path 为"/"。
      * 
      * @param response
-     *            http响应
+     *            http 响应
      * @param cookieName
-     *            cookie的名称
+     *            cookie 的名称
      * @param cookieValue
-     *            cookie的值
+     *            cookie 的值
      * @param maxAge
-     *            cookie的存活期，毫秒为单位
+     *            cookie 的存活期，毫秒为单位
      */
     public static void addCookie(HttpServletResponse response, String cookieName, String cookieValue, int maxAge) {
         Cookie cookie = new Cookie(cookieName, cookieValue);
         cookie.setMaxAge(maxAge);
         cookie.setPath("/");
+        addCookie(response, cookie);
+    }
+
+    /**
+     * 增加 cookie。如果 cookie 的 path 为 null，会被设置为 "/"。
+     * 
+     * @param response
+     *            http 响应
+     * @param cookie
+     *            cookie 对象
+     */
+    public static void addCookie(HttpServletResponse response, Cookie cookie) {
+        if (cookie.getPath() == null) {
+            cookie.setPath("/");
+        }
         response.addCookie(cookie);
     }
 
     /**
-     * 清除http缓存。
+     * 删除 cookie。
      * 
      * @param response
-     *            http响应
+     *            http 响应
+     * @param cookieName
+     *            cookie 的名称
+     */
+    public static void removeCookie(HttpServletResponse response, String cookieName) {
+        addCookie(response, cookieName, "", 0);
+    }
+
+    /**
+     * 取得 cookie 的值。
+     * 
+     * @param request
+     *            http 请求
+     * @param cookieName
+     *            cookie 的名称
+     * @return cookie 的值
+     */
+    public static String getCookie(HttpServletRequest request, String cookieName) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if (cookieName.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 清除 http 缓存。
+     * 
+     * @param response
+     *            http 响应
      */
     public static void clearCache(HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-store");
@@ -139,9 +189,9 @@ public abstract class ServletUtils {
      * @param file
      *            文件
      * @param request
-     *            http请求
+     *            http 请求
      * @param response
-     *            http响应
+     *            http 响应
      * @throws ServletException
      *             Servlet 异常时抛出
      * @throws IOException
@@ -158,11 +208,11 @@ public abstract class ServletUtils {
      * @param file
      *            文件
      * @param request
-     *            http请求
+     *            http 请求
      * @param response
-     *            http响应
+     *            http 响应
      * @param mimeTypes
-     *            mime类型的映射表
+     *            mime 类型的映射表
      * @throws ServletException
      *             Servlet 异常时抛出
      * @throws IOException
@@ -179,11 +229,11 @@ public abstract class ServletUtils {
      * @param file
      *            文件
      * @param request
-     *            http请求
+     *            http 请求
      * @param response
-     *            http响应
+     *            http 响应
      * @param mimeTypes
-     *            mime类型的映射表
+     *            mime 类型的映射表
      * @param fileName
      *            指定用户浏览器下载的文件名
      * @throws ServletException
@@ -247,9 +297,9 @@ public abstract class ServletUtils {
      * @param file
      *            文件
      * @param request
-     *            http请求
+     *            http 请求
      * @param response
-     *            http响应
+     *            http 响应
      * @param fileName
      *            指定用户浏览器下载的文件名
      * @throws ServletException
@@ -268,9 +318,9 @@ public abstract class ServletUtils {
      * @param in
      *            输入流
      * @param request
-     *            http请求
+     *            http 请求
      * @param response
-     *            http响应
+     *            http 响应
      * @throws ServletException
      *             Servlet 异常时抛出
      * @throws IOException
@@ -287,9 +337,9 @@ public abstract class ServletUtils {
      * @param in
      *            输入流
      * @param request
-     *            http请求
+     *            http 请求
      * @param response
-     *            http响应
+     *            http 响应
      * @param fileName
      *            指定用户浏览器下载的文件名
      * @throws ServletException
@@ -356,29 +406,6 @@ public abstract class ServletUtils {
             }
         }
         return browserName;
-    }
-
-    /**
-     * 取得cookie的值。
-     * 
-     * @param request
-     *            http请求
-     * @param cookieName
-     *            cookie的名称
-     * @return cookie的值
-     */
-    public static String getCookie(HttpServletRequest request, String cookieName) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-
-        for (Cookie cookie : cookies) {
-            if (cookieName.equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-        return null;
     }
 
     /**
@@ -552,7 +579,7 @@ public abstract class ServletUtils {
      * 取得网站的跟目录，比如：http://www.foobar.com。
      * 
      * @param request
-     *            http请求
+     *            http 请求
      * @return 网站的跟目录
      */
     public static String getWebsiteRoot(HttpServletRequest request) {
@@ -565,11 +592,11 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 是否是文件上传的http请求。
+     * 是否是文件上传的 http 请求。
      * 
      * @param request
-     *            http请求
-     * @return 是true，否则false
+     *            http 请求
+     * @return true/false
      */
     public static boolean isMultipart(HttpServletRequest request) {
         String contentType = request.getContentType();
@@ -577,21 +604,21 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 是否是POST请求。
+     * 是否是 POST 请求。
      * 
      * @param request
-     *            http请求
-     * @return 是true，否则false
+     *            http 请求
+     * @return true/false
      */
     public static boolean isPost(HttpServletRequest request) {
         return METHOD_POST.equals(request.getMethod());
     }
 
     /**
-     * 输出字符串内容到http响应中。
+     * 输出字符串内容到 http 响应中。
      * 
      * @param response
-     *            http响应
+     *            http 响应
      * @param value
      *            字符串内容
      * @throws IOException
@@ -602,14 +629,14 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 输出字符串内容到http响应中。
+     * 输出字符串内容到 http 响应中。
      * 
      * @param response
-     *            http响应
+     *            http 响应
      * @param value
      *            字符串内容
      * @param mimeType
-     *            MIME类型
+     *            MIME 类型
      * @throws IOException
      *             出现 IO 异常时抛出
      */
@@ -632,19 +659,7 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 删除cookie。
-     * 
-     * @param response
-     *            http响应
-     * @param cookieName
-     *            cookie的名称
-     */
-    public static void removeCookie(HttpServletResponse response, String cookieName) {
-        addCookie(response, cookieName, "", 0);
-    }
-
-    /**
-     * 设置http请求的字符集。
+     * 设置 http 请求的字符集。
      * 
      * @param request
      *            http请求
