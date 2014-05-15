@@ -48,6 +48,13 @@ public abstract class BasicMongoService {
      * 根据 ID 查询文档。
      */
     public <T> T findById(Object id, Class<T> entityClass) {
+        return findById(id, entityClass, null);
+    }
+
+    /**
+     * 根据 ID 查询文档。
+     */
+    public <T> T findById(Object id, Class<T> entityClass, String collectionName) {
         if (id == null) {
             return null;
         }
@@ -59,7 +66,11 @@ public abstract class BasicMongoService {
             }
         }
 
-        return mongoOps.findById(id, entityClass);
+        if (StringUtils.isBlank(collectionName)) {
+            return mongoOps.findById(id, entityClass);
+        }
+
+        return mongoOps.findById(id, entityClass, collectionName);
     }
 
     /**
@@ -70,10 +81,24 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 根据 {@code Query} 条件查询满足条件的第一个文档。
+     */
+    public <T> T findOne(Query query, Class<T> entityClass, String collectionName) {
+        return mongoOps.findOne(query, entityClass, collectionName);
+    }
+
+    /**
      * 查找满足 {@code query} 条件的第一个文档并修改。
      */
     public <T> T findAndModify(Query query, Update update, Class<T> entityClass) {
         return mongoOps.findAndModify(query, update, entityClass);
+    }
+
+    /**
+     * 查找满足 {@code query} 条件的第一个文档并修改。
+     */
+    public <T> T findAndModify(Query query, Update update, Class<T> entityClass, String collectionName) {
+        return mongoOps.findAndModify(query, update, entityClass, collectionName);
     }
 
     /**
@@ -84,6 +109,13 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 查找满足 {@code query} 条件的第一个文档并删除。
+     */
+    public <T> T findAndRemove(Query query, Class<T> entityClass, String collectionName) {
+        return mongoOps.findAndRemove(query, entityClass, collectionName);
+    }
+
+    /**
      * 根据 {@code Query} 条件获取文档列表。
      */
     public <T> List<T> find(Query query, Class<T> entityClass) {
@@ -91,9 +123,23 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 根据 {@code Query} 条件获取文档列表。
+     */
+    public <T> List<T> find(Query query, Class<T> entityClass, String collectionName) {
+        return mongoOps.find(query, entityClass, collectionName);
+    }
+
+    /**
      * 根据 {@code Query} 条件以分页方式获取文档列表。
      */
     public <T> List<T> find(Query query, Pagination page, Class<T> entityClass) {
+        return find(query, page, entityClass, null);
+    }
+
+    /**
+     * 根据 {@code Query} 条件以分页方式获取文档列表。
+     */
+    public <T> List<T> find(Query query, Pagination page, Class<T> entityClass, String collectionName) {
         // 先获取结果集数量
         int count = (int) mongoOps.count(query, entityClass);
 
@@ -110,11 +156,19 @@ public abstract class BasicMongoService {
             query.with(new Sort(page.isDesc() ? Direction.DESC : Direction.ASC, page.getOrderBy()));
         }
 
-        return mongoOps.find(query, entityClass);
+        if (StringUtils.isBlank(collectionName)) {
+            return mongoOps.find(query, entityClass);
+        }
+
+        return mongoOps.find(query, entityClass, collectionName);
     }
 
     public <T> long count(Query query, Class<T> entityClass) {
         return mongoOps.count(query, entityClass);
+    }
+
+    public <T> long count(Query query, String collectionName) {
+        return mongoOps.count(query, collectionName);
     }
 
     public <T> GroupByResults<T> group(String inputCollectionName, GroupBy groupBy, Class<T> entityClass) {
@@ -152,12 +206,29 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 保存对象到文档中。<br>
+     * <b>注意：</b> 如果文档已经存在，则会以新对象替换掉整个文档。
+     */
+    public void save(Object object, String collectionName) {
+        mongoOps.save(object, collectionName);
+    }
+
+    /**
      * 将对象作为一个新文档添加到集合中。<br>
      * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
      */
     public void insert(Object object) {
         setCreationTimeIfPossible(object);
         mongoOps.insert(object);
+    }
+
+    /**
+     * 将对象作为一个新文档添加到集合中。<br>
+     * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
+     */
+    public void insert(Object object, String collectionName) {
+        setCreationTimeIfPossible(object);
+        mongoOps.insert(object, collectionName);
     }
 
     /**
@@ -172,10 +243,28 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 将多个对象作为新文档添加到集合中。<br>
+     * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
+     */
+    public <T> void insert(Collection<T> objects, String collectionName) {
+        for (T object : objects) {
+            setCreationTimeIfPossible(object);
+        }
+        mongoOps.insert(objects, collectionName);
+    }
+
+    /**
      * 更新满足 {@code query} 条件的第一个文档。
      */
     public <T> WriteResult updateFirst(Query query, Update update, Class<T> entityClass) {
         return mongoOps.updateFirst(query, update, entityClass);
+    }
+
+    /**
+     * 更新满足 {@code query} 条件的第一个文档。
+     */
+    public <T> WriteResult updateFirst(Query query, Update update, String collectionName) {
+        return mongoOps.updateFirst(query, update, collectionName);
     }
 
     /**
@@ -186,6 +275,13 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 更新满足 {@code query} 条件的所有文档。
+     */
+    public <T> WriteResult updateMulti(Query query, Update update, String collectionName) {
+        return mongoOps.updateMulti(query, update, collectionName);
+    }
+
+    /**
      * 根据对象中的 {@code id} 来删除匹配的文档。
      */
     public void remove(Object object) {
@@ -193,10 +289,24 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 根据对象中的 {@code id} 来删除匹配的文档。
+     */
+    public void remove(Object object, String collectionName) {
+        mongoOps.remove(object, collectionName);
+    }
+
+    /**
      * 删除所有满足 {@code query} 条件的文档。
      */
     public <T> void remove(Query query, Class<T> entityClass) {
         mongoOps.remove(query, entityClass);
+    }
+
+    /**
+     * 删除所有满足 {@code query} 条件的文档。
+     */
+    public <T> void remove(Query query, String collectionName) {
+        mongoOps.remove(query, collectionName);
     }
 
     private void setCreationTimeIfPossible(Object object) {
