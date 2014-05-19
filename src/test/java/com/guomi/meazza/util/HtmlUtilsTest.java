@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)HtmlUtilsTest.java    Created on 2012-8-2
  * Copyright (c) 2012 Guomi. All rights reserved.
  */
@@ -20,6 +20,15 @@ import org.springframework.util.StopWatch;
  * @author akuma
  */
 public class HtmlUtilsTest {
+
+    //    @Test
+    //    public void testEscapeHtml() {
+    //        System.out.println(HtmlUtils.escapeHtmlExcludeImg(""));
+    //        System.out.println(HtmlUtils.escapeHtmlExcludeImg("&a\"\nb"));
+    //        System.out.println(HtmlUtils.escapeHtmlExcludeImg("\n<strong>a</strong>"));
+    //        System.out.println(HtmlUtils.escapeHtmlExcludeImg("&nbsp;<img src='http://a.cn/a.png'>"));
+    //        System.out.println(HtmlUtils.escapeHtmlExcludeImg("<b>a</b> <img src='http://a.cn/a.png'> <script>1</script>"));
+    //    }
 
     @Test
     public void testStripHtmlTags() throws IOException {

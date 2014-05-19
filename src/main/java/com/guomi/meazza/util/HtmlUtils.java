@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)HtmlUtils.java    Created on 2012-7-28
  * Copyright (c) 2012 Guomi. All rights reserved.
  */
@@ -72,7 +72,7 @@ public abstract class HtmlUtils {
      * <li>&lt; --> &amp;lt;</li>
      * <li>&gt; --> &amp;gt;</li>
      * <li>&quot; --> &amp;quot;</li>
-     * <li>\n --> &lt;br/&gt;</li>
+     * <li>\n --> &lt;br&gt;</li>
      * <li>\t --> &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;</li>
      * <li>空格 --> &amp;nbsp;</li>
      * </ul>
@@ -84,7 +84,7 @@ public abstract class HtmlUtils {
      * @return 过滤后的 HTML 文本
      */
     public static String escapeHtml(String html) {
-        if (html == null || html.length() == 0) {
+        if (StringUtils.isEmpty(html)) {
             return "&nbsp;";
         }
 
@@ -112,12 +112,31 @@ public abstract class HtmlUtils {
      * @return 过滤后的 HTML 文本
      */
     public static String escapeHtmlToEmpty(String html) {
-        if (html == null || html.length() == 0) {
-            return "";
+        if (StringUtils.isEmpty(html)) {
+            return StringUtils.EMPTY;
         }
 
         return html.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
     }
+
+    //    public static String escapeHtmlExcludeImg(String html) {
+    //        if (StringUtils.isEmpty(html)) {
+    //            return "&nbsp;";
+    //        }
+    //
+    //        Document dirty = Jsoup.parseBodyFragment(html);
+    //        Elements elements = dirty.select("body *").not("img");
+    //        for (Element element : elements) {
+    //            element.replaceWith(new TextNode(element.toString(), ""));
+    //        }
+    //
+    //        Cleaner cleaner = new Cleaner(Whitelist.none().addTags("img")
+    //                .addAttributes("img", "align", "alt", "height", "src", "title", "width")
+    //                .addProtocols("img", "src", "http", "https"));
+    //        Document clean = cleaner.clean(dirty);
+    //        clean.outputSettings().prettyPrint(false);
+    //        return clean.body().html().replaceAll("\t", "    ").replaceAll(" ", "&nbsp;");
+    //    }
 
     /**
      * 判断 HTML 代码是否为空白。如果 {@code html} 只包含空串、空格、空的 html 标签则认为 HTML 代码为空白。
