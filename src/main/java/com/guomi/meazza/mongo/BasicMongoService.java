@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -26,6 +27,7 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import com.guomi.meazza.support.LongIdEntity;
 import com.guomi.meazza.support.StringIdEntity;
+import com.guomi.meazza.util.ObjectHelper;
 import com.guomi.meazza.util.Pagination;
 import com.guomi.meazza.util.StringUtils;
 import com.mongodb.WriteResult;
@@ -307,6 +309,27 @@ public abstract class BasicMongoService {
      */
     public <T> void remove(Query query, String collectionName) {
         mongoOps.remove(query, collectionName);
+    }
+
+    /**
+     * 根据 bean 中的属性值生成 update 对象，不为 null 的属性才添加到 update 中。
+     */
+    protected Update getDynamicUpdate(Object bean, String... properties) {
+        if (ArrayUtils.isEmpty(properties)) {
+            return null;
+        }
+
+        boolean hasUpdate = false;
+        Update update = new Update();
+        for (String name : properties) {
+            Object value = ObjectHelper.getPropertyValueQuietly(bean, name);
+            if (value != null) {
+                update.set(name, value);
+                hasUpdate = true;
+            }
+        }
+
+        return hasUpdate ? update : null;
     }
 
     private void setCreationTimeIfPossible(Object object) {
