@@ -312,6 +312,38 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 根据 bean 中的属性值生成 eq query 对象。满足以下条件的属性会添加到 query 中：
+     * 
+     * <ul>
+     * <li>如果属性是 CharSequence 类型且内容不为 null、空串、空格，则生成一个 eq 条件。</li>
+     * <li>对于其他类型的属性，如果内容不为 null，则生成一个 eq 条件。</li>
+     * </ul>
+     */
+    protected Query getDynamicEqQuery(Object bean, String... properties) {
+        if (ArrayUtils.isEmpty(properties)) {
+            return null;
+        }
+
+        boolean hasQuery = false;
+        Query query = new Query();
+        for (String name : properties) {
+            Object value = ObjectHelper.getPropertyValueQuietly(bean, name);
+            if (value instanceof CharSequence) {
+                if (!StringUtils.isBlank((CharSequence) value)) {
+                    query.addCriteria(Criteria.where(name).is(value));
+                    hasQuery = true;
+                }
+            } else {
+                if (value != null) {
+                    query.addCriteria(Criteria.where(name).is(value));
+                    hasQuery = true;
+                }
+            }
+        }
+        return hasQuery ? query : null;
+    }
+
+    /**
      * 根据 bean 中的属性值生成 update 对象，不为 null 的属性才添加到 update 中。
      */
     protected Update getDynamicUpdate(Object bean, String... properties) {
@@ -328,7 +360,6 @@ public abstract class BasicMongoService {
                 hasUpdate = true;
             }
         }
-
         return hasUpdate ? update : null;
     }
 
