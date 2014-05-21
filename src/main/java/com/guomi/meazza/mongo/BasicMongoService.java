@@ -320,27 +320,26 @@ public abstract class BasicMongoService {
      * </ul>
      */
     protected Query getDynamicEqQuery(Object bean, String... properties) {
+        Query query = new Query();
+
         if (ArrayUtils.isEmpty(properties)) {
-            return null;
+            return query;
         }
 
-        boolean hasQuery = false;
-        Query query = new Query();
         for (String name : properties) {
             Object value = ObjectHelper.getPropertyValueQuietly(bean, name);
             if (value instanceof CharSequence) {
                 if (!StringUtils.isBlank((CharSequence) value)) {
                     query.addCriteria(Criteria.where(name).is(value));
-                    hasQuery = true;
                 }
             } else {
                 if (value != null) {
                     query.addCriteria(Criteria.where(name).is(value));
-                    hasQuery = true;
                 }
             }
         }
-        return hasQuery ? query : null;
+
+        return query;
     }
 
     /**
