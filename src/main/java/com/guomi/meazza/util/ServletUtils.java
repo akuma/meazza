@@ -149,6 +149,19 @@ public abstract class ServletUtils {
     }
 
     /**
+     * 删除 cookie。
+     * 
+     * @param response
+     *            http 响应
+     * @param cookie
+     *            cookie 对象
+     */
+    public static void removeCookie(HttpServletResponse response, Cookie cookie) {
+        cookie.setMaxAge(0);
+        addCookie(response, cookie);
+    }
+
+    /**
      * 取得 cookie 的值。
      * 
      * @param request
