@@ -90,11 +90,14 @@ public abstract class ServletUtils {
     private static final int BUFFER_SIZE = ONE_KB * 4;
 
     private static final String USER_AGENT = "user-agent";
+
     private static final Pattern PATTERN_BROWSER_REGEX_MOST = Pattern.compile(
             ".*((msie |firefox/|chrome/|opera/)\\d+(\\.\\d+)*).*", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_BROWSER_REGEX_SAFARI = Pattern.compile(
             "(?!.*chrome).*(safari/\\d+(\\.\\d+)*).*", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PATTERN_IP_ADDRESS = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.");
+
+    private static final Pattern PATTERN_IP_ADDRESS_PREFIX = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.");
+    private static final String REGEX_IP_ADDRESS = "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
 
     private static final String MANIFEST_FILE = "/META-INF/MANIFEST.MF";
 
@@ -575,7 +578,7 @@ public abstract class ServletUtils {
         hostAddr = StringUtils.defaultIfEmpty(hostAddr, "unknown_addr");
         if (hostAddr.length() > 0) {
             // 获取服务器本地 IP 地址的后两位，例：192.168.0.222 -> 0.222
-            hostAddr = PATTERN_IP_ADDRESS.matcher(hostAddr).replaceAll("");
+            hostAddr = PATTERN_IP_ADDRESS_PREFIX.matcher(hostAddr).replaceAll("");
         }
 
         Map<String, String> webappMetaInfo = getWebappMetaInfo(servletContext);
@@ -602,6 +605,26 @@ public abstract class ServletUtils {
                 + request.getServerName()
                 + (serverPort == 80 ? "" : ":" + serverPort)
                 + request.getContextPath();
+    }
+
+    /**
+     * 获取顶级域名。返回值举例：
+     * <ul>
+     * <li>foo.com => foo.com</li>
+     * <li>bar.foo.com => foo.com</li>
+     * <li>a.bar.foo.com => foo.com</li>
+     * <li>foo => null</li>
+     * <li>localhost => null</li>
+     * <li>127.0.0.1 => null</li>
+     * <li>192.168.1.10 => null</li>
+     * </ul>
+     */
+    public static String getTopDomain(HttpServletRequest request) {
+        String domain = request.getServerName();
+        if (!domain.contains(".") || domain.matches(REGEX_IP_ADDRESS)) {
+            return null;
+        }
+        return domain.replaceFirst("(.*\\.)?(.+\\..+)", "$2");
     }
 
     /**
