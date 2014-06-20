@@ -426,6 +426,23 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
+     * 判断是字符串是否是汉字。
+     */
+    public static boolean isChineseCharacter(String str) {
+        if (str == null) {
+            return false;
+        }
+
+        char[] charArray = str.toCharArray();
+        for (char c : charArray) {
+            if ((c >= 0x4e00) && (c <= 0x9fbb)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 根据数字返回一个数字文件路径前缀，路径中的文件夹由除末两位外的其他数字按序组成。例如：
      * 
      * <ul>
