@@ -429,7 +429,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      * 判断是字符串是否是汉字。
      */
     public static boolean isChineseCharacter(String str) {
-        if (str == null) {
+        if (isBlank(str)) {
             return false;
         }
 
