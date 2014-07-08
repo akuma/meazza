@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -329,14 +330,36 @@ public abstract class BasicMongoService {
      * 删除指定 {@code id} 的文档。
      */
     public <T> void removeById(Object id, Class<T> entityClass) {
-        mongoOps.remove(getQueryById(id), entityClass);
+        if (!isEmptyId(id)) {
+            mongoOps.remove(getQueryById(id), entityClass);
+        }
     }
 
     /**
      * 删除指定 {@code id} 的文档。
      */
     public void removeById(Object id, String collectionName) {
-        mongoOps.remove(getQueryById(id), collectionName);
+        if (!isEmptyId(id)) {
+            mongoOps.remove(getQueryById(id), collectionName);
+        }
+    }
+
+    /**
+     * 批量删除指定 {@code id} 的文档。
+     */
+    public <T> void removeByIds(Collection<?> ids, Class<T> entityClass) {
+        if (!CollectionUtils.isEmpty(ids)) {
+            remove(getQueryByIds(ids), entityClass);
+        }
+    }
+
+    /**
+     * 批量删除指定 {@code id} 的文档。
+     */
+    public void removeByIds(Collection<?> ids, String collectionName) {
+        if (!CollectionUtils.isEmpty(ids)) {
+            remove(getQueryByIds(ids), collectionName);
+        }
     }
 
     /**
@@ -425,6 +448,18 @@ public abstract class BasicMongoService {
                 entity.setCreationTime(new Date());
             }
         }
+    }
+
+    private boolean isEmptyId(Object id) {
+        if (id == null) {
+            return true;
+        }
+
+        if ((id instanceof String) && StringUtils.isBlank((String) id)) {
+            return true;
+        }
+
+        return false;
     }
 
 }
