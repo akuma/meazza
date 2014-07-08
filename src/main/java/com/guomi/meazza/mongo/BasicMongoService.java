@@ -169,7 +169,7 @@ public abstract class BasicMongoService {
         return mongoOps.count(query, entityClass);
     }
 
-    public <T> long count(Query query, String collectionName) {
+    public long count(Query query, String collectionName) {
         return mongoOps.count(query, collectionName);
     }
 
@@ -256,6 +256,20 @@ public abstract class BasicMongoService {
     }
 
     /**
+     * 更新指定 {@code id} 的文档。
+     */
+    public <T> WriteResult updateById(Object id, Update update, Class<T> entityClass) {
+        return mongoOps.updateFirst(getQueryById(id), update, entityClass);
+    }
+
+    /**
+     * 更新指定 {@code id} 的文档。
+     */
+    public WriteResult updateById(Object id, Update update, String collectionName) {
+        return mongoOps.updateFirst(getQueryById(id), update, collectionName);
+    }
+
+    /**
      * 更新满足 {@code query} 条件的第一个文档。
      */
     public <T> WriteResult updateFirst(Query query, Update update, Class<T> entityClass) {
@@ -265,7 +279,7 @@ public abstract class BasicMongoService {
     /**
      * 更新满足 {@code query} 条件的第一个文档。
      */
-    public <T> WriteResult updateFirst(Query query, Update update, String collectionName) {
+    public WriteResult updateFirst(Query query, Update update, String collectionName) {
         return mongoOps.updateFirst(query, update, collectionName);
     }
 
@@ -279,7 +293,7 @@ public abstract class BasicMongoService {
     /**
      * 更新满足 {@code query} 条件的所有文档。
      */
-    public <T> WriteResult updateMulti(Query query, Update update, String collectionName) {
+    public WriteResult updateMulti(Query query, Update update, String collectionName) {
         return mongoOps.updateMulti(query, update, collectionName);
     }
 
@@ -307,8 +321,43 @@ public abstract class BasicMongoService {
     /**
      * 删除所有满足 {@code query} 条件的文档。
      */
-    public <T> void remove(Query query, String collectionName) {
+    public void remove(Query query, String collectionName) {
         mongoOps.remove(query, collectionName);
+    }
+
+    /**
+     * 删除指定 {@code id} 的文档。
+     */
+    public <T> void removeById(Object id, Class<T> entityClass) {
+        mongoOps.remove(getQueryById(id), entityClass);
+    }
+
+    /**
+     * 删除指定 {@code id} 的文档。
+     */
+    public void removeById(Object id, String collectionName) {
+        mongoOps.remove(getQueryById(id), collectionName);
+    }
+
+    /**
+     * 获取根据 ID 查询的 Query 对象。
+     */
+    protected Query getQueryById(Object id) {
+        return Query.query(Criteria.where("id").is(id));
+    }
+
+    /**
+     * 获取根据多个 ID 查询的 Query 对象。
+     */
+    protected Query getQueryByIds(Object... ids) {
+        return Query.query(Criteria.where("id").in(ids));
+    }
+
+    /**
+     * 获取根据多个 ID 查询的 Query 对象。
+     */
+    protected Query getQueryByIds(Collection<?> ids) {
+        return Query.query(Criteria.where("id").in(ids));
     }
 
     /**
