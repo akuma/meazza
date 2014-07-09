@@ -7,6 +7,7 @@ package com.guomi.meazza.util;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -310,6 +311,32 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
 
     public static Date parseByDateTime(String str) {
         return parse(str, PATTERN_DATE_TIME);
+    }
+
+    /**
+     * 将秒数格式化为可读的时间。例如：08:58
+     */
+    public static String secondsToDisplayTime(long seconds) {
+        if (seconds < 0) {
+            return "00:00";
+        }
+
+        long day = TimeUnit.SECONDS.toDays(seconds);
+        long hour = TimeUnit.SECONDS.toHours(seconds) - (day * 24);
+        long minute = TimeUnit.SECONDS.toMinutes(seconds) - (TimeUnit.SECONDS.toHours(seconds) * 60);
+        long second = TimeUnit.SECONDS.toSeconds(seconds) - (TimeUnit.SECONDS.toMinutes(seconds) * 60);
+
+        StringBuilder time = new StringBuilder();
+        if (day != 0) {
+            time.append(StringUtils.leftPad(String.valueOf(day), 2, "0") + ":");
+        }
+        if (hour != 0) {
+            time.append(StringUtils.leftPad(String.valueOf(hour), 2, "0") + ":");
+        }
+        time.append(StringUtils.leftPad(String.valueOf(minute), 2, "0") + ":");
+        time.append(StringUtils.leftPad(String.valueOf(second), 2, "0"));
+
+        return time.toString();
     }
 
 }
