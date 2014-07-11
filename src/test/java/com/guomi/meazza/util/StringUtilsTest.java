@@ -93,4 +93,21 @@ public class StringUtilsTest {
         assertNull(StringUtils.getEmailWebsite(null));
     }
 
+    @Test
+    public void testisEnglishLetter() {
+        assertTrue(StringUtils.isEnglishLetter("abcdefghijklmnopqrstuvwxyz"));
+        assertTrue(StringUtils.isEnglishLetter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+        assertTrue(StringUtils.isEnglishLetter("AbcdefgHIJKLmnopqRStuvwxYZ"));
+        assertTrue(!StringUtils.isEnglishLetter("AbcdefgHIJKL mnopqRStuvwxYZ"));
+        assertTrue(!StringUtils.isEnglishLetter("AbcdefgHIJKL_mnopqRStuvwxYZ"));
+        assertTrue(!StringUtils.isEnglishLetter("AbcdefgHIJKLmnopqRStuvwxYZ9"));
+        assertTrue(!StringUtils.isEnglishLetter("AbcdefgHIJKL测试mnopqRStuvwxYZ9"));
+        assertTrue(!StringUtils.isEnglishLetter("1AbcdefgHIJKLmnopqRStuvwxYZ9"));
+        assertTrue(!StringUtils.isEnglishLetter("测试即"));
+        assertTrue(!StringUtils.isEnglishLetter("AbcdefgHIJKLmnopqRStuvwxYZ2"));
+        assertTrue(!StringUtils.isEnglishLetter("  "));
+        assertTrue(!StringUtils.isEnglishLetter("  1"));
+        assertTrue(!StringUtils.isEnglishLetter(null));
+    }
+
 }

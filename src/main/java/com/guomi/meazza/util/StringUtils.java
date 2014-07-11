@@ -426,6 +426,23 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
+     * 判断字符串是否全是 A-Z 的英文字母（包括大小写）。
+     */
+    public static boolean isEnglishLetter(String str) {
+        if (StringUtils.isBlank(str)) {
+            return false;
+        }
+
+        char[] chars = str.toCharArray();
+        for (char c : chars) {
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 判断是字符串是否是汉字。
      */
     public static boolean isChineseCharacter(String str) {
