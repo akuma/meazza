@@ -358,7 +358,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      */
     public static String createSortedQueryString(Map<String, String> params, boolean encodeParamValue) {
         if (MapUtils.isEmpty(params)) {
-            return StringUtils.EMPTY;
+            return EMPTY;
         }
 
         List<String> keys = new ArrayList<String>(params.keySet());
@@ -429,7 +429,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      * 判断字符串是否全是 A-Z 的英文字母（包括大小写）。
      */
     public static boolean isEnglishLetter(String str) {
-        if (StringUtils.isBlank(str)) {
+        if (isBlank(str)) {
             return false;
         }
 
@@ -457,6 +457,28 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * 判断字符串是否数字，包括整数、浮点数。
+     */
+    public static boolean isNumber(String str) {
+        if (isBlank(str)) {
+            return false;
+        }
+
+        return isRegexMatch(str, "\\d+\\.?\\d+");
+    }
+
+    /**
+     * 判断字符串是否是浮点数。
+     */
+    public static boolean isFloatNumber(String str) {
+        if (isBlank(str)) {
+            return false;
+        }
+
+        return isRegexMatch(str, "\\d+\\.\\d+");
     }
 
     /**

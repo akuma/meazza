@@ -110,4 +110,35 @@ public class StringUtilsTest {
         assertTrue(!StringUtils.isEnglishLetter(null));
     }
 
+    @Test
+    public void testIsNumber() {
+        assertTrue(StringUtils.isNumber("0.11"));
+        assertTrue(StringUtils.isNumber("1233.11234234"));
+        assertTrue(StringUtils.isNumber("11"));
+        assertFalse(StringUtils.isNumber(".11"));
+        assertFalse(StringUtils.isNumber("11."));
+        assertFalse(StringUtils.isNumber("0.11a"));
+        assertFalse(StringUtils.isNumber("0.a11"));
+        assertFalse(StringUtils.isNumber("0a.11"));
+        assertFalse(StringUtils.isNumber("11asdf"));
+        assertFalse(StringUtils.isNumber("asdf"));
+        assertFalse(StringUtils.isNumber(""));
+        assertFalse(StringUtils.isNumber(null));
+    }
+
+    @Test
+    public void testIsFloatNumber() {
+        assertTrue(StringUtils.isFloatNumber("0.11"));
+        assertTrue(StringUtils.isFloatNumber("1233.11234234"));
+        assertFalse(StringUtils.isFloatNumber(".11"));
+        assertFalse(StringUtils.isFloatNumber("11"));
+        assertFalse(StringUtils.isFloatNumber("11."));
+        assertFalse(StringUtils.isFloatNumber("0.11a"));
+        assertFalse(StringUtils.isFloatNumber("0.a11"));
+        assertFalse(StringUtils.isFloatNumber("0a.11"));
+        assertFalse(StringUtils.isFloatNumber("asdf"));
+        assertFalse(StringUtils.isFloatNumber(""));
+        assertFalse(StringUtils.isFloatNumber(null));
+    }
+
 }
