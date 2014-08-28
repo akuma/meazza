@@ -4,6 +4,7 @@
  */
 package com.guomi.meazza.mongo;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -232,6 +233,22 @@ public abstract class BasicMongoService {
     public void insert(Object object, String collectionName) {
         setCreationTimeIfPossible(object);
         mongoOps.insert(object, collectionName);
+    }
+
+    /**
+     * 将多个对象作为新文档添加到集合中。<br>
+     * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
+     */
+    public <T> void insert(T[] objects, Class<T> entityClass) {
+        insert(Arrays.asList(objects), entityClass);
+    }
+
+    /**
+     * 将多个对象作为新文档添加到集合中。<br>
+     * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
+     */
+    public <T> void insert(T[] objects, String collectionName) {
+        insert(Arrays.asList(objects), collectionName);
     }
 
     /**
