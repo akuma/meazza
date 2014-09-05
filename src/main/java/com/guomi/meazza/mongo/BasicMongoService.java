@@ -144,13 +144,19 @@ public abstract class BasicMongoService {
      * 根据 {@code Query} 条件以分页方式获取文档列表。
      */
     public <T> List<T> find(Query query, Pagination page, Class<T> entityClass, String collectionName) {
-        // 先获取结果集数量
-        int count = (int) mongoOps.count(query, entityClass);
+        Integer count = null;
+        if (page.isPageCountEnable()) {
+            count = (int) mongoOps.count(query, entityClass); // 先获取结果集数量
+            page.setRowCount(count); // 计算分页
+        }
 
-        // 计算分页
-        page.setRowCount(count);
         page.initialize();
-        logger.debug("Page query: count={}, skip={}, limit={}", count, page.getCurrentRowNum(), page.getPageSize());
+
+        if (count == null) {
+            logger.debug("Page query: skip={}, limit={}", page.getCurrentRowNum(), page.getPageSize());
+        } else {
+            logger.debug("Page query: count={}, skip={}, limit={}", count, page.getCurrentRowNum(), page.getPageSize());
+        }
 
         // 只获取分页下的数据
         query.skip(page.getCurrentRowNum() - 1).limit(page.getPageSize());

@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)Pagination.java    Created on 2012-05-31
  * Copyright (c) 2012 Guomi, Inc. All rights reserved.
  */
@@ -28,7 +28,7 @@ public class Pagination {
 
     private String orderBy;
     private boolean desc;
-    private boolean useCursor;
+    private boolean pageCountEnable = true; // 是否启用分页的页数，不启用的情况下不需要显示总共有多少页
 
     /**
      * 构造方法。
@@ -55,44 +55,48 @@ public class Pagination {
      *            当前是第几页
      * @param pageSize
      *            每页多少行
-     * @param useCursor
-     *            是否使用游标
+     * @param pageCountEnable
+     *            是否启用页数
      */
-    public Pagination(Integer pageNum, Integer pageSize, boolean useCursor) {
+    public Pagination(Integer pageNum, Integer pageSize, boolean pageCountEnable) {
         this.pageNum = pageNum == null ? 0 : pageNum;
         this.pageSize = pageSize == null ? 10 : pageSize;
-        this.useCursor = useCursor;
+        this.pageCountEnable = pageCountEnable;
     }
 
     /**
      * 初始化，计算出一共有多少页和当前起始记录序号。
      */
     public void initialize() {
-        // 得到总共页数
-        if (rowCount % pageSize == 0) {
-            pageCount = rowCount / pageSize;
-        } else {
-            pageCount = rowCount / pageSize + 1;
-        }
+        if (pageCountEnable) {
+            // 得到总共页数
+            if (rowCount % pageSize == 0) {
+                pageCount = rowCount / pageSize;
+            } else {
+                pageCount = rowCount / pageSize + 1;
+            }
 
-        // 校验当前页参数
-        if (pageNum > pageCount) {
-            pageNum = pageCount;
-        } else if (pageNum < 1) {
-            pageNum = 1;
-        }
+            // 校验当前页参数
+            if (pageNum > pageCount) {
+                pageNum = pageCount;
+            } else if (pageNum < 1) {
+                pageNum = 1;
+            }
 
-        // 得到当前起始记录序号
-        if (rowCount == 0) {
-            currentRowNum = 0;
-            pageNum = 0;
+            // 得到当前起始记录序号
+            if (rowCount == 0) {
+                currentRowNum = 0;
+                pageNum = 0;
+            } else {
+                currentRowNum = (pageNum - 1) * pageSize + 1;
+            }
         } else {
             currentRowNum = (pageNum - 1) * pageSize + 1;
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("page: {}/{}, row: {}/{}, size: {}, cursor: {}", new Object[] { pageNum, pageCount,
-                    currentRowNum, rowCount, pageSize, useCursor });
+            logger.info("page: {}/{}, row: {}/{}, size: {}, pageCountEnable: {}", new Object[] { pageNum, pageCount,
+                    currentRowNum, rowCount, pageSize, pageCountEnable });
         }
     }
 
@@ -229,22 +233,22 @@ public class Pagination {
     }
 
     /**
-     * 判断是否使用游标。
+     * 判断是否启用页数。
      * 
-     * @return 是true，否则false
+     * @return true/false
      */
-    public boolean isUseCursor() {
-        return useCursor;
+    public boolean isPageCountEnable() {
+        return pageCountEnable;
     }
 
     /**
-     * 设置是否使用游标。
+     * 设置是否启用页数。
      * 
-     * @param useCursor
-     *            是否使用游标
+     * @param pageCountEnable
+     *            是否使用页数
      */
-    public void setUseCursor(boolean useCursor) {
-        this.useCursor = useCursor;
+    public void setPageCountEnable(boolean useCursor) {
+        this.pageCountEnable = useCursor;
     }
 
     /**
@@ -271,7 +275,7 @@ public class Pagination {
         sb.append("page: " + pageNum + "/" + pageCount);
         sb.append(", row: " + currentRowNum + "/" + rowCount);
         sb.append(", size: " + pageSize);
-        sb.append(", cursor: " + useCursor + ")");
+        sb.append(", pageCountEnable: " + pageCountEnable + ")");
         return sb.toString();
     }
 
