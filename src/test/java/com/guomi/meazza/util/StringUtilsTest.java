@@ -114,6 +114,7 @@ public class StringUtilsTest {
     public void testIsNumber() {
         assertTrue(StringUtils.isNumber("0.11"));
         assertTrue(StringUtils.isNumber("1233.11234234"));
+        assertTrue(StringUtils.isNumber("1"));
         assertTrue(StringUtils.isNumber("11"));
         assertFalse(StringUtils.isNumber(".11"));
         assertFalse(StringUtils.isNumber("11."));
