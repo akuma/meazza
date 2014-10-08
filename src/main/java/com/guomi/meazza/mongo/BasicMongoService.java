@@ -36,7 +36,7 @@ import com.mongodb.WriteResult;
 
 /**
  * Mongo Service 基类。
- * 
+ *
  * @author akuma
  */
 public abstract class BasicMongoService {
@@ -283,6 +283,7 @@ public abstract class BasicMongoService {
      * 更新指定 {@code id} 的文档。
      */
     public <T> WriteResult updateById(Object id, Update update, Class<T> entityClass) {
+        setModifyTimeIfPossible(update);
         return mongoOps.updateFirst(getQueryById(id), update, entityClass);
     }
 
@@ -290,6 +291,7 @@ public abstract class BasicMongoService {
      * 更新指定 {@code id} 的文档。
      */
     public WriteResult updateById(Object id, Update update, String collectionName) {
+        setModifyTimeIfPossible(update);
         return mongoOps.updateFirst(getQueryById(id), update, collectionName);
     }
 
@@ -297,6 +299,7 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的第一个文档。
      */
     public <T> WriteResult updateFirst(Query query, Update update, Class<T> entityClass) {
+        setModifyTimeIfPossible(update);
         return mongoOps.updateFirst(query, update, entityClass);
     }
 
@@ -304,6 +307,7 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的第一个文档。
      */
     public WriteResult updateFirst(Query query, Update update, String collectionName) {
+        setModifyTimeIfPossible(update);
         return mongoOps.updateFirst(query, update, collectionName);
     }
 
@@ -311,6 +315,7 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的所有文档。
      */
     public <T> WriteResult updateMulti(Query query, Update update, Class<T> entityClass) {
+        setModifyTimeIfPossible(update);
         return mongoOps.updateMulti(query, update, entityClass);
     }
 
@@ -318,6 +323,7 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的所有文档。
      */
     public WriteResult updateMulti(Query query, Update update, String collectionName) {
+        setModifyTimeIfPossible(update);
         return mongoOps.updateMulti(query, update, collectionName);
     }
 
@@ -408,7 +414,7 @@ public abstract class BasicMongoService {
 
     /**
      * 根据 bean 中的属性值生成 eq query 对象。满足以下条件的属性会添加到 query 中：
-     * 
+     *
      * <ul>
      * <li>如果属性是 CharSequence 类型且内容不为 null、空串、空格，则生成一个 eq 条件。</li>
      * <li>对于其他类型的属性，如果内容不为 null，则生成一个 eq 条件。</li>
@@ -463,6 +469,10 @@ public abstract class BasicMongoService {
             if (entity.getCreationTime() == null) {
                 entity.setCreationTime(new Date());
             }
+
+            if (entity.getModifyTime() == null) {
+                entity.setModifyTime(new Date());
+            }
         }
 
         if (object instanceof LongIdEntity) {
@@ -470,6 +480,16 @@ public abstract class BasicMongoService {
             if (entity.getCreationTime() == null) {
                 entity.setCreationTime(new Date());
             }
+
+            if (entity.getModifyTime() == null) {
+                entity.setModifyTime(new Date());
+            }
+        }
+    }
+
+    private void setModifyTimeIfPossible(Update update) {
+        if (update != null && !update.modifies("modifyTime")) {
+            update.set("modifyTime", new Date());
         }
     }
 
