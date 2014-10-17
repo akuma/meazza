@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * 对日期进行转换处理的工具类。
- * 
+ *
  * @author akuma
  */
 public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils {
@@ -167,7 +167,8 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
      */
     public static Date getMonthEnd(int year, int month) {
         Calendar cal = Calendar.getInstance();
-        cal.set(year, month - 1, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        cal.set(year, month - 1, 1);
+        cal.set(Calendar.DATE, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
         return getDateEnd(cal.getTime());
     }
 
@@ -230,7 +231,7 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
 
     /**
      * 根据日期对象获取月份。
-     * 
+     *
      * <p>
      * <strong>返回值说明：</strong>
      * <ul>
@@ -250,7 +251,7 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
 
     /**
      * 根据日期对象获取星期几，根据中国人的传统将星期一作为星期的第一天。
-     * 
+     *
      * <p>
      * <strong>返回值说明：</strong>
      * <ul>
@@ -272,7 +273,7 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
 
     /**
      * 根据日期对象获取当周是一年中的第几周，根据中国人的传统将星期一作为星期的第一天。
-     * 
+     *
      * <p>
      * <strong>返回值说明：</strong>
      * <ul>

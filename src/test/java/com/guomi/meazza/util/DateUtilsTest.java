@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
 /**
@@ -179,6 +180,21 @@ public class DateUtilsTest {
 
         date = DateUtils.parseByDateTime("2014-3-3 04:25:47");
         assertEquals(10, DateUtils.getChineseWeekOfYear(date));
+    }
+
+    @Test
+    public void testGetMonthBeginAndEnd() {
+        Pair<Date, Date> dates = DateUtils.getMonthBeginAndEnd(2014, 7);
+        assertEquals("2014-07-01 00:00:00", DateUtils.formatToDateTime(dates.getLeft()));
+        assertEquals("2014-07-31 23:59:59", DateUtils.formatToDateTime(dates.getRight()));
+
+        dates = DateUtils.getMonthBeginAndEnd(2014, 2);
+        assertEquals("2014-02-01 00:00:00", DateUtils.formatToDateTime(dates.getLeft()));
+        assertEquals("2014-02-28 23:59:59", DateUtils.formatToDateTime(dates.getRight()));
+
+        dates = DateUtils.getMonthBeginAndEnd(2014, 9);
+        assertEquals("2014-09-01 00:00:00", DateUtils.formatToDateTime(dates.getLeft()));
+        assertEquals("2014-09-30 23:59:59", DateUtils.formatToDateTime(dates.getRight()));
     }
 
 }
