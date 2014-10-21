@@ -4,12 +4,16 @@
  */
 package com.guomi.meazza.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * 用于处理数据分页的工具类。
- * 
+ *
  * @author akuma
  */
 public class Pagination {
@@ -26,9 +30,13 @@ public class Pagination {
     private Integer pageSize = DEFAULT_PAGE_SIZE; // 每页有多少行，默认10行
     private Integer currentRowNum = 0; // 当前起始记录序号
 
-    private String orderBy;
-    private boolean desc;
+    private List<Pair<String, Boolean>> sorts = new ArrayList<>(); // 排序方式
     private boolean pageCountEnable = true; // 是否启用分页的页数，不启用的情况下不需要显示总共有多少页
+
+    @Deprecated
+    private String orderBy;
+    @Deprecated
+    private boolean desc;
 
     /**
      * 构造方法。
@@ -38,7 +46,7 @@ public class Pagination {
 
     /**
      * 构造方法。
-     * 
+     *
      * @param pageSize
      *            每页多少行
      * @param useCursor
@@ -50,7 +58,7 @@ public class Pagination {
 
     /**
      * 构造方法。
-     * 
+     *
      * @param pageNum
      *            当前是第几页
      * @param pageSize
@@ -102,7 +110,7 @@ public class Pagination {
 
     /**
      * 取得分页对象的id。
-     * 
+     *
      * @return 分页对象的id
      */
     public String getId() {
@@ -111,7 +119,7 @@ public class Pagination {
 
     /**
      * 设置分页对象的id。
-     * 
+     *
      * @param id
      *            分页对象的id
      */
@@ -121,7 +129,7 @@ public class Pagination {
 
     /**
      * 取得当前是第几页。
-     * 
+     *
      * @return 当前是第几页
      */
     public Integer getPageNum() {
@@ -130,7 +138,7 @@ public class Pagination {
 
     /**
      * 设置当前是第几页。
-     * 
+     *
      * @param pageNum
      *            当前是第几页
      */
@@ -140,7 +148,7 @@ public class Pagination {
 
     /**
      * 取得每页有多少行。
-     * 
+     *
      * @return 每页有多少行
      */
     public Integer getPageSize() {
@@ -149,7 +157,7 @@ public class Pagination {
 
     /**
      * 设置每页多少行。
-     * 
+     *
      * @param pageSize
      *            每页多少行
      */
@@ -159,7 +167,7 @@ public class Pagination {
 
     /**
      * 取得一共有多少页。
-     * 
+     *
      * @return 一共有多少页
      */
     public Integer getPageCount() {
@@ -168,7 +176,7 @@ public class Pagination {
 
     /**
      * 取得当前起始记录序号。
-     * 
+     *
      * @return 当前起始记录序号
      */
     public Integer getCurrentRowNum() {
@@ -177,7 +185,7 @@ public class Pagination {
 
     /**
      * 取得一共有多少行。
-     * 
+     *
      * @return 一共有多少行
      */
     public Integer getRowCount() {
@@ -186,7 +194,7 @@ public class Pagination {
 
     /**
      * 设置一共有多少行。
-     * 
+     *
      * @param rowCount
      *            一共有多少行
      */
@@ -196,45 +204,100 @@ public class Pagination {
 
     /**
      * 取得排序字段。
-     * 
-     * @return 排序字段
+     *
+     * @deprecated
      */
+    @Deprecated
     public String getOrderBy() {
         return orderBy;
     }
 
     /**
      * 设置排序字段。
-     * 
-     * @param orderBy
-     *            排序字段
+     *
+     * @deprecated
      */
+    @Deprecated
     public void setOrderBy(String orderBy) {
         this.orderBy = orderBy;
     }
 
     /**
      * 判断是否降序排列。
-     * 
-     * @return 是true，否则false
+     *
+     * @deprecated
      */
+    @Deprecated
     public boolean isDesc() {
         return desc;
     }
 
     /**
      * 设置是否降序排列。
-     * 
-     * @param desc
-     *            是否降序排列
+     *
+     * @deprecated
      */
+    @Deprecated
     public void setDesc(boolean desc) {
         this.desc = desc;
     }
 
     /**
+     * 获取排序方式，支持多个字段组合排序。
+     */
+    public List<Pair<String, Boolean>> getSorts() {
+        return sorts;
+    }
+
+    /**
+     * 设置排序方式，支持多个字段组合排序。
+     */
+    public void setSorts(List<Pair<String, Boolean>> sorts) {
+        this.sorts = sorts;
+    }
+
+    /**
+     * 添加排序方式。
+     */
+    public void addSort(String field, boolean isDesc) {
+        sorts.add(Pair.of(field, isDesc));
+    }
+
+    /**
+     * 获取第一个排序字段名称。
+     */
+    public String getSortField() {
+        return sorts.isEmpty() ? null : sorts.get(0).getLeft();
+    }
+
+    /**
+     * 获取第一个排序字段的排序方式。
+     */
+    public boolean isSortDesc() {
+        return sorts.isEmpty() ? false : sorts.get(0).getRight();
+    }
+
+    /**
+     * 设置排序字段。格式：field:desc/asc，例如：name:desc、age:asc
+     */
+    public void setSort(String sort) {
+        if (StringUtils.isBlank(sort) || !sort.contains(":")) {
+            return;
+        }
+
+        String[] strs = sort.split(":");
+        if (strs.length != 2) {
+            return;
+        }
+
+        String field = strs[0];
+        boolean isDesc = "desc".equalsIgnoreCase(strs[1]);
+        addSort(field, isDesc);
+    }
+
+    /**
      * 判断是否启用页数。
-     * 
+     *
      * @return true/false
      */
     public boolean isPageCountEnable() {
@@ -243,7 +306,7 @@ public class Pagination {
 
     /**
      * 设置是否启用页数。
-     * 
+     *
      * @param pageCountEnable
      *            是否使用页数
      */
@@ -253,7 +316,7 @@ public class Pagination {
 
     /**
      * 判断当前页是否是第一页。
-     * 
+     *
      * @return true/false
      */
     public boolean isFirstPage() {
@@ -262,7 +325,7 @@ public class Pagination {
 
     /**
      * 判断当前页是否是最后一页。
-     * 
+     *
      * @return true/false
      */
     public boolean isLastPage() {

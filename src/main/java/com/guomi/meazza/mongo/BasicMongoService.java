@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -143,6 +144,7 @@ public abstract class BasicMongoService {
     /**
      * 根据 {@code Query} 条件以分页方式获取文档列表。
      */
+    @SuppressWarnings("deprecation")
     public <T> List<T> find(Query query, Pagination page, Class<T> entityClass, String collectionName) {
         Integer count = null;
         if (page.isPageCountEnable()) {
@@ -161,9 +163,14 @@ public abstract class BasicMongoService {
         // 只获取分页下的数据
         query.skip(page.getCurrentRowNum() - 1).limit(page.getPageSize());
 
-        // 处理排序方式
+        // 老版本的排序方式处理
         if (!StringUtils.isBlank(page.getOrderBy())) {
             query.with(new Sort(page.isDesc() ? Direction.DESC : Direction.ASC, page.getOrderBy()));
+        }
+
+        // 新版本的排序方式处理
+        for (Pair<String, Boolean> sort : page.getSorts()) {
+            query.with(new Sort(sort.getRight() ? Direction.DESC : Direction.ASC, sort.getLeft()));
         }
 
         if (StringUtils.isBlank(collectionName)) {
