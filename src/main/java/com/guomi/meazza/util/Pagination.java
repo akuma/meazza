@@ -278,15 +278,35 @@ public class Pagination {
     }
 
     /**
+     * 获取第一个排序字段信息，例如：name:desc
+     */
+    public String getSort() {
+        if (sorts.isEmpty()) {
+            return StringUtils.EMPTY;
+        }
+
+        Pair<String, Boolean> sort = sorts.get(0);
+        String field = sort.getLeft();
+        String direction = sort.getRight() ? "desc" : "asc";
+        return field + ":" + direction;
+    }
+
+    /**
      * 设置排序字段。格式：field:desc/asc，例如：name:desc、age:asc
      */
     public void setSort(String sort) {
-        if (StringUtils.isBlank(sort) || !sort.contains(":")) {
+        if (StringUtils.isBlank(sort)) {
+            return;
+        }
+
+        if (!sort.contains(":")) {
+            addSort(sort, true);
             return;
         }
 
         String[] strs = sort.split(":");
         if (strs.length != 2) {
+            addSort(sort, true);
             return;
         }
 
