@@ -46,14 +46,21 @@ public class Pagination {
 
     /**
      * 构造方法。
+     */
+    public Pagination(Integer pageSize) {
+        this(0, pageSize, true);
+    }
+
+    /**
+     * 构造方法。
      *
      * @param pageSize
      *            每页多少行
-     * @param useCursor
-     *            是否使用游标
+     * @param pageCountEnable
+     *            是否启用页数
      */
-    public Pagination(Integer pageSize, boolean useCursor) {
-        this(0, pageSize, useCursor);
+    public Pagination(Integer pageSize, boolean pageCountEnable) {
+        this(0, pageSize, pageCountEnable);
     }
 
     /**
@@ -330,8 +337,8 @@ public class Pagination {
      * @param pageCountEnable
      *            是否使用页数
      */
-    public void setPageCountEnable(boolean useCursor) {
-        this.pageCountEnable = useCursor;
+    public void setPageCountEnable(boolean pageCountEnable) {
+        this.pageCountEnable = pageCountEnable;
     }
 
     /**
