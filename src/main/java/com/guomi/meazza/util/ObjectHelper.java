@@ -5,7 +5,6 @@
 package com.guomi.meazza.util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -16,7 +15,7 @@ import org.springframework.util.CollectionUtils;
 
 /**
  * 处理对象的工具类。
- * 
+ *
  * @author akuma
  */
 public abstract class ObjectHelper {
@@ -47,11 +46,11 @@ public abstract class ObjectHelper {
      * 创建一个 <code>targetClass</code> 对象列表，并依次从 <code>source</code> 对象中复制相同属性名的值。
      */
     public static <S, T> List<T> copyProperties(List<S> sources, Class<T> targetClass) {
+        List<T> targets = new ArrayList<>();
         if (CollectionUtils.isEmpty(sources)) {
-            return Collections.emptyList();
+            return targets;
         }
 
-        List<T> targets = new ArrayList<>();
         for (S s : sources) {
             targets.add(copyProperties(s, targetClass));
         }
