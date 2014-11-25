@@ -32,13 +32,13 @@ import com.guomi.meazza.util.ServletUtils;
 
 /**
  * 添加 Spring {@code ControllerAdvice} 注解的类。主要提供了以下功能：
- * 
+ *
  * <ul>
  * <li>对异常进行统一拦截，如果是 AJAX 请求会直接返回 JSON 格式的出错响应，否则 dispatch 到出错视图。</li>
  * <li>对于非 AJAX 的请求，默认的出错视图名称为 'error'，可以使用 {@link #setDefaultErrorView(String)} 修改默认值，也可以使用
  * {@link #setExceptionMappings(Map)} 给不同的异常指定不同的出错视图。</li>
  * </ul>
- * 
+ *
  * @author akuma
  */
 @ControllerAdvice
@@ -88,7 +88,7 @@ public class DefaultControllerAdvice {
      * <li>对于 AJAX 请求，异常信息会以 JSON 格式的报文返回，格式为：{"exception":{"message":"foo","stackTrace":"bar"}</li>
      * <li>对于普通请求，异常信息会添加到 Request Attribute 中（属性名为 exception），并 dispatch 到错误视图（默认为 error）</li>
      * </ul>
-     * 
+     *
      * 另外，还有两个可以修改的设置：
      * <ul>
      * <li>允许通过 {@link #setDefaultErrorView(String)} 修改默认的错误视图名称</li>
@@ -100,6 +100,7 @@ public class DefaultControllerAdvice {
     @ResponseBody
     public Object handleException(Exception e, ServletWebRequest request) {
         logger.error("Exception handler caught an exception", e);
+        logger.error("Exception request: {}", request.getRequest().getRequestURL());
 
         boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
         logger.debug("Debug is {}", isDebug ? "on" : "off");
