@@ -16,7 +16,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 /**
  * 继承自 {@code org.apache.commons.lang3.StringUtils} 的字符串处理工具类。
- * 
+ *
  * @author akuma
  * @since 0.0.15
  */
@@ -52,7 +52,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 移除字符串首尾的空白字符。如果字符串为 null 或者是空串，则直接返回原值。
-     * 
+     *
      * @param str
      *            需要操作的字符串
      * @return 移除空白字符后的字符串
@@ -69,7 +69,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 移除字符串首尾的空白字符。如果字符串为 null 则返回空串。
-     * 
+     *
      * @param str
      *            需要操作的字符串
      * @return 移除空白字符后的字符串
@@ -80,7 +80,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 移除字符串首的空白字符。
-     * 
+     *
      * @param str
      * @return
      */
@@ -99,7 +99,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 移除字符串末尾的空白字符。
-     * 
+     *
      * @param str
      * @return
      */
@@ -118,7 +118,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * 和 {@link org.apache.commons.lang3.StringUtils#isBlank(CharSequence)} 的区别是认为 non-breaking space (
      * {@code '\u005Cu00A0'}, {@code '\u005Cu2007'}, {@code '\u005Cu202F'}) 也是空白字符。
-     * 
+     *
      * @param cs
      *            字符串
      * @return true/false
@@ -142,7 +142,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      * 判断字符是否是空白字符。
      * <em>和 {@link Character#isWhitespace(char)} 的区别是认为 non-breaking space ( {@code '\u005Cu00A0'}, {@code '\u005Cu2007'},
      * {@code '\u005Cu202F'}) 也是空白字符。</em>
-     * 
+     *
      * @param ch
      *            需要测试的字符
      * @return true/false
@@ -154,7 +154,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 判断字符串是否是合法的电子邮箱地址。
-     * 
+     *
      * @param str
      *            字符串
      * @return true/false
@@ -165,7 +165,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 是否为手机号码。此判断比较宽松，只要是以 1 开头的 11 位的数字，就认为是合法手机号码。
-     * 
+     *
      * @param str
      *            字符串
      * @return 若是合法的手机号码返回 <code>true</code>, 否则返回 <code>false</code>.
@@ -176,7 +176,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 判断是否是合法的邮编，判断标准是 6 位全数字。
-     * 
+     *
      * @param str
      *            字符串
      * @return true/false
@@ -198,7 +198,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 判断字符串是否匹配了正则表达式。
-     * 
+     *
      * @param str
      *            字符串
      * @param regex
@@ -211,7 +211,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 截取固定长度的字符串，超长部分用 <code>suffix</code> 代替，最终字符串真实长度不会超过 <code>maxLength</code>。
-     * 
+     *
      * @param str
      *            被处理的字符串
      * @param maxLength
@@ -255,7 +255,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 取得字符串的真实长度，一个汉字长度为两个字节。
-     * 
+     *
      * @param str
      *            字符串
      * @return 字符串的字节数
@@ -280,7 +280,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 对字符串以指定的 <code>separatorChars</code> 进行分割，然后转换为 <code>Integer</code> 数组。
-     * 
+     *
      * @throws NumberFormatException
      *             当数字转换出错时会抛出此异常
      */
@@ -309,7 +309,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 对字符串以指定的 <code>separatorChars</code> 进行分割，然后转换为 <code>Long</code> 数组。
-     * 
+     *
      * @throws NumberFormatException
      *             当数字转换出错时会抛出此异常
      */
@@ -338,7 +338,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 把所有参数按照 key 的字典顺序排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串。其中对参数值会进行 URL 编码。
-     * 
+     *
      * @param params
      *            需要排序并参与字符拼接的参数
      * @return 拼接后的字符串
@@ -349,7 +349,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 把所有参数按照 key 的字典顺序排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串。
-     * 
+     *
      * @param params
      *            需要排序并参与字符拼接的参数
      * @param encodeParamValue
@@ -385,7 +385,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 判断 value 的值是否表示条件为真。例子：
-     * 
+     *
      * <ul>
      * <li>"1" -> true</li>
      * <li>"true" -> true</li>
@@ -395,7 +395,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      * <li>"false" -> false</li>
      * <li>"test" -> false</li>
      * </ul>
-     * 
+     *
      * @param str
      *            字符串
      * @return 如果 value 等于 “1” 或者 “true”（大小写无关） 返回 <code>true</code>，否则返回 <code>false</code>。
@@ -406,7 +406,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 判断 value 的值是否表示条件为假。例子：
-     * 
+     *
      * <ul>
      * <li>"0" -> true</li>
      * <li>"false" -> true</li>
@@ -416,7 +416,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      * <li>"true" -> false</li>
      * <li>"test" -> false</li>
      * </ul>
-     * 
+     *
      * @param str
      *            字符串
      * @return 如果 value 等于 “0” 或者 “false”（大小写无关） 返回 <code>true</code>，否则返回 <code>false</code>。
@@ -483,7 +483,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * 根据数字返回一个数字文件路径前缀，路径中的文件夹由除末两位外的其他数字按序组成。例如：
-     * 
+     *
      * <ul>
      * <li>-1:</li>
      * <li>0:</li>
@@ -530,6 +530,17 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
         String domain = email.substring(email.indexOf("@") + 1);
         String website = EMAIL_WEBSITES.get(domain);
         return website != null ? website : "http://mail." + domain;
+    }
+
+    /**
+     * 将内容中的多个换行替换为单个换行。
+     */
+    public static String removeMultiLines(String content) {
+        if (isBlank(content)) {
+            return content;
+        }
+
+        return content.replaceAll("[\r\n]+", "\r\n"); // 将多个换行替换为一个换行
     }
 
 }
