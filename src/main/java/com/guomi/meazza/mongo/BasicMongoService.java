@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
@@ -102,8 +103,23 @@ public abstract class BasicMongoService {
     /**
      * 查找满足 {@code query} 条件的第一个文档并修改。
      */
+    public <T> T findAndModify(Query query, Update update, FindAndModifyOptions options, Class<T> entityClass) {
+        return mongoOps.findAndModify(query, update, options, entityClass);
+    }
+
+    /**
+     * 查找满足 {@code query} 条件的第一个文档并修改。
+     */
     public <T> T findAndModify(Query query, Update update, Class<T> entityClass, String collectionName) {
         return mongoOps.findAndModify(query, update, entityClass, collectionName);
+    }
+
+    /**
+     * 查找满足 {@code query} 条件的第一个文档并修改。
+     */
+    public <T> T findAndModify(Query query, Update update, FindAndModifyOptions options, Class<T> entityClass,
+            String collectionName) {
+        return mongoOps.findAndModify(query, update, options, entityClass, collectionName);
     }
 
     /**
