@@ -6,6 +6,7 @@ package com.guomi.meazza.mongo;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -77,6 +78,28 @@ public abstract class BasicMongoService {
         }
 
         return mongoOps.findById(id, entityClass, collectionName);
+    }
+
+    /**
+     * 根据多个 ID 查询文档。
+     */
+    public <T> List<T> findByIds(List<?> ids, Class<T> entityClass) {
+        return findByIds(ids, entityClass, null);
+    }
+
+    /**
+     * 根据多个 ID 查询文档。
+     */
+    public <T> List<T> findByIds(List<?> ids, Class<T> entityClass, String collectionName) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+
+        if (StringUtils.isBlank(collectionName)) {
+            return mongoOps.find(getQueryByIds(ids), entityClass);
+        }
+
+        return mongoOps.find(getQueryByIds(ids), entityClass, collectionName);
     }
 
     /**
