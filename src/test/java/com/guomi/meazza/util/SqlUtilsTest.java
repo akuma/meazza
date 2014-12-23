@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)SqlUtilsTest.java    Created on 2013-7-25
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
@@ -66,6 +66,30 @@ public class SqlUtilsTest {
         long start = System.currentTimeMillis();
         countSql = SqlUtils.generateCountSql(originSql);
         long elapsed = System.currentTimeMillis() - start;
+        System.out.println(elapsed);
+
+        originSql = "select * from homework "
+                + "where is_group = 0 "
+                + "and subject = ? "
+                + "and state = ? "
+                + "and id in ("
+                + "select homework_id from homework_class hc WHERE "
+                + "hc.class_id = ? "
+                + "and hc.creation_time >= ? "
+                + "and hc.creation_time < ?"
+                + ")"
+                + " union ("
+                + "select * from homework "
+                + "where is_group = 1 "
+                + "and subject = ? "
+                + "and state = ? "
+                + "and id in (select homework_id from homework_user where user_id = ?)"
+                + ")"
+                + " order by creationTime desc";
+        start = System.currentTimeMillis();
+        countSql = SqlUtils.generateCountSql(originSql);
+        System.out.println(countSql);
+        elapsed = System.currentTimeMillis() - start;
         System.out.println(elapsed);
     }
 

@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 /**
  * 处理 SQL 语句的工具类。
- * 
+ *
  * @author akuma
  */
 public abstract class SqlUtils {
@@ -26,6 +26,9 @@ public abstract class SqlUtils {
     private static final Pattern SQL_GROUP_BY_PATTERN = Pattern.compile(
             "^.+( |\t|\r|\n)+group( |\t|\r|\n)+by( |\t|\r|\n)+.+$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
+    private static final Pattern SQL_UNION_PATTERN = Pattern.compile("^.+( |\t|\r|\n)+union( |\t|\r|\n)+.+$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
     private static final Pattern SQL_FIRST_SELECT_PREFIX_PATTERN = Pattern.compile(
             "^( |\t|\r|\n)*select( |\t|\r|\n)+.+?( |\t|\r|\n)+from( |\t|\r|\n)+", Pattern.CASE_INSENSITIVE
                     | Pattern.DOTALL);
@@ -35,7 +38,7 @@ public abstract class SqlUtils {
      */
     public static String generateCountSql(String originSql) {
         String countSql = null;
-        if (SQL_GROUP_BY_PATTERN.matcher(originSql).matches()) {
+        if (SQL_GROUP_BY_PATTERN.matcher(originSql).matches() || SQL_UNION_PATTERN.matcher(originSql).matches()) {
             countSql = String.format(SQL_COUNT_TEMPLATE, originSql);
         } else {
             countSql = SQL_FIRST_SELECT_PREFIX_PATTERN.matcher(originSql).replaceFirst(SQL_SELECT_COUNT_PREFIX);
