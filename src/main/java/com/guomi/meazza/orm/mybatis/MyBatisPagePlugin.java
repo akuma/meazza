@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#)PaginationPlugin.java    Created on 2013-1-23
  * Copyright (c) 2013 Guomi. All rights reserved.
  */
@@ -36,7 +36,7 @@ import com.guomi.meazza.util.StringUtils;
 
 /**
  * 支持 MyBatis 物理 SQL 分页查询的插件类。
- * 
+ *
  * @author akuma
  */
 @Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class }) })
@@ -150,9 +150,10 @@ public class MyBatisPagePlugin implements Interceptor {
         long start = System.currentTimeMillis();
         String originSql = statementHandler.getBoundSql().getSql();
         String countSql = SqlUtils.generateCountSql(originSql);
+        logger.debug("Count SQL: {}", countSql);
 
         try (Connection connection = configuration.getEnvironment().getDataSource().getConnection();
-                PreparedStatement countStmt = connection.prepareStatement(countSql)) {
+             PreparedStatement countStmt = connection.prepareStatement(countSql)) {
             // 使用 parameterHandler 设置 count 语句中的参数
             statementHandler.getParameterHandler().setParameters(countStmt);
             ResultSet rs = countStmt.executeQuery();
