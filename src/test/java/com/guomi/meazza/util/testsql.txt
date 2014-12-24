@@ -1,0 +1,51 @@
+select
+            id as id,
+            name as name,
+            subject as subject,
+            grade as grade,
+            homework_type as homeworkType,
+            source_type as sourceType,
+            source_id as sourceId,
+            source_name as sourceName,
+            state as state,
+            is_online as isOnline,
+            is_expire_answer_enable as isExpireAnswerEnable,
+            is_blank_auto_mark as isBlankAutoMark,
+            is_group as isGroup,
+            time_allowed as timeAllowed,
+            objective_count as objectiveCount,
+            description as description,
+            school_id as schoolId,
+            creator as creator,
+            modify_time as modifyTime,
+            creation_time as creationTime
+        from homework
+     
+          where 1 = 1
+             
+         
+            and subject = ?
+         
+         
+         
+         
+         
+            and state = ?
+         
+     
+             
+                and id in (
+                select homework_id from homework_class hc WHERE group_id = 0
+                 
+                  and hc.class_id = ?
+                 
+                 
+                 
+                 
+                )
+             
+             
+             
+        )
+         
+        order by creationTime desc
