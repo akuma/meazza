@@ -6,9 +6,6 @@ package com.guomi.meazza.util;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 /**
@@ -95,15 +92,15 @@ public class SqlUtilsTest {
         elapsed = System.currentTimeMillis() - start;
         System.out.println(elapsed);
 
-        try {
-            originSql = IOUtils.toString(SqlUtilsTest.class.getResourceAsStream("testsql.txt"));
-            System.out.println(originSql);
-        } catch (IOException e) {
-        }
-        countSql = SqlUtils.generateCountSql(originSql);
-        System.out.println(countSql);
-        elapsed = System.currentTimeMillis() - start;
-        System.out.println(elapsed);
+        //        try {
+        //            originSql = IOUtils.toString(SqlUtilsTest.class.getResourceAsStream("testsql.txt"));
+        //            System.out.println(originSql);
+        //        } catch (IOException e) {
+        //        }
+        //        countSql = SqlUtils.generateCountSql(originSql);
+        //        System.out.println(countSql);
+        //        elapsed = System.currentTimeMillis() - start;
+        //        System.out.println(elapsed);
     }
 
 }
