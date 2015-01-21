@@ -533,7 +533,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
-     * 将内容中的多个换行替换为单个换行。
+     * 将文本内容中的多个换行替换为单个换行。
      */
     public static String removeMultiLines(String content) {
         if (isBlank(content)) {
@@ -541,6 +541,17 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
         }
 
         return content.replaceAll("[\r\n]+", "\r\n"); // 将多个换行替换为一个换行
+    }
+
+    /**
+     * 将文本内容中的空格、\n 分别替换为 html 的 &amp;nbsp、&lt;br&gt;，这样在网页上显示该文本时就能保持一定的格式。
+     */
+    public static String textToHtml(String content) {
+        if (isBlank(content)) {
+            return content;
+        }
+
+        return content.replace(" ", "&nbsp;").replaceAll("\n", "<br>");
     }
 
 }
