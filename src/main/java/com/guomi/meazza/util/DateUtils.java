@@ -217,6 +217,14 @@ public abstract class DateUtils extends org.apache.commons.lang3.time.DateUtils 
     }
 
     /**
+     * 获取当前时间所在的年份，例如：2015。
+     */
+    public static int getYear() {
+        Calendar cal = Calendar.getInstance();
+        return cal.get(Calendar.YEAR);
+    }
+
+    /**
      * 根据日期对象获取年份。如果 <code>date</code> 为 null，则返回 0。
      */
     public static int getYear(Date date) {
