@@ -30,6 +30,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
+import com.guomi.meazza.support.IdEntity;
 import com.guomi.meazza.support.LongIdEntity;
 import com.guomi.meazza.support.StringIdEntity;
 import com.guomi.meazza.util.ObjectHelper;
@@ -534,9 +535,18 @@ public abstract class BasicMongoService {
     }
 
     private void setModifyTimeIfPossible(Update update) {
-        if (update != null && !update.modifies("modifyTime")) {
-            update.set("modifyTime", new Date());
+        if (update == null) {
+            return;
         }
+
+        if (update.modifies("modifyTime")) {
+            Object modifyTime = update.getUpdateObject().get("modifyTime");
+            if (IdEntity.NULL_DATE.equals(modifyTime)) {
+                return;
+            }
+        }
+
+        update.set("modifyTime", new Date());
     }
 
     private boolean isEmptyId(Object id) {
