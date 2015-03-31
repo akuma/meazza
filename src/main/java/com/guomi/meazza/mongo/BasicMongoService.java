@@ -30,7 +30,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import com.guomi.meazza.support.IdEntity;
 import com.guomi.meazza.support.LongIdEntity;
 import com.guomi.meazza.support.StringIdEntity;
 import com.guomi.meazza.util.ObjectHelper;
@@ -330,7 +329,14 @@ public abstract class BasicMongoService {
      * 更新指定 {@code id} 的文档。
      */
     public <T> WriteResult updateById(Object id, Update update, Class<T> entityClass) {
-        setModifyTimeIfPossible(update);
+        return updateById(id, update, entityClass, true);
+    }
+
+    /**
+     * 更新指定 {@code id} 的文档。
+     */
+    public <T> WriteResult updateById(Object id, Update update, Class<T> entityClass, boolean autoUpdateModifyTime) {
+        setModifyTimeIfPossible(update, autoUpdateModifyTime);
         return mongoOps.updateFirst(getQueryById(id), update, entityClass);
     }
 
@@ -338,7 +344,14 @@ public abstract class BasicMongoService {
      * 更新指定 {@code id} 的文档。
      */
     public WriteResult updateById(Object id, Update update, String collectionName) {
-        setModifyTimeIfPossible(update);
+        return updateById(id, update, collectionName, true);
+    }
+
+    /**
+     * 更新指定 {@code id} 的文档。
+     */
+    public WriteResult updateById(Object id, Update update, String collectionName, boolean autoUpdateModifyTime) {
+        setModifyTimeIfPossible(update, autoUpdateModifyTime);
         return mongoOps.updateFirst(getQueryById(id), update, collectionName);
     }
 
@@ -346,7 +359,14 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的第一个文档。
      */
     public <T> WriteResult updateFirst(Query query, Update update, Class<T> entityClass) {
-        setModifyTimeIfPossible(update);
+        return updateFirst(query, update, entityClass, true);
+    }
+
+    /**
+     * 更新满足 {@code query} 条件的第一个文档。
+     */
+    public <T> WriteResult updateFirst(Query query, Update update, Class<T> entityClass, boolean autoUpdateModifyTime) {
+        setModifyTimeIfPossible(update, autoUpdateModifyTime);
         return mongoOps.updateFirst(query, update, entityClass);
     }
 
@@ -354,7 +374,14 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的第一个文档。
      */
     public WriteResult updateFirst(Query query, Update update, String collectionName) {
-        setModifyTimeIfPossible(update);
+        return updateFirst(query, update, collectionName, true);
+    }
+
+    /**
+     * 更新满足 {@code query} 条件的第一个文档。
+     */
+    public WriteResult updateFirst(Query query, Update update, String collectionName, boolean autoUpdateModifyTime) {
+        setModifyTimeIfPossible(update, autoUpdateModifyTime);
         return mongoOps.updateFirst(query, update, collectionName);
     }
 
@@ -362,7 +389,14 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的所有文档。
      */
     public <T> WriteResult updateMulti(Query query, Update update, Class<T> entityClass) {
-        setModifyTimeIfPossible(update);
+        return updateMulti(query, update, entityClass, true);
+    }
+
+    /**
+     * 更新满足 {@code query} 条件的所有文档。
+     */
+    public <T> WriteResult updateMulti(Query query, Update update, Class<T> entityClass, boolean autoUpdateModifyTime) {
+        setModifyTimeIfPossible(update, autoUpdateModifyTime);
         return mongoOps.updateMulti(query, update, entityClass);
     }
 
@@ -370,7 +404,14 @@ public abstract class BasicMongoService {
      * 更新满足 {@code query} 条件的所有文档。
      */
     public WriteResult updateMulti(Query query, Update update, String collectionName) {
-        setModifyTimeIfPossible(update);
+        return updateMulti(query, update, collectionName, true);
+    }
+
+    /**
+     * 更新满足 {@code query} 条件的所有文档。
+     */
+    public WriteResult updateMulti(Query query, Update update, String collectionName, boolean autoUpdateModifyTime) {
+        setModifyTimeIfPossible(update, autoUpdateModifyTime);
         return mongoOps.updateMulti(query, update, collectionName);
     }
 
@@ -534,19 +575,14 @@ public abstract class BasicMongoService {
         }
     }
 
-    private void setModifyTimeIfPossible(Update update) {
+    private void setModifyTimeIfPossible(Update update, boolean autoUpdateModifyTime) {
         if (update == null) {
             return;
         }
 
-        if (update.modifies("modifyTime")) {
-            Object modifyTime = update.getUpdateObject().get("modifyTime");
-            if (IdEntity.NULL_DATE.equals(modifyTime)) {
-                return;
-            }
+        if (update.modifies("modifyTime") && autoUpdateModifyTime) {
+            update.set("modifyTime", new Date());
         }
-
-        update.set("modifyTime", new Date());
     }
 
     private boolean isEmptyId(Object id) {
