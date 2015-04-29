@@ -139,6 +139,17 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
+     * 和 {@link StringUtils#isBlank(CharSequence)} 返回相反的结果。
+     *
+     * @param cs
+     *            字符串
+     * @return true/false
+     */
+    public static boolean isNotBlank(CharSequence cs) {
+        return !isBlank(cs);
+    }
+
+    /**
      * 判断字符是否是空白字符。
      * <em>和 {@link Character#isWhitespace(char)} 的区别是认为 non-breaking space ( {@code '\u005Cu00A0'}, {@code '\u005Cu2007'},
      * {@code '\u005Cu202F'}) 也是空白字符。</em>
