@@ -8,7 +8,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -60,6 +62,22 @@ public class ObjectHelperTest {
             assertEquals(person.isAlive(), student.isAlive());
             assertEquals(person.getBirthday(), student.getBirthday());
         }
+    }
+
+    @Test
+    public void testCopyPropertiesOfMap() {
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("name", "jerry");
+        data.put("sex", 20);
+        data.put("alive", "true");
+        data.put("birthday", new Date());
+
+        Person person = ObjectHelper.copyProperties(data, Person.class);
+        assertEquals(person.getName(), ObjectHelper.getPropertyValueQuietly(person, "name"));
+        assertEquals(person.getSex(), ObjectHelper.getPropertyValueQuietly(person, "sex"));
+        assertEquals(person.isAlive(), ObjectHelper.getPropertyValueQuietly(person, "alive"));
+        assertEquals(person.getBirthday(), ObjectHelper.getPropertyValueQuietly(person, "birthday"));
+        assertEquals(null, ObjectHelper.getPropertyValueQuietly(person, "none"));
     }
 
     @Test

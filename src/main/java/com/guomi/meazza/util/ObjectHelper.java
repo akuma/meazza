@@ -6,6 +6,7 @@ package com.guomi.meazza.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public abstract class ObjectHelper {
     }
 
     /**
-     * 创建一个 <code>targetClass</code> 对象列表，并依次从 <code>source</code> 对象中复制相同属性名的值。
+     * 创建一个 <code>targetClass</code> 对象列表，并依次从 <code>sources</code> 对象中复制相同属性名的值。
      */
     public static <S, T> List<T> copyProperties(List<S> sources, Class<T> targetClass) {
         List<T> targets = new ArrayList<>();
@@ -55,6 +56,28 @@ public abstract class ObjectHelper {
             targets.add(copyProperties(s, targetClass));
         }
         return targets;
+    }
+
+    /**
+     * 创建一个 <code>targetClass</code> 对象，并依次从 <code>source</code> 中复制属性名和 key 相对应的值。
+     */
+    public static <T> T copyProperties(Map<String, Object> source, Class<T> targetClass) {
+        if (CollectionUtils.isEmpty(source)) {
+            return null;
+        }
+
+        T target = null;
+        try {
+            target = targetClass.newInstance();
+        } catch (Exception e) {
+            logger.error("Create dest object error", e);
+            return null;
+        }
+
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
+            setPropertyValueQuietly(target, entry.getKey(), entry.getValue());
+        }
+        return target;
     }
 
     /**
