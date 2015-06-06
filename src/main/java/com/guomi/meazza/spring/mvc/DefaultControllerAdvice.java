@@ -159,13 +159,13 @@ public class DefaultControllerAdvice {
      * 拦截 {@link MaxUploadSizeExceededException} 异常。
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    @ResponseStatus(HttpStatus.REQUEST_ENTITY_TOO_LARGE)
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
     @ResponseBody
     public Object handleException(MaxUploadSizeExceededException e, ServletWebRequest request) {
         MaxUploadSizeExceededException ex = e;
         String maxDisplaySize = FileUtils.byteCountToDisplaySize(ex.getMaxUploadSize());
         String message = "上传的文件最大不能超过 " + maxDisplaySize;
-        return handleFileUploadException(e, HttpStatus.REQUEST_ENTITY_TOO_LARGE.value(), message, request);
+        return handleFileUploadException(e, HttpStatus.PAYLOAD_TOO_LARGE.value(), message, request);
     }
 
     /**
