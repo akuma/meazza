@@ -66,7 +66,7 @@ public abstract class AbstractAppSettings implements Serializable {
     public void init() {
         final String assetsVersionPath = getAssetsVersionPath();
         final String assetsVersionUrl = getAssetsVersionUrl();
-        if (assetsVersionUrl == null) {
+        if (assetsVersionPath == null && assetsVersionUrl == null) {
             return;
         }
 
@@ -212,17 +212,14 @@ public abstract class AbstractAppSettings implements Serializable {
      */
     private void initAssetsVersion(String versionPath, String versionUrl) {
         if (!StringUtils.isBlank(versionPath)) {
-            File versionFile = new File(versionPath);
-            if (versionFile.exists()) {
-                try (InputStream version = new FileInputStream(versionFile)) {
-                    assetsVersion = MAPPER.reader(Map.class).readValue(version);
-                    return;
-                } catch (IOException e) {
-                    if (e instanceof FileNotFoundException) {
-                        logger.info("Assets version file not found: {}", versionPath);
-                    } else {
-                        logger.error("Read assets version file error", e);
-                    }
+            try (InputStream version = new FileInputStream(new File(versionPath))) {
+                assetsVersion = MAPPER.reader(Map.class).readValue(version);
+                return;
+            } catch (IOException e) {
+                if (e instanceof FileNotFoundException) {
+                    logger.info("Assets version file not found: {}", versionPath);
+                } else {
+                    logger.error("Read assets version file error", e);
                 }
             }
         }
