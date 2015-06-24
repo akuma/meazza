@@ -4,6 +4,8 @@
  */
 package com.guomi.meazza.support;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 封装了比较通用的系统配置参数的抽象类。
- * 
+ *
  * @author akuma
  */
 public abstract class AbstractAppSettings implements Serializable {
@@ -38,6 +40,8 @@ public abstract class AbstractAppSettings implements Serializable {
     private static final String EXTENSION_CSS = "css";
     private static final String EXTENSION_JS = "js";
 
+    private static ObjectMapper MAPPER = new ObjectMapper();
+
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     @Value("#{appProperties['app.environment']}")
@@ -45,6 +49,8 @@ public abstract class AbstractAppSettings implements Serializable {
 
     @Value("#{appProperties['assets.path']}")
     private String assetsPath;
+    @Value("#{appProperties['assets.dist']}")
+    private String assetsDist;
 
     @Value("#{appProperties['page.tracker.enable']}")
     private Boolean pageTrackerEnable;
@@ -58,12 +64,13 @@ public abstract class AbstractAppSettings implements Serializable {
 
     @PostConstruct
     public void init() {
+        final String assetsVersionPath = getAssetsVersionPath();
         final String assetsVersionUrl = getAssetsVersionUrl();
         if (assetsVersionUrl == null) {
             return;
         }
 
-        initAssetsVersion(assetsVersionUrl);
+        initAssetsVersion(assetsVersionPath, assetsVersionUrl);
 
         // 如果是测试环境，则开启定时读取 assets version 文件的任务
         if (isTest()) {
@@ -71,7 +78,7 @@ public abstract class AbstractAppSettings implements Serializable {
             executor.scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
-                    initAssetsVersion(assetsVersionUrl);
+                    initAssetsVersion(assetsVersionPath, assetsVersionUrl);
                 }
             }, 60, 10, TimeUnit.SECONDS);
         }
@@ -103,6 +110,13 @@ public abstract class AbstractAppSettings implements Serializable {
      */
     public String getAssetsPath() {
         return assetsPath;
+    }
+
+    /**
+     * 获取资源文件发布目录。例如：/opt/assets/dist
+     */
+    public String getAssetsDist() {
+        return assetsDist;
     }
 
     /**
@@ -196,11 +210,25 @@ public abstract class AbstractAppSettings implements Serializable {
     /**
      * 初始化资源版本映射表。
      */
-    private void initAssetsVersion(String versionUrl) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            InputStream version = new URL(versionUrl).openStream();
-            assetsVersion = mapper.reader(Map.class).readValue(version);
+    private void initAssetsVersion(String versionPath, String versionUrl) {
+        if (!StringUtils.isBlank(versionPath)) {
+            File versionFile = new File(versionPath);
+            if (versionFile.exists()) {
+                try (InputStream version = new FileInputStream(versionFile)) {
+                    assetsVersion = MAPPER.reader(Map.class).readValue(version);
+                    return;
+                } catch (IOException e) {
+                    if (e instanceof FileNotFoundException) {
+                        logger.info("Assets version file not found: {}", versionPath);
+                    } else {
+                        logger.error("Read assets version file error", e);
+                    }
+                }
+            }
+        }
+
+        try (InputStream version = new URL(versionUrl).openStream()) {
+            assetsVersion = MAPPER.reader(Map.class).readValue(version);
         } catch (IOException e) {
             if (e instanceof FileNotFoundException) {
                 logger.info("Assets version file not found: {}", versionUrl);
@@ -209,6 +237,10 @@ public abstract class AbstractAppSettings implements Serializable {
             }
             return;
         }
+    }
+
+    private String getAssetsVersionPath() {
+        return StringUtils.isBlank(assetsDist) ? null : assetsDist + "/version.json";
     }
 
     private String getAssetsVersionUrl() {
