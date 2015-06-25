@@ -274,6 +274,7 @@ public abstract class BasicMongoService {
      * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
      */
     public void insert(Object object) {
+        convertBlankIdToNull(object);
         setCreationTimeIfPossible(object);
         mongoOps.insert(object);
     }
@@ -283,6 +284,7 @@ public abstract class BasicMongoService {
      * 如果对象是 {@code StringIdEntity} 或 {@code LongIdEntity} 的子类，则会自动设置 {@code creationTime} 属性为当前系统时间。
      */
     public void insert(Object object, String collectionName) {
+        convertBlankIdToNull(object);
         setCreationTimeIfPossible(object);
         mongoOps.insert(object, collectionName);
     }
@@ -309,6 +311,7 @@ public abstract class BasicMongoService {
      */
     public <T> void insert(Collection<T> objects, Class<T> entityClass) {
         for (T object : objects) {
+            convertBlankIdToNull(object);
             setCreationTimeIfPossible(object);
         }
         mongoOps.insert(objects, entityClass);
@@ -320,6 +323,7 @@ public abstract class BasicMongoService {
      */
     public <T> void insert(Collection<T> objects, String collectionName) {
         for (T object : objects) {
+            convertBlankIdToNull(object);
             setCreationTimeIfPossible(object);
         }
         mongoOps.insert(objects, collectionName);
@@ -549,6 +553,18 @@ public abstract class BasicMongoService {
             }
         }
         return hasUpdate ? update : null;
+    }
+
+    /**
+     * 将空串的 ID 设置为 NULL，让 MongoDB 自动生成 ID。
+     */
+    private void convertBlankIdToNull(Object object) {
+        if (object instanceof StringIdEntity) {
+            StringIdEntity entity = (StringIdEntity) object;
+            if (StringUtils.isBlank(entity.getId())) {
+                entity.setId(null);
+            }
+        }
     }
 
     private void setCreationTimeIfPossible(Object object) {
