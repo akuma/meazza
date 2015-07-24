@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.ConnectException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -229,6 +230,8 @@ public abstract class AbstractAppSettings implements Serializable {
         } catch (IOException e) {
             if (e instanceof FileNotFoundException) {
                 logger.info("Assets version file not found: {}", versionUrl);
+            } else if (e instanceof ConnectException) {
+                logger.info("Assets version file can't fetch: {}", e.getMessage());
             } else {
                 logger.error("Read assets version file error", e);
             }
