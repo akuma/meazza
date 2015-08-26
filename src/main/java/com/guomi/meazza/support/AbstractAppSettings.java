@@ -4,23 +4,23 @@
  */
 package com.guomi.meazza.support;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.ConnectException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,8 +38,10 @@ public abstract class AbstractAppSettings implements Serializable {
 
     private static final long serialVersionUID = -8794135442659506482L;
 
-    private static final String EXTENSION_CSS = "css";
     private static final String EXTENSION_JS = "js";
+    private static final String EXTENSION_CSS = "css";
+    private static final String ASSETS_MIN_FLAG = ".min.";
+    private static final String ASSETS_VERION_FILENAME = "version.json";
 
     private static ObjectMapper MAPPER = new ObjectMapper();
 
@@ -60,18 +62,33 @@ public abstract class AbstractAppSettings implements Serializable {
     @Value("#{appProperties['page.tracker.domain']}")
     private String pageTrackerDomain;
 
-    private Map<String, String> assetsVersion = new HashMap<>(); // 资源版本映射表
+    // 资源前缀地址列表
+    private List<String> assetsPaths = new ArrayList<>();
+
+    // 资源版本映射表（js、css、img）
+    private Map<String, Map<String, String>> assetsVersions = new HashMap<>();
+
+    // 定时读取 assets verion 文件的服务
     private ScheduledExecutorService executor;
 
     @PostConstruct
     public void init() {
-        final String assetsVersionPath = getAssetsVersionPath();
-        final String assetsVersionUrl = getAssetsVersionUrl();
-        if (assetsVersionPath == null && assetsVersionUrl == null) {
+        if (!StringUtils.isEmpty(assetsPath)) {
+            String[] paths = assetsPath.split(",");
+            for (String path : paths) {
+                if (!StringUtils.isEmpty(path)) {
+                    assetsPaths.add(path);
+                }
+            }
+        }
+
+        String path = StringUtils.isEmpty(assetsDist) ? assetsPath : assetsDist;
+        if (StringUtils.isEmpty(path)) {
             return;
         }
 
-        initAssetsVersion(assetsVersionPath, assetsVersionUrl);
+        final String assetsVersionPath = path;
+        initAssetsVersion(assetsVersionPath);
 
         // 如果是测试环境，则开启定时读取 assets version 文件的任务
         if (isTest()) {
@@ -79,9 +96,16 @@ public abstract class AbstractAppSettings implements Serializable {
             executor.scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
-                    initAssetsVersion(assetsVersionPath, assetsVersionUrl);
+                    initAssetsVersion(assetsVersionPath);
                 }
             }, 60, 10, TimeUnit.SECONDS);
+        }
+    }
+
+    @PreDestroy
+    public void destory() {
+        if (executor != null && !executor.isShutdown()) {
+            executor.shutdownNow();
         }
     }
 
@@ -107,10 +131,24 @@ public abstract class AbstractAppSettings implements Serializable {
     }
 
     /**
-     * 获取资源文件路径前缀。例如：http://static.foo.bar/assets
+     * 获取资源文件路径前缀，默认返回第一个路径前缀，即 <code>group == 0</code>。例如：http://static.foo.bar/assets
      */
     public String getAssetsPath() {
-        return assetsPath;
+        return getAssetsPathByGroup(0);
+    }
+
+    /**
+     * 根据 <code>group</code> 获取资源文件路径前缀。例如：http://static.foo.bar/assets
+     */
+    public String getAssetsPathByGroup(int group) {
+        if (assetsPaths.isEmpty()) {
+            return null;
+        }
+
+        if (group < 0 || group >= assetsPaths.size()) {
+            group = 0;
+        }
+        return assetsPaths.get(group);
     }
 
     /**
@@ -142,12 +180,22 @@ public abstract class AbstractAppSettings implements Serializable {
     }
 
     /**
-     * 从资源版本映射表中获取带有版本号的资源路径（相对路径），如果获取不到，则返回原始路径。
+     * 从默认的第一组资源版本映射表中获取带有版本号的资源路径（相对路径），如果获取不到，则返回原始路径。
      * <p>
      * 例如：js/global.min.js -> js/global.min.78b76e3e.js
      */
     public String versionedAsset(String originAssetPath) {
-        return versionedAsset(originAssetPath, null);
+        return versionedAssetByGroup(originAssetPath, 0);
+    }
+
+    /**
+     * 从 <code>group</code> 指定的资源版本映射表中获取带有版本号的资源路径（相对路径），如果获取不到，则返回原始路径。<br>
+     * 默认 <code>group == 0</code>，即在第一组资源里获取。
+     * <p>
+     * 例如：js/global.min.js -> js/global.min.78b76e3e.js
+     */
+    public String versionedAssetByGroup(String originAssetPath, int group) {
+        return versionedAsset(originAssetPath, null, group);
     }
 
     /**
@@ -155,7 +203,7 @@ public abstract class AbstractAppSettings implements Serializable {
      * <p>
      * 例如：js/global.min.js -> js/global.min.78b76e3e.js
      */
-    private String versionedAsset(String originAsset, String preVersionedAsset) {
+    private String versionedAsset(String originAsset, String preVersionedAsset, int group) {
         if (StringUtils.isEmpty(originAsset)) {
             return StringUtils.EMPTY;
         }
@@ -168,14 +216,14 @@ public abstract class AbstractAppSettings implements Serializable {
         // 获取资源后缀名
         String extension = FilenameUtils.getExtension(originAsset);
 
-        // 如果资源不是 http、https 开头的地址，则尝试给资源添加 css/、js/ 这样的前缀目录
+        // 如果资源不以 http/https 开头，则尝试给资源添加 css/、js/ 这样的前缀目录
         if (!originAsset.startsWith("http://") && !originAsset.startsWith("https://")) {
 
             String prefix = StringUtils.EMPTY;
-            if (EXTENSION_CSS.equalsIgnoreCase(extension)) {
-                prefix = "css/";
-            } else if (EXTENSION_JS.equalsIgnoreCase(extension)) {
-                prefix = "js/";
+            if (EXTENSION_JS.equalsIgnoreCase(extension)) {
+                prefix = EXTENSION_JS + "/";
+            } else if (EXTENSION_CSS.equalsIgnoreCase(extension)) {
+                prefix = EXTENSION_CSS + "/";
             }
 
             if (!originAsset.startsWith(prefix)) {
@@ -184,23 +232,40 @@ public abstract class AbstractAppSettings implements Serializable {
         }
 
         // 获取带版本号的资源
-        String versionedAsset = getVersionedAsset(originAsset, preVersionedAsset);
+        String versionedAsset = getVersionedAsset(originAsset, preVersionedAsset, group);
         if (!StringUtils.isEmpty(versionedAsset)) {
             return versionedAsset;
         }
 
         // 如果没有获取到，则再尝试根据压缩版本的名称去获取资源（e.g. xxx.min.js）
-        if (!originAsset.contains(".min.")) {
+        if (!originAsset.contains(ASSETS_MIN_FLAG)) {
             String path = FilenameUtils.getPath(originAsset);
             String basename = FilenameUtils.getBaseName(originAsset);
-            String minAssetPath = path + basename + ".min." + extension;
-            versionedAsset = getVersionedAsset(minAssetPath, preVersionedAsset);
+            String minAssetPath = path + basename + ASSETS_MIN_FLAG + extension;
+            versionedAsset = getVersionedAsset(minAssetPath, preVersionedAsset, group);
         }
 
         return StringUtils.isEmpty(versionedAsset) ? originAsset : versionedAsset;
     }
 
-    private String getVersionedAsset(String originAsset, String preVersionedAsset) {
+    /**
+     * 根据原始 assets 路径获取带版本号的 assets 路径。
+     *
+     * @param originAsset
+     *            原始 assets 路径
+     * @param preVersionedAsset
+     *            上一次获取到的带版本号的 assets 路径
+     * @return 带版本号的 assets 路径，如果没有就返回 null
+     */
+    private String getVersionedAsset(String originAsset, String preVersionedAsset, int group) {
+        if (group < 0 || group >= assetsPaths.size()) {
+            group = 0;
+        }
+        Map<String, String> assetsVersion = assetsVersions.get(String.valueOf(group));
+        if (assetsVersion == null) {
+            return null;
+        }
+
         String versionedAsset = assetsVersion.get(originAsset);
         if (!StringUtils.isEmpty(versionedAsset) && !versionedAsset.equals(preVersionedAsset)) {
             logger.trace("Got versioned asset: {} -> {}", originAsset, versionedAsset);
@@ -211,11 +276,23 @@ public abstract class AbstractAppSettings implements Serializable {
     /**
      * 初始化资源版本映射表。
      */
-    private void initAssetsVersion(String versionPath, String versionUrl) {
-        if (!StringUtils.isBlank(versionPath)) {
-            try (InputStream version = new FileInputStream(new File(versionPath))) {
-                assetsVersion = MAPPER.reader(Map.class).readValue(version);
-                return;
+    private void initAssetsVersion(String assetsPath) {
+        if (StringUtils.isBlank(assetsPath)) {
+            return;
+        }
+
+        String[] assetsPaths = assetsPath.split(",");
+        if (ArrayUtils.isEmpty(assetsPaths)) {
+            return;
+        }
+
+        // 0 -> map1, 1 -> map2...
+        for (int i = 0; i < assetsPaths.length; i++) {
+            String versionPath = getAssetsVersionPath(assetsPaths[i]);
+
+            try {
+                Map<String, String> assetsVersion = MAPPER.reader(Map.class).readValue(new URL(versionPath));
+                assetsVersions.put(String.valueOf(i), assetsVersion);
             } catch (IOException e) {
                 if (e instanceof FileNotFoundException) {
                     logger.info("Assets version file not found: {}", versionPath);
@@ -224,27 +301,10 @@ public abstract class AbstractAppSettings implements Serializable {
                 }
             }
         }
-
-        try (InputStream version = new URL(versionUrl).openStream()) {
-            assetsVersion = MAPPER.reader(Map.class).readValue(version);
-        } catch (IOException e) {
-            if (e instanceof FileNotFoundException) {
-                logger.info("Assets version file not found: {}", versionUrl);
-            } else if (e instanceof ConnectException) {
-                logger.info("Assets version file can't fetch: {}", e.getMessage());
-            } else {
-                logger.error("Read assets version file error", e);
-            }
-            return;
-        }
     }
 
-    private String getAssetsVersionPath() {
-        return StringUtils.isBlank(assetsDist) ? null : assetsDist + "/version.json";
-    }
-
-    private String getAssetsVersionUrl() {
-        return StringUtils.isBlank(assetsPath) ? null : assetsPath + "/version.json";
+    private String getAssetsVersionPath(String assetsPath) {
+        return StringUtils.isBlank(assetsPath) ? null : assetsPath + "/" + ASSETS_VERION_FILENAME;
     }
 
 }
