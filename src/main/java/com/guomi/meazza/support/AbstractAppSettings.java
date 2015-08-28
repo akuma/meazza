@@ -131,10 +131,10 @@ public abstract class AbstractAppSettings implements Serializable {
     }
 
     /**
-     * 获取资源文件路径前缀，默认返回第一个路径前缀，即 <code>group == 0</code>。例如：http://static.foo.bar/assets
+     * 获取资源文件路径前缀，默认返回第一个路径前缀，即 <code>group == 1</code>。例如：http://static.foo.bar/assets
      */
     public String getAssetsPath() {
-        return getAssetsPathByGroup(0);
+        return getAssetsPathByGroup(1);
     }
 
     /**
@@ -145,10 +145,10 @@ public abstract class AbstractAppSettings implements Serializable {
             return null;
         }
 
-        if (group < 0 || group >= assetsPaths.size()) {
-            group = 0;
+        if (group <= 0 || group > assetsPaths.size()) {
+            group = 1;
         }
-        return assetsPaths.get(group);
+        return assetsPaths.get(group - 1);
     }
 
     /**
@@ -190,7 +190,7 @@ public abstract class AbstractAppSettings implements Serializable {
 
     /**
      * 从 <code>group</code> 指定的资源版本映射表中获取带有版本号的资源路径（相对路径），如果获取不到，则返回原始路径。<br>
-     * 默认 <code>group == 0</code>，即在第一组资源里获取。
+     * 默认 <code>group == 1</code>，即在第一组资源里获取。
      * <p>
      * 例如：js/global.min.js -> js/global.min.78b76e3e.js
      */
@@ -258,9 +258,10 @@ public abstract class AbstractAppSettings implements Serializable {
      * @return 带版本号的 assets 路径，如果没有就返回 null
      */
     private String getVersionedAsset(String originAsset, String preVersionedAsset, int group) {
-        if (group < 0 || group >= assetsPaths.size()) {
-            group = 0;
+        if (group <= 0 || group > assetsPaths.size()) {
+            group = 1;
         }
+
         Map<String, String> assetsVersion = assetsVersions.get(String.valueOf(group));
         if (assetsVersion == null) {
             return null;
@@ -286,13 +287,13 @@ public abstract class AbstractAppSettings implements Serializable {
             return;
         }
 
-        // 0 -> map1, 1 -> map2...
+        // 1 -> map1, 2 -> map2...
         for (int i = 0; i < assetsPaths.length; i++) {
             String versionPath = getAssetsVersionPath(assetsPaths[i]);
 
             try {
                 Map<String, String> assetsVersion = MAPPER.reader(Map.class).readValue(new URL(versionPath));
-                assetsVersions.put(String.valueOf(i), assetsVersion);
+                assetsVersions.put(String.valueOf(i + 1), assetsVersion);
             } catch (IOException e) {
                 if (e instanceof FileNotFoundException) {
                     logger.info("Assets version file not found: {}", versionPath);
