@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.guomi.meazza.util.UUIDUtils;
+
 /**
  * Controller 操作的响应消息类，主要用在以 <code>ResponseBody</code> 方式返回结果的方法中。<br>
  * 它包含了 Action 提示信息、Action 错误信息、字段错误信息以及其他响应数据。
@@ -21,6 +23,7 @@ public class ResponseMessage implements Serializable {
     private static final long serialVersionUID = 6725085407815077443L;
 
     private long code = 0; // 响应代码，默认 0 表示成功
+    private String requestId = UUIDUtils.newId(); // 请求的 ID，默认 UUID
     private Collection<String> actionMessages = new ArrayList<>(0);
     private Collection<String> actionErrors = new ArrayList<>(0);
     private Map<String, Collection<String>> fieldErrors = new HashMap<>(0);
@@ -33,6 +36,14 @@ public class ResponseMessage implements Serializable {
 
     public void setCode(long code) {
         this.code = code;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     /**
