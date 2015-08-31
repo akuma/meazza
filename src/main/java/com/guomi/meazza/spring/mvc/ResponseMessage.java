@@ -129,7 +129,7 @@ public class ResponseMessage implements Serializable {
      * @return true/false
      */
     public boolean getHasFieldErrors() {
-        return !getFieldErrors().isEmpty();
+        return !fieldErrors.isEmpty();
     }
 
 }
