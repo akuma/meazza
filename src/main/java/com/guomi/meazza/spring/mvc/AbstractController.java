@@ -6,7 +6,6 @@ package com.guomi.meazza.spring.mvc;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,33 +73,30 @@ public abstract class AbstractController implements ValidationSupport {
     public Collection<String> getActionMessages(Model model) {
         @SuppressWarnings("unchecked")
         List<String> messages = (List<String>) model.asMap().get(ACTION_MESSAGES);
-        if (CollectionUtils.isEmpty(messages)) {
-            messages = new ArrayList<String>(0);
+        if (messages == null) {
+            messages = new ArrayList<>();
         }
-
-        return Collections.unmodifiableCollection(messages);
+        return messages;
     }
 
     @Override
     public Collection<String> getActionErrors(Model model) {
         @SuppressWarnings("unchecked")
         List<String> errors = (List<String>) model.asMap().get(ACTION_ERRORS);
-        if (CollectionUtils.isEmpty(errors)) {
-            errors = new ArrayList<String>(0);
+        if (errors == null) {
+            errors = new ArrayList<>();
         }
-
-        return Collections.unmodifiableCollection(errors);
+        return errors;
     }
 
     @Override
     public Map<String, Collection<String>> getFieldErrors(Model model) {
         @SuppressWarnings("unchecked")
         Map<String, Collection<String>> errorsMap = (Map<String, Collection<String>>) model.asMap().get(FIELD_ERRORS);
-        if (CollectionUtils.isEmpty(errorsMap)) {
-            errorsMap = new LinkedHashMap<String, Collection<String>>(0);
+        if (errorsMap == null) {
+            errorsMap = new LinkedHashMap<>();
         }
-
-        return Collections.unmodifiableMap(errorsMap);
+        return errorsMap;
     }
 
     @Override
@@ -108,7 +104,7 @@ public abstract class AbstractController implements ValidationSupport {
         @SuppressWarnings("unchecked")
         List<String> messages = (List<String>) model.asMap().get(ACTION_MESSAGES);
         if (CollectionUtils.isEmpty(messages)) {
-            messages = new ArrayList<String>();
+            messages = new ArrayList<>();
             model.addAttribute(ACTION_MESSAGES, messages);
         }
 
@@ -119,7 +115,7 @@ public abstract class AbstractController implements ValidationSupport {
         @SuppressWarnings("unchecked")
         List<String> messages = (List<String>) model.asMap().get(ACTION_MESSAGES);
         if (CollectionUtils.isEmpty(messages)) {
-            messages = new ArrayList<String>();
+            messages = new ArrayList<>();
             model.addFlashAttribute(ACTION_MESSAGES, messages);
         }
 
@@ -131,7 +127,7 @@ public abstract class AbstractController implements ValidationSupport {
         @SuppressWarnings("unchecked")
         List<String> errors = (List<String>) model.asMap().get(ACTION_ERRORS);
         if (CollectionUtils.isEmpty(errors)) {
-            errors = new ArrayList<String>();
+            errors = new ArrayList<>();
             model.addAttribute(ACTION_ERRORS, errors);
         }
 
@@ -142,7 +138,7 @@ public abstract class AbstractController implements ValidationSupport {
         @SuppressWarnings("unchecked")
         List<String> errors = (List<String>) model.asMap().get(ACTION_ERRORS);
         if (CollectionUtils.isEmpty(errors)) {
-            errors = new ArrayList<String>();
+            errors = new ArrayList<>();
             model.addFlashAttribute(ACTION_ERRORS, errors);
         }
 
@@ -154,13 +150,13 @@ public abstract class AbstractController implements ValidationSupport {
         @SuppressWarnings("unchecked")
         Map<String, List<String>> errorsMap = (Map<String, List<String>>) model.asMap().get(FIELD_ERRORS);
         if (CollectionUtils.isEmpty(errorsMap)) {
-            errorsMap = new LinkedHashMap<String, List<String>>();
+            errorsMap = new LinkedHashMap<>();
             model.addAttribute(FIELD_ERRORS, errorsMap);
         }
 
         List<String> errors = errorsMap.get(fieldName);
         if (CollectionUtils.isEmpty(errors)) {
-            errors = new ArrayList<String>();
+            errors = new ArrayList<>();
             errorsMap.put(fieldName, errors);
         }
 
@@ -218,12 +214,12 @@ public abstract class AbstractController implements ValidationSupport {
         message.setActionErrors(actionErrors);
 
         // 设置字段错误信息
-        Map<String, Collection<String>> fieldErrorsMap = new LinkedHashMap<String, Collection<String>>();
+        Map<String, Collection<String>> fieldErrorsMap = new LinkedHashMap<>();
         List<FieldError> springFieldErrors = errors.getFieldErrors();
         for (FieldError error : springFieldErrors) {
             Collection<String> fieldErrors = fieldErrorsMap.get(error.getField());
             if (fieldErrors == null) {
-                fieldErrors = new ArrayList<String>();
+                fieldErrors = new ArrayList<>();
                 fieldErrorsMap.put(error.getField(), fieldErrors);
             }
             String fieldError = messageSource.getMessage(error.getCode(), error.getArguments(),
