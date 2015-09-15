@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -99,17 +100,12 @@ public class DefaultControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public Object handleException(Exception e, ServletWebRequest request) {
-        logger.error("Exception handler caught an exception", e);
-        logger.error("Exception request: {}", request.getRequest().getRequestURL());
-
-        boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
-        logger.debug("Debug is {}", isDebug ? "on" : "off");
-
-        Map<String, Object> errorResponse = getErrorResponse(e);
-
-        // 如果开启 debug，则将 debug 标记写入 error response 中
-        if (isDebug) {
-            errorResponse.put("debug", true);
+        if (e instanceof HttpRequestMethodNotSupportedException) {
+            logger.info("Method " + request.getHttpMethod() + " not supported error", e);
+            logger.info("Request url: {}", request.getRequest().getRequestURL());
+        } else {
+            logger.error("Exception handler caught an exception", e);
+            logger.error("Exception request: {}", request.getRequest().getRequestURL());
         }
 
         return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), request);
@@ -189,6 +185,13 @@ public class DefaultControllerAdvice {
     private Object handleException(Exception e, int status, String message, ServletWebRequest request) {
         Map<String, Object> errorResponse = getErrorResponse(e, message);
 
+        // 如果开启 debug，则将 debug 标记写入 error response 中
+        boolean isDebug = BooleanUtils.toBoolean(request.getParameter("debug"));
+        logger.debug("Debug is {}", isDebug ? "on" : "off");
+        if (isDebug) {
+            errorResponse.put("debug", true);
+        }
+
         // AJAX 请求需要手工指定 status
         if (isAjaxRequest(request)) {
             request.getResponse().setStatus(status);
@@ -206,13 +209,6 @@ public class DefaultControllerAdvice {
      */
     private Object handleFileUploadException(Exception e, int status, String message, ServletWebRequest request) {
         return getErrorResponse(e, status, message);
-    }
-
-    /**
-     * 根据异常创建出错后的响应对象。
-     */
-    private Map<String, Object> getErrorResponse(Exception e) {
-        return getErrorResponse(e, null);
     }
 
     /**
