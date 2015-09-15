@@ -24,9 +24,9 @@ public class ResponseMessage implements Serializable {
 
     private long code = 0; // 响应代码，默认 0 表示成功
     private String requestId = UUIDUtils.newId(); // 请求的 ID，默认 UUID
-    private Collection<String> actionMessages = new ArrayList<>(0);
-    private Collection<String> actionErrors = new ArrayList<>(0);
-    private Map<String, Collection<String>> fieldErrors = new HashMap<>(0);
+    private Collection<String> actionMessages = new ArrayList<>();
+    private Collection<String> actionErrors = new ArrayList<>();
+    private Map<String, Collection<String>> fieldErrors = new HashMap<>();
 
     private Map<String, Object> data = new HashMap<>(); // 其他需要返回的数据
 
@@ -103,6 +103,43 @@ public class ResponseMessage implements Serializable {
      */
     public void addAttributes(Map<String, Object> data) {
         this.data.putAll(data);
+    }
+
+    /**
+     * 添加 Action 提示信息。
+     *
+     * @param message
+     *            提示信息
+     */
+    public void addActionMessage(String message) {
+        actionMessages.add(message);
+    }
+
+    /**
+     * 添加 Action 错误信息。
+     *
+     * @param error
+     *            错误信息
+     */
+    public void addActionError(String error) {
+        actionErrors.add(error);
+    }
+
+    /**
+     * 添加字段错误信息。
+     *
+     * @param field
+     *            字段名
+     * @param error
+     *            错误信息
+     */
+    public void addFieldErrors(String field, String error) {
+        Collection<String> errors = fieldErrors.get(field);
+        if (errors == null) {
+            errors = new ArrayList<>();
+            fieldErrors.put(field, errors);
+        }
+        errors.add(error);
     }
 
     /**
