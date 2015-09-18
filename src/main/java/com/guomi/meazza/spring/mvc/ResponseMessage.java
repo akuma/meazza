@@ -22,21 +22,12 @@ public class ResponseMessage implements Serializable {
 
     private static final long serialVersionUID = 6725085407815077443L;
 
-    private long code = 0; // 响应代码，默认 0 表示成功
     private String requestId = UUIDUtils.newId(); // 请求的 ID，默认 UUID
+    private int code = 0; // 响应代码，默认 0 表示成功
     private Collection<String> actionMessages = new ArrayList<>();
     private Collection<String> actionErrors = new ArrayList<>();
     private Map<String, Collection<String>> fieldErrors = new HashMap<>();
-
-    private Map<String, Object> data = new HashMap<>(); // 其他需要返回的数据
-
-    public long getCode() {
-        return code;
-    }
-
-    public void setCode(long code) {
-        this.code = code;
-    }
+    private Map<String, Object> data = new HashMap<>(); // 业务数据
 
     public String getRequestId() {
         return requestId;
@@ -44,6 +35,14 @@ public class ResponseMessage implements Serializable {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 
     /**
