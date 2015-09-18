@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.guomi.meazza.util.UUIDUtils;
 
 /**
@@ -50,10 +52,12 @@ public class ResponseMessage implements Serializable {
      *
      * @return true/false
      */
+    @JsonInclude(Include.NON_DEFAULT)
     public boolean getHasActionMessages() {
         return !actionMessages.isEmpty();
     }
 
+    @JsonInclude(Include.NON_EMPTY)
     public Collection<String> getActionMessages() {
         return actionMessages;
     }
@@ -62,6 +66,7 @@ public class ResponseMessage implements Serializable {
         this.actionMessages = actionMessages;
     }
 
+    @JsonInclude(Include.NON_EMPTY)
     public Collection<String> getActionErrors() {
         return actionErrors;
     }
@@ -70,6 +75,7 @@ public class ResponseMessage implements Serializable {
         this.actionErrors = actionErrors;
     }
 
+    @JsonInclude(Include.NON_EMPTY)
     public Map<String, Collection<String>> getFieldErrors() {
         return fieldErrors;
     }
@@ -78,6 +84,7 @@ public class ResponseMessage implements Serializable {
         this.fieldErrors = fieldErrors;
     }
 
+    @JsonInclude(Include.NON_EMPTY)
     public Map<String, Object> getData() {
         return data;
     }
@@ -146,6 +153,7 @@ public class ResponseMessage implements Serializable {
      *
      * @return true/false
      */
+    @JsonInclude(Include.NON_DEFAULT)
     public boolean getHasErrors() {
         return getHasActionErrors() || getHasFieldErrors();
     }
@@ -155,6 +163,7 @@ public class ResponseMessage implements Serializable {
      *
      * @return true/false
      */
+    @JsonInclude(Include.NON_DEFAULT)
     public boolean getHasActionErrors() {
         return !actionErrors.isEmpty();
     }
@@ -164,6 +173,7 @@ public class ResponseMessage implements Serializable {
      *
      * @return true/false
      */
+    @JsonInclude(Include.NON_DEFAULT)
     public boolean getHasFieldErrors() {
         return !fieldErrors.isEmpty();
     }
