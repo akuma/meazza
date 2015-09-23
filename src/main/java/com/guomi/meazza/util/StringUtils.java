@@ -31,7 +31,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * 手机号码的正则表达式。
      */
-    private static final String REGEX_MOBILE = "^1[3458]\\d{9}$";
+    private static final String REGEX_MOBILE = "^1[34578]\\d{9}$";
 
     /**
      * UUID 的正则表达式。
@@ -45,6 +45,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     private static final String BOOLEAN_FALSE_NUMBER = "0";
 
     private static final Map<String, String> EMAIL_WEBSITES = new HashMap<>();
+
     static {
         EMAIL_WEBSITES.put("gmail.com", "http://gmail.com");
         EMAIL_WEBSITES.put("hotmail.com", "http://hotmail.com");
@@ -160,7 +161,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      */
     public static boolean isWhitespace(char ch) {
         // 添加对 '\u005Cu00A0', '\u005Cu2007', '\u005Cu202F' 的判断
-        return (Character.isWhitespace(ch) || ch == '\u00A0' || ch == '\u2007' || ch == '\u202F');
+ return (Character.isWhitespace(ch) || ch == '\u00A0' || ch == '\u2007' || ch == '\u202F');
     }
 
     /**
