@@ -84,7 +84,7 @@ public class ResponseMessage implements Serializable {
         this.fieldErrors = fieldErrors;
     }
 
-    @JsonInclude(Include.NON_EMPTY)
+    @JsonInclude(Include.NON_NULL)
     public Map<String, Object> getData() {
         return data;
     }
