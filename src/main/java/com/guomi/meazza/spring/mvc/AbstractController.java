@@ -189,7 +189,17 @@ public abstract class AbstractController implements ValidationSupport {
      * @return 响应消息，一般最终以 JSON 格式返回给客户端
      */
     public ResponseMessage getResponseMessage(Model model) {
+        return getResponseMessage(model, ResponseMessage.SUCCESS_CODE);
+    }
+
+    /**
+     * 从 Spring 的 <code>org.springframework.ui.Model</code> 对象中获取错误消息，封装成响应对象，用于页面错误提示。
+     *
+     * @return 响应消息，一般最终以 JSON 格式返回给客户端
+     */
+    public ResponseMessage getResponseMessage(Model model, int code) {
         ResponseMessage message = new ResponseMessage();
+        message.setCode(code);
         message.setActionMessages(getActionMessages(model));
         message.setActionErrors(getActionErrors(model));
         message.setFieldErrors(getFieldErrors(model));
@@ -202,14 +212,24 @@ public abstract class AbstractController implements ValidationSupport {
      * @return 响应消息，一般最终以 JSON 格式返回给客户端
      */
     public ResponseMessage getResponseMessage(Errors errors) {
+        return getResponseMessage(errors, ResponseMessage.SUCCESS_CODE);
+    }
+
+    /**
+     * 从 Spring 的 <code>org.springframework.validation.Errors</code> 对象中获取错误消息，封装成响应对象，用于页面错误提示。
+     *
+     * @return 响应消息，一般最终以 JSON 格式返回给客户端
+     */
+    public ResponseMessage getResponseMessage(Errors errors, int code) {
         ResponseMessage message = new ResponseMessage();
+        message.setCode(code);
 
         // 设置全局错误信息
         Collection<String> actionErrors = new ArrayList<String>();
         List<ObjectError> springActionErrors = errors.getGlobalErrors();
         for (ObjectError error : springActionErrors) {
-            actionErrors.add(messageSource.getMessage(error.getCode(), error.getArguments(), error.getDefaultMessage(),
-                    null));
+            actionErrors.add(
+                    messageSource.getMessage(error.getCode(), error.getArguments(), error.getDefaultMessage(), null));
         }
         message.setActionErrors(actionErrors);
 

@@ -24,8 +24,13 @@ public class ResponseMessage implements Serializable {
 
     private static final long serialVersionUID = 6725085407815077443L;
 
+    /**
+     * 表示成功响应的代码。
+     */
+    public static final int SUCCESS_CODE = 0;
+
     private String requestId = UUIDUtils.newId(); // 请求的 ID，默认 UUID
-    private int code = 0; // 响应代码，默认 0 表示成功
+    private int code = SUCCESS_CODE; // 响应代码
     private Collection<String> actionMessages = new ArrayList<>();
     private Collection<String> actionErrors = new ArrayList<>();
     private Map<String, Collection<String>> fieldErrors = new HashMap<>();
