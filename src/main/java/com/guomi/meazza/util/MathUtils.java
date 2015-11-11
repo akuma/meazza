@@ -1,14 +1,15 @@
-/* 
+/*
  * @(#)MathUtils.java    Created on 2012-05-31
  * Copyright (c) 2012 Guomi, Inc. All rights reserved.
  */
 package com.guomi.meazza.util;
 
 import java.math.BigDecimal;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 由于 Java 的简单类型不能够精确的对浮点数进行运算，此工具类提供精确的浮点数运算，包括加减乘除和四舍五入。
- * 
+ *
  * @author akuma
  */
 public abstract class MathUtils {
@@ -17,8 +18,21 @@ public abstract class MathUtils {
     private static final int DEFAULT_DIV_SCALE = 10;
 
     /**
+     * 在指定的数字范围内生成随机数。
+     *
+     * @param min
+     *            随机数最大值
+     * @param max
+     *            随机数最小值
+     * @return {@code min} 到 {@code max} 之间的随机数
+     */
+    public static int random(int min, int max) {
+        return ThreadLocalRandom.current().nextInt(min, max + 1);
+    }
+
+    /**
      * 提供精确的加法运算。
-     * 
+     *
      * @param v1
      *            被加数
      * @param v2
@@ -34,7 +48,7 @@ public abstract class MathUtils {
 
     /**
      * 提供精确的加法运算。
-     * 
+     *
      * @param v1
      *            被加数
      * @param v2
@@ -50,7 +64,7 @@ public abstract class MathUtils {
 
     /**
      * 提供（相对）精确的除法运算，当发生除不尽的情况时，精确到小数点以后10位，以后的数字四舍五入。
-     * 
+     *
      * @param v1
      *            被除数
      * @param v2
@@ -63,7 +77,7 @@ public abstract class MathUtils {
 
     /**
      * 提供（相对）精确的除法运算。 当发生除不尽的情况时，由scale参数指定精度，以后的数字四舍五入。
-     * 
+     *
      * @param v1
      *            被除数
      * @param v2
@@ -85,7 +99,7 @@ public abstract class MathUtils {
 
     /**
      * 判断 double 值是否非法，值为 Infinite 或者 NaN 即表示非法。
-     * 
+     *
      * @param v
      *            doube 值
      * @return 如果值为 Infinite 或者 NaN 则返回 <code>true</code>，否则返回 <code>false</code>。
@@ -96,7 +110,7 @@ public abstract class MathUtils {
 
     /**
      * 判断 float 值是否非法，值为 Infinite 或者 NaN 即表示非法。
-     * 
+     *
      * @param v
      *            doube 值
      * @return 如果值为 Infinite 或者 NaN 则返回 <code>true</code>，否则返回 <code>false</code>。
@@ -107,7 +121,7 @@ public abstract class MathUtils {
 
     /**
      * 提供精确的乘法运算。
-     * 
+     *
      * @param v1
      *            被乘数
      * @param v2
@@ -123,7 +137,7 @@ public abstract class MathUtils {
 
     /**
      * 提供精确的小数位四舍五入处理。如果 v 是非法的，则原样返回。
-     * 
+     *
      * @param v
      *            需要四舍五入的数字
      * @param scale
@@ -145,7 +159,7 @@ public abstract class MathUtils {
 
     /**
      * 提供精确的小数位四舍五入处理。如果 v 是非法的，则原样返回。
-     * 
+     *
      * @param v
      *            需要四舍五入的数字
      * @param scale
@@ -167,7 +181,7 @@ public abstract class MathUtils {
 
     /**
      * 提供精确的减法运算。
-     * 
+     *
      * @param v1
      *            被减数
      * @param v2
@@ -183,7 +197,7 @@ public abstract class MathUtils {
 
     /**
      * 采用 BigDecimal 的字符串构造器进行初始化。
-     * 
+     *
      * @param v
      *            double 值
      * @return BigDecimal 对象
@@ -194,7 +208,7 @@ public abstract class MathUtils {
 
     /**
      * 采用 BigDecimal 的字符串构造器进行初始化。
-     * 
+     *
      * @param v
      *            float 值
      * @return BigDecimal 对象
