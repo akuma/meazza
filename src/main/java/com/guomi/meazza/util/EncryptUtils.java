@@ -5,6 +5,11 @@
 package com.guomi.meazza.util;
 
 import java.io.UnsupportedEncodingException;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -13,29 +18,36 @@ import javax.crypto.spec.DESedeKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 加解密工具类。
- * 
+ *
  * @author akuma
  */
 public abstract class EncryptUtils {
 
+    private static final Logger logger = LoggerFactory.getLogger(EncryptUtils.class);
+
     private static final char[] chs = { 'L', 'K', 'J', '4', 'D', 'G', 'F', 'V', 'R', 'T', 'Y', 'B', 'N', 'U', 'P', 'W',
             '3', 'E', '5', 'H', 'M', '7', 'Q', '9', 'S', 'A', 'Z', 'X', '8', 'C', '6', '2' };
 
-    // DES加密算法, 可用DES, DESede, Blowfish
-    private static final String DES_ALGORITHM = "DESede";
+    // DES 加密算法, 可用 DES, DESede, Blowfish
+    private static final String ALGORITHM_DES = "DESede";
+
+    // RSA 加密算法
+    private static final String ALGORITHM_RSA = "RSA";
 
     private static final String DEFAULT_CHARSET = "UTF-8";
 
     /**
      * 自身混淆加密，最多只能加密 30 个字节长度的字符串。
-     * 
+     *
      * <p>
      * <b>对同一个字符串，加密后的密文可能是不相同的，所以在判断密码是否相等时，不能采用密文进行比对，必须采用明文比对。</b>
      * </p>
-     * 
+     *
      * @param source
      *            源字符串
      * @return 加密后字符串
@@ -47,8 +59,8 @@ public abstract class EncryptUtils {
         }
 
         if (source.length() > 30) {
-            throw new IllegalArgumentException("the length of source must be less than 31, actual was "
-                    + source.length());
+            throw new IllegalArgumentException(
+                    "the length of source must be less than 31, actual was " + source.length());
         }
 
         String plainText = source;
@@ -100,7 +112,7 @@ public abstract class EncryptUtils {
 
     /**
      * 自身混淆解密。如果不是合法的加密串（长度不是64个字节），会直接返回原字符串。
-     * 
+     *
      * @param str
      *            加密的字符串
      * @return 解密后字符串
@@ -156,7 +168,7 @@ public abstract class EncryptUtils {
 
     /**
      * 使用 3DES 加密，然后使用 Base64 编码。
-     * 
+     *
      * @param str
      *            源字符串
      * @param key
@@ -170,15 +182,15 @@ public abstract class EncryptUtils {
         try {
             byte[] rawkey = key.getBytes();
             DESedeKeySpec keyspec = new DESedeKeySpec(rawkey);
-            SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(DES_ALGORITHM);
+            SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(ALGORITHM_DES);
             SecretKey deskey = keyfactory.generateSecret(keyspec);
 
-            Cipher cipher = Cipher.getInstance(DES_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ALGORITHM_DES);
             cipher.init(Cipher.ENCRYPT_MODE, deskey);
             byte[] cipherText = cipher.doFinal(str.getBytes());
             encoded = new String(Base64.encodeBase64(cipherText));
         } catch (Exception e) {
-            // Ignore error
+            logger.error("Encode by 3DES & Base64 error", e);
         }
 
         return encoded;
@@ -186,7 +198,7 @@ public abstract class EncryptUtils {
 
     /**
      * 使用 Base64 解码，然后使用 3DES 解密。
-     * 
+     *
      * @param str
      *            加密的字符串
      * @param key
@@ -200,15 +212,75 @@ public abstract class EncryptUtils {
         try {
             byte[] rawkey = key.getBytes();
             DESedeKeySpec keyspec = new DESedeKeySpec(rawkey);
-            SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(DES_ALGORITHM);
+            SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(ALGORITHM_DES);
             SecretKey deskey = keyfactory.generateSecret(keyspec);
 
-            Cipher cipher = Cipher.getInstance(DES_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ALGORITHM_DES);
             cipher.init(Cipher.DECRYPT_MODE, deskey);
             byte[] clearText = cipher.doFinal(Base64.decodeBase64(str.getBytes()));
             decoded = new String(clearText);
         } catch (Exception e) {
-            // Ignore error
+            logger.error("Decode by 3DES & Base64 error", e);
+        }
+
+        return decoded;
+    }
+
+    /**
+     * 使用 3DES 加密，然后使用 Base64 编码。
+     *
+     * @param str
+     *            源字符串
+     * @param publicKey
+     *            公钥
+     * @return 加密后字符串
+     * @see {@link #decodeByRSAAndBase64(String, String)}
+     */
+    public static String encodeByRSAAndBase64(String str, String publicKey) {
+        String encoded = null;
+
+        try {
+            byte[] byteKey = Base64.decodeBase64(publicKey.getBytes());
+            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
+            KeyFactory kf = KeyFactory.getInstance(ALGORITHM_RSA);
+            PublicKey pubKey = kf.generatePublic(X509publicKey);
+
+            Cipher cipher = Cipher.getInstance(ALGORITHM_RSA);
+            cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+            byte[] cipherText = cipher.doFinal(str.getBytes());
+            encoded = new String(Base64.encodeBase64(cipherText));
+        } catch (Exception e) {
+            logger.error("Encode by RSA & Base64 error", e);
+        }
+
+        return encoded;
+    }
+
+    /**
+     * 使用 Base64 解码，然后使用 RSA 解密。
+     *
+     * @param str
+     *            加密的字符串
+     * @param privateKey
+     *            私钥
+     * @return 解密后字符串
+     * @see {@link #encodeByRSAAndBase64(String, String)}
+     */
+    public static String decodeByRSAAndBase64(String str, String privateKey) {
+        String decoded = null;
+
+        try {
+            byte[] byteKey = Base64.decodeBase64(privateKey.getBytes());
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(byteKey);
+            KeyFactory fact = KeyFactory.getInstance(ALGORITHM_RSA);
+            PrivateKey priveKey = fact.generatePrivate(keySpec);
+
+            Cipher cipher = Cipher.getInstance(ALGORITHM_RSA);
+            cipher.init(Cipher.DECRYPT_MODE, priveKey);
+            byte[] clearText = cipher.doFinal(Base64.decodeBase64(str.getBytes()));
+            decoded = new String(clearText);
+        } catch (Exception e) {
+            logger.error("Decode by RSA & Base64 error", e);
         }
 
         return decoded;
@@ -223,7 +295,7 @@ public abstract class EncryptUtils {
 
     /**
      * 带 secure 参数的字符串 MD5 签名。加密算法为：md5(str + secure)
-     * 
+     *
      * @param str
      *            需要签名的字符串
      * @param secure
@@ -237,7 +309,7 @@ public abstract class EncryptUtils {
 
     /**
      * 验证字符串签名是否匹配。加密算法为：md5(str + secure)
-     * 
+     *
      * @param str
      *            需要签名的字符串
      * @param secure
