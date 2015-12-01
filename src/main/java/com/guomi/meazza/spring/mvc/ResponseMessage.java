@@ -29,19 +29,19 @@ public class ResponseMessage implements Serializable {
      */
     public static final int SUCCESS_CODE = 0;
 
-    private String requestId = UUIDUtils.newId(); // 请求的 ID，默认 UUID
+    private String id = UUIDUtils.newId(); // 请求 ID，默认 UUID
     private int code = SUCCESS_CODE; // 响应代码
-    private Collection<String> actionMessages = new ArrayList<>();
-    private Collection<String> actionErrors = new ArrayList<>();
-    private Map<String, Collection<String>> fieldErrors = new HashMap<>();
+    private Collection<String> actionMessages = new ArrayList<>(); // 普通提示信息
+    private Collection<String> actionErrors = new ArrayList<>(); // 普通出错提示
+    private Map<String, Collection<String>> fieldErrors = new HashMap<>(); // 字段出错提示
     private Map<String, Object> data = new HashMap<>(); // 业务数据
 
-    public String getRequestId() {
-        return requestId;
+    public String getId() {
+        return id;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setId(String requestId) {
+        this.id = requestId;
     }
 
     public int getCode() {
