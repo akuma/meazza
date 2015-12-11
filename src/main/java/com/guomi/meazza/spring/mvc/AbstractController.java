@@ -200,9 +200,19 @@ public abstract class AbstractController implements ValidationSupport {
     public ResponseMessage getResponseMessage(Model model, int code) {
         ResponseMessage message = new ResponseMessage();
         message.setCode(code);
+
+        // 将存放在 model 中的提示消息放到返回结果中
         message.setActionMessages(getActionMessages(model));
         message.setActionErrors(getActionErrors(model));
         message.setFieldErrors(getFieldErrors(model));
+
+        // 将存放在 model 中的数据放到返回结果中
+        Map<String, Object> data = model.asMap();
+        data.remove(ACTION_MESSAGES);
+        data.remove(ACTION_ERRORS);
+        data.remove(FIELD_ERRORS);
+        message.getData().putAll(data);
+
         return message;
     }
 
