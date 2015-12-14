@@ -6,9 +6,11 @@ package com.guomi.meazza.spring.mvc;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
@@ -207,10 +209,17 @@ public abstract class AbstractController implements ValidationSupport {
         message.setFieldErrors(getFieldErrors(model));
 
         // 将存放在 model 中的数据放到返回结果中
+        // 需要过滤掉部分不需要的数据
         Map<String, Object> data = model.asMap();
         data.remove(ACTION_MESSAGES);
         data.remove(ACTION_ERRORS);
         data.remove(FIELD_ERRORS);
+        for (Iterator<Entry<String, Object>> iter = data.entrySet().iterator(); iter.hasNext();) {
+            Entry<String, Object> entry = iter.next();
+            if (entry.getKey() == null || entry.getKey().startsWith("org.springframework")) {
+                iter.remove();
+            }
+        }
         message.getData().putAll(data);
 
         return message;
