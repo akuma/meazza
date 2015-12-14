@@ -6,11 +6,13 @@ package com.guomi.meazza.spring.mvc;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -25,6 +27,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.guomi.meazza.util.Pagination;
 import com.guomi.meazza.util.StringUtils;
 
 /**
@@ -37,6 +40,9 @@ public abstract class AbstractController implements ValidationSupport {
     public static final String ACTION_ERRORS = "actionErrors";
     public static final String ACTION_MESSAGES = "actionMessages";
     public static final String FIELD_ERRORS = "fieldErrors";
+
+    private static String SPRING_PACKAGE_PREFIX = "org.springframework.";
+    private static String SPRING_BINDING_RESULT_PREFIX = "org.springframework.validation.BindingResult.";
 
     private static final String REGEX_MOBILE_AGENT1 = "(?i).*((android|bb\\d+|meego).+mobile|avantgo|bada\\/|"
             + "blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|"
@@ -214,13 +220,31 @@ public abstract class AbstractController implements ValidationSupport {
         data.remove(ACTION_MESSAGES);
         data.remove(ACTION_ERRORS);
         data.remove(FIELD_ERRORS);
-        for (Iterator<Entry<String, Object>> iter = data.entrySet().iterator(); iter.hasNext();) {
-            Entry<String, Object> entry = iter.next();
-            if (entry.getKey() == null || entry.getKey().startsWith("org.springframework")) {
-                iter.remove();
+
+        // 从 model 中获取除 spring binding result 之外的键值对
+        // 忽略例如：org.springframework.validation.BindingResult.user & user
+        Set<String> ignoreDataKeys = new HashSet<>();
+        for (Entry<String, Object> entry : data.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(SPRING_PACKAGE_PREFIX)) {
+                ignoreDataKeys.add(key);
+            }
+
+            if (key.startsWith(SPRING_BINDING_RESULT_PREFIX)) {
+                String bindingResultKey = key.substring(SPRING_BINDING_RESULT_PREFIX.length());
+                Object bindingResultValue = data.get(bindingResultKey);
+                if (bindingResultValue == null || !Pagination.class.equals(bindingResultValue.getClass())) {
+                    ignoreDataKeys.add(bindingResultKey);
+                }
             }
         }
-        message.getData().putAll(data);
+        Map<String, Object> newData = new HashMap<>();
+        for (Entry<String, Object> entry : data.entrySet()) {
+            if (!ignoreDataKeys.contains(entry.getKey())) {
+                newData.put(entry.getKey(), entry.getValue());
+            }
+        }
+        message.getData().putAll(newData);
 
         return message;
     }
