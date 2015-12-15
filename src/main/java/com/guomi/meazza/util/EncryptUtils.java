@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -259,13 +260,12 @@ public abstract class EncryptUtils {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] data = str.getBytes();
             for (int i = 0; i < data.length; i += blockSize) {
-                byte[] doFinal = cipher.doFinal(ArrayUtils.subarray(data, i, i + blockSize));
-                out.write(doFinal);
+                byte[] block = cipher.doFinal(ArrayUtils.subarray(data, i, i + blockSize));
+                out.write(block);
             }
-            byte[] cipherText = out.toByteArray();
-            encoded = new String(Base64.encodeBase64(cipherText));
+            encoded = new String(Base64.encodeBase64(out.toByteArray()));
         } catch (Exception e) {
-            logger.error("Encode by RSA & Base64 error", e);
+            logger.error("Encode by RSA error", e);
         }
 
         return encoded;
@@ -297,13 +297,12 @@ public abstract class EncryptUtils {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] data = Base64.decodeBase64(str);
             for (int i = 0; i < data.length; i += blockSize) {
-                byte[] doFinal = cipher.doFinal(ArrayUtils.subarray(data, i, i + blockSize));
-                out.write(doFinal);
+                byte[] block = cipher.doFinal(ArrayUtils.subarray(data, i, i + blockSize));
+                out.write(block);
             }
-            byte[] clearText = out.toByteArray();
-            decoded = new String(clearText);
+            decoded = new String(out.toByteArray());
         } catch (Exception e) {
-            logger.error("Decode by RSA & Base64 error", e);
+            logger.error("Decode by RSA error", e);
         }
 
         return decoded;
@@ -357,7 +356,7 @@ public abstract class EncryptUtils {
         try {
             KeyFactory factory = KeyFactory.getInstance(ALGORITHM_RSA);
             byte[] byteKey = Base64.decodeBase64(publicKey);
-            RSAPublicKey pubKey = (RSAPublicKey) factory.generatePublic(new X509EncodedKeySpec(byteKey));
+            PublicKey pubKey = factory.generatePublic(new X509EncodedKeySpec(byteKey));
 
             Signature sig = Signature.getInstance(ALGORITHM_RSA_SIG);
             sig.initVerify(pubKey);
