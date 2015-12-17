@@ -188,17 +188,15 @@ public abstract class EncryptUtils {
         String encoded = null;
 
         try {
-            byte[] rawkey = key.getBytes();
-            DESedeKeySpec keyspec = new DESedeKeySpec(rawkey);
             SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(ALGORITHM_DES);
-            SecretKey deskey = keyfactory.generateSecret(keyspec);
+            SecretKey secretKey = keyfactory.generateSecret(new DESedeKeySpec(key.getBytes()));
 
             Cipher cipher = Cipher.getInstance(ALGORITHM_DES);
-            cipher.init(Cipher.ENCRYPT_MODE, deskey);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] cipherText = cipher.doFinal(str.getBytes());
             encoded = new String(Base64.encodeBase64(cipherText));
         } catch (Exception e) {
-            logger.error("Encode by 3DES & Base64 error", e);
+            logger.error("Encode by 3DES error", e);
         }
 
         return encoded;
@@ -218,17 +216,15 @@ public abstract class EncryptUtils {
         String decoded = null;
 
         try {
-            byte[] rawkey = key.getBytes();
-            DESedeKeySpec keyspec = new DESedeKeySpec(rawkey);
             SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(ALGORITHM_DES);
-            SecretKey deskey = keyfactory.generateSecret(keyspec);
+            SecretKey secretKey = keyfactory.generateSecret(new DESedeKeySpec(key.getBytes()));
 
             Cipher cipher = Cipher.getInstance(ALGORITHM_DES);
-            cipher.init(Cipher.DECRYPT_MODE, deskey);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] clearText = cipher.doFinal(Base64.decodeBase64(str));
             decoded = new String(clearText);
         } catch (Exception e) {
-            logger.error("Decode by 3DES & Base64 error", e);
+            logger.error("Decode by 3DES error", e);
         }
 
         return decoded;

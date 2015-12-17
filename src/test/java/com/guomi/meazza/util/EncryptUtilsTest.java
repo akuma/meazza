@@ -20,6 +20,16 @@ import org.junit.Test;
 public class EncryptUtilsTest {
 
     @Test
+    public void test3DES() {
+        String key = "Bhb7FQsrT6TxlWjZSDIpeJFCsmRxzQMHrvGiGuEX";
+
+        String plainText = "Hello DES!";
+        String encodeText = EncryptUtils.encodeBy3DESAndBase64(plainText, key);
+        String decodeText = EncryptUtils.decodeBy3DESAndBase64(encodeText, key);
+        assertEquals(plainText, decodeText);
+    }
+
+    @Test
     public void testRSA() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(1024);
