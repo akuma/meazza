@@ -9,9 +9,11 @@ import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -19,6 +21,9 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -35,19 +40,35 @@ public abstract class EncryptUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(EncryptUtils.class);
 
-    private static final char[] chs = { 'L', 'K', 'J', '4', 'D', 'G', 'F', 'V', 'R', 'T', 'Y', 'B', 'N', 'U', 'P', 'W',
-            '3', 'E', '5', 'H', 'M', '7', 'Q', '9', 'S', 'A', 'Z', 'X', '8', 'C', '6', '2' };
-
-    // DES 加密算法, 可用 DES, DESede, Blowfish
-    private static final String ALGORITHM_DES = "DESede";
-
-    // RSA 加密算法
-    private static final String ALGORITHM_RSA = "RSA";
-
-    // RSA 签名算法
-    private static final String ALGORITHM_RSA_SIG = "SHA1withRSA";
+    private static final char[] CHARS = { 'L', 'K', 'J', '4', 'D', 'G', 'F', 'V', 'R', 'T', 'Y', 'B', 'N', 'U', 'P',
+            'W', '3', 'E', '5', 'H', 'M', '7', 'Q', '9', 'S', 'A', 'Z', 'X', '8', 'C', '6', '2' };
 
     private static final String DEFAULT_CHARSET = "UTF-8";
+
+    // 工作模式：ECB/CBC/PCBC/CTR/CTS/CFB/CFB8 to CFB128/OFB/OBF8 to OFB128
+    // 填充方式：Nopadding/PKCS5Padding/ISO10126Padding
+
+    // 秘钥生成算法
+    private static final String SECRET_KEY_ALGORITHM = "PBKDF2WithHmacSHA1";
+
+    // 算法的 iteration 数量
+    private static final int ITERATION_COUNT = 1000;
+
+    // AES 加密算法
+    private static final String AES_ALGORITHM = "AES";
+    private static final String AES_CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
+    private static final int AES_KEY_SIZE = 128; // 128 bit
+    private static final int AES_SALT_SIZE = AES_KEY_SIZE / 8; // 16 byte
+
+    // DES 加密算法, 可用 DES, DESede, Blowfish
+    private static final String DES_ALGORITHM = "DESede"; // 3 DES
+    private static final String DES_CIPHER_ALGORITHM = "DESede/CBC/PKCS5Padding";
+    private static final int DES_KEY_SIZE = 192; // 64 * 3 = 168 bit
+    private static final int DES_SALT_SIZE = 8; // 8 bytes
+
+    // RSA 加密算法、签名算法
+    private static final String RSA_ALGORITHM = "RSA";
+    private static final String RSA_SIG_ALGORITHM = "SHA1withRSA";
 
     /**
      * 自身混淆加密，最多只能加密 30 个字节长度的字符串。
@@ -72,7 +93,7 @@ public abstract class EncryptUtils {
         }
 
         String plainText = source;
-        byte[] plainTextBytes = plainText.getBytes();
+        byte[] plainTextBytes = getBytes(plainText);
 
         byte[] encodedBytes1 = new byte[30];
         byte[] encodedBytes2 = new byte[30];
@@ -112,10 +133,16 @@ public abstract class EncryptUtils {
         byte[] ps = new byte[encodedArray.length];
 
         for (int i = 0; i < encodedArray.length; i++) {
-            ps[i] = (byte) chs[encodedArray[i]];
+            ps[i] = (byte) CHARS[encodedArray[i]];
         }
 
-        return new String(ps);
+        String result = null;
+        try {
+            result = new String(ps, DEFAULT_CHARSET);
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Encode by self error", e);
+        }
+        return result;
     }
 
     /**
@@ -133,11 +160,11 @@ public abstract class EncryptUtils {
         }
 
         byte[] bb = new byte[str.length()];
-        byte[] sb = str.getBytes();
+        byte[] sb = getBytes(str);
 
         for (int i = 0; i < sb.length; i++) {
             for (int j = 0; j < 32; j++) {
-                if (((byte) chs[j]) == sb[i]) {
+                if (((byte) CHARS[j]) == sb[i]) {
                     bb[i] = (byte) j;
                     break;
                 }
@@ -171,7 +198,69 @@ public abstract class EncryptUtils {
             }
         }
 
-        return new String(oldb);
+        String result = null;
+        try {
+            result = new String(oldb, DEFAULT_CHARSET);
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Decode by self error", e);
+        }
+        return result;
+    }
+
+    /**
+     * 使用 AES 加密，然后使用 Base64 编码。
+     *
+     * @param str
+     *            源字符串
+     * @param password
+     *            密码
+     * @return 加密后字符串
+     * @see {@link #decodeByAES(String, String)}
+     */
+    public static String encodeByAES(String str, String password) {
+        return encodeByPBE(str, password, AES_ALGORITHM, AES_CIPHER_ALGORITHM, AES_KEY_SIZE, AES_SALT_SIZE);
+    }
+
+    /**
+     * 使用 Base64 解码，然后使用 AES 解密。
+     *
+     * @param str
+     *            加密的字符串
+     * @param password
+     *            密钥
+     * @return 解密后字符串
+     * @see {@link #encodeByAES(String, String)}
+     */
+    public static String decodeByAES(String str, String password) {
+        return decodeByPBE(str, password, AES_ALGORITHM, AES_CIPHER_ALGORITHM, AES_KEY_SIZE, AES_SALT_SIZE);
+    }
+
+    /**
+     * 使用 3DES 加密，然后使用 Base64 编码。
+     *
+     * @param str
+     *            源字符串
+     * @param password
+     *            密钥
+     * @return 加密后字符串
+     * @see {@link #decodeBy3DES(String, String)}
+     */
+    public static String encodeBy3DES(String str, String password) {
+        return encodeByPBE(str, password, DES_ALGORITHM, DES_CIPHER_ALGORITHM, DES_KEY_SIZE, DES_SALT_SIZE);
+    }
+
+    /**
+     * 使用 Base64 解码，然后使用 3DES 解密。
+     *
+     * @param str
+     *            加密的字符串
+     * @param password
+     *            密钥
+     * @return 解密后字符串
+     * @see {@link #encodeBy3DES(String, String)}
+     */
+    public static String decodeBy3DES(String str, String password) {
+        return decodeByPBE(str, password, DES_ALGORITHM, DES_CIPHER_ALGORITHM, DES_KEY_SIZE, DES_SALT_SIZE);
     }
 
     /**
@@ -188,13 +277,13 @@ public abstract class EncryptUtils {
         String encoded = null;
 
         try {
-            SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(ALGORITHM_DES);
-            SecretKey secretKey = keyfactory.generateSecret(new DESedeKeySpec(key.getBytes()));
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(DES_ALGORITHM);
+            SecretKey secretKey = factory.generateSecret(new DESedeKeySpec(key.getBytes()));
 
-            Cipher cipher = Cipher.getInstance(ALGORITHM_DES);
+            Cipher cipher = Cipher.getInstance(DES_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] cipherText = cipher.doFinal(str.getBytes());
-            encoded = new String(Base64.encodeBase64(cipherText));
+            encoded = Base64.encodeBase64String(cipherText);
         } catch (Exception e) {
             logger.error("Encode by 3DES error", e);
         }
@@ -216,13 +305,13 @@ public abstract class EncryptUtils {
         String decoded = null;
 
         try {
-            SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(ALGORITHM_DES);
-            SecretKey secretKey = keyfactory.generateSecret(new DESedeKeySpec(key.getBytes()));
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(DES_ALGORITHM);
+            SecretKey secretKey = factory.generateSecret(new DESedeKeySpec(key.getBytes()));
 
-            Cipher cipher = Cipher.getInstance(ALGORITHM_DES);
+            Cipher cipher = Cipher.getInstance(DES_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] clearText = cipher.doFinal(Base64.decodeBase64(str));
-            decoded = new String(clearText);
+            decoded = new String(clearText, DEFAULT_CHARSET);
         } catch (Exception e) {
             logger.error("Decode by 3DES error", e);
         }
@@ -245,21 +334,21 @@ public abstract class EncryptUtils {
 
         try {
             byte[] byteKey = Base64.decodeBase64(publicKey);
-            KeyFactory factory = KeyFactory.getInstance(ALGORITHM_RSA);
+            KeyFactory factory = KeyFactory.getInstance(RSA_ALGORITHM);
             RSAPublicKey pubKey = (RSAPublicKey) factory.generatePublic(new X509EncodedKeySpec(byteKey));
 
-            Cipher cipher = Cipher.getInstance(ALGORITHM_RSA);
+            Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, pubKey);
 
             // 加密时超过 blockSize 字节就报错，为此采用分段加密
             int blockSize = pubKey.getModulus().bitLength() / 8 - 11;
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] data = str.getBytes();
+            byte[] data = getBytes(str);
             for (int i = 0; i < data.length; i += blockSize) {
                 byte[] block = cipher.doFinal(ArrayUtils.subarray(data, i, i + blockSize));
                 out.write(block);
             }
-            encoded = new String(Base64.encodeBase64(out.toByteArray()));
+            encoded = Base64.encodeBase64String(out.toByteArray());
         } catch (Exception e) {
             logger.error("Encode by RSA error", e);
         }
@@ -282,10 +371,10 @@ public abstract class EncryptUtils {
 
         try {
             byte[] byteKey = Base64.decodeBase64(privateKey);
-            KeyFactory factory = KeyFactory.getInstance(ALGORITHM_RSA);
+            KeyFactory factory = KeyFactory.getInstance(RSA_ALGORITHM);
             RSAPrivateKey priveKey = (RSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(byteKey));
 
-            Cipher cipher = Cipher.getInstance(ALGORITHM_RSA);
+            Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, priveKey);
 
             // 解密时超过 blockSize 字节就报错，为此采用分段加密
@@ -296,7 +385,7 @@ public abstract class EncryptUtils {
                 byte[] block = cipher.doFinal(ArrayUtils.subarray(data, i, i + blockSize));
                 out.write(block);
             }
-            decoded = new String(out.toByteArray());
+            decoded = new String(out.toByteArray(), DEFAULT_CHARSET);
         } catch (Exception e) {
             logger.error("Decode by RSA error", e);
         }
@@ -318,15 +407,15 @@ public abstract class EncryptUtils {
         String result = null;
 
         try {
-            KeyFactory factory = KeyFactory.getInstance(ALGORITHM_RSA);
+            KeyFactory factory = KeyFactory.getInstance(RSA_ALGORITHM);
             byte[] byteKey = Base64.decodeBase64(privateKey);
             PrivateKey priveKey = factory.generatePrivate(new PKCS8EncodedKeySpec(byteKey));
 
-            Signature sig = Signature.getInstance(ALGORITHM_RSA_SIG);
+            Signature sig = Signature.getInstance(RSA_SIG_ALGORITHM);
             sig.initSign(priveKey);
-            sig.update(str.getBytes());
+            sig.update(getBytes(str));
             byte[] signed = sig.sign();
-            result = new String(Base64.encodeBase64(signed));
+            result = Base64.encodeBase64String(signed);
         } catch (Exception e) {
             logger.error("Sign by RSA error", e);
         }
@@ -350,13 +439,13 @@ public abstract class EncryptUtils {
         boolean isSuccess = false;
 
         try {
-            KeyFactory factory = KeyFactory.getInstance(ALGORITHM_RSA);
+            KeyFactory factory = KeyFactory.getInstance(RSA_ALGORITHM);
             byte[] byteKey = Base64.decodeBase64(publicKey);
             PublicKey pubKey = factory.generatePublic(new X509EncodedKeySpec(byteKey));
 
-            Signature sig = Signature.getInstance(ALGORITHM_RSA_SIG);
+            Signature sig = Signature.getInstance(RSA_SIG_ALGORITHM);
             sig.initVerify(pubKey);
-            sig.update(str.getBytes());
+            sig.update(getBytes(str));
             isSuccess = sig.verify(Base64.decodeBase64(expectSign));
         } catch (Exception e) {
             logger.error("Verify by RSA error", e);
@@ -437,6 +526,78 @@ public abstract class EncryptUtils {
         return verifyByMD5(str, secure, expectSign);
     }
 
+    /**
+     * 使用基于 password 的 AES/3DES 等算法加密，然后使用 Base64 编码。
+     *
+     * @param str
+     *            源字符串
+     * @param password
+     *            密码
+     * @return 加密后字符串
+     * @see {@link #decodeByPBE(String, String)}
+     */
+    private static String encodeByPBE(String str, String password, String algorithm, String cipherAlgorithm,
+            int keySize, int saltSize) {
+        String encoded = null;
+
+        try {
+            SecureRandom random = new SecureRandom();
+            byte[] salt = new byte[saltSize];
+            random.nextBytes(salt);
+            KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, keySize);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(SECRET_KEY_ALGORITHM);
+            byte[] rawKey = factory.generateSecret(keySpec).getEncoded();
+            SecretKey secretKey = new SecretKeySpec(rawKey, algorithm);
+
+            Cipher cipher = Cipher.getInstance(cipherAlgorithm);
+            byte[] iv = new byte[cipher.getBlockSize()];
+            random.nextBytes(iv);
+            IvParameterSpec ivParams = new IvParameterSpec(iv);
+
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParams);
+            byte[] cipherText = cipher.doFinal(getBytes(str));
+
+            encoded = Base64.encodeBase64String(salt)
+                    + ":"
+                    + Base64.encodeBase64String(iv)
+                    + ":"
+                    + Base64.encodeBase64String(cipherText);
+        } catch (Exception e) {
+            logger.error("Encode by " + algorithm + " error", e);
+        }
+
+        return encoded;
+    }
+
+    private static String decodeByPBE(String str, String password, String algorithm, String cipherAlgorithm,
+            int keySize, int saltSize) {
+        String decoded = null;
+
+        try {
+            String[] fields = str.split(":");
+            if (fields.length != 3) {
+                logger.error("Decode by " + algorithm + " error: encrpyted string wrong");
+                return decoded;
+            }
+
+            byte[] salt = Base64.decodeBase64(fields[0]);
+            KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, keySize);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(SECRET_KEY_ALGORITHM);
+            byte[] rawKey = factory.generateSecret(keySpec).getEncoded();
+            SecretKey secretKey = new SecretKeySpec(rawKey, algorithm);
+
+            Cipher cipher = Cipher.getInstance(cipherAlgorithm);
+            IvParameterSpec ivParams = new IvParameterSpec(Base64.decodeBase64(fields[1]));
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParams);
+            byte[] clearText = cipher.doFinal(Base64.decodeBase64(fields[2]));
+            decoded = new String(clearText, DEFAULT_CHARSET);
+        } catch (Exception e) {
+            logger.error("Decode by " + algorithm + " error", e);
+        }
+
+        return decoded;
+    }
+
     private static int sumSqual(byte[] b) {
         int sum = 0;
         for (int i = 0; i < b.length; i++) {
@@ -475,9 +636,13 @@ public abstract class EncryptUtils {
         return hi * 32 + low;
     }
 
+    private static byte[] getBytes(String str) {
+        return getBytes(str, null);
+    }
+
     private static byte[] getBytes(String str, String charset) {
         if (StringUtils.isBlank(charset)) {
-            return str.getBytes();
+            charset = DEFAULT_CHARSET;
         }
 
         try {

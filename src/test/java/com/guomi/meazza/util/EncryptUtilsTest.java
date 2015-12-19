@@ -12,6 +12,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Test;
 
 /**
@@ -19,14 +20,50 @@ import org.junit.Test;
  */
 public class EncryptUtilsTest {
 
+    private static final String TEST_PLAIN_TEXT = "Hello World!";
+    private static final String TEST_PASSWORD = "Bhb7FQsrT6TxlWjZSDIpeJFCsmRxzQMHrvGiGuEX";
+
+    @Test
+    public void testAES() throws Exception {
+        StopWatch watch = new StopWatch();
+        watch.start();
+        String encodeText = EncryptUtils.encodeByAES(TEST_PLAIN_TEXT, TEST_PASSWORD);
+        watch.stop();
+        System.out.printf("%d\tms: AES (%s)\n", watch.getTime(), encodeText);
+
+        String decodeText = EncryptUtils.decodeByAES(encodeText, TEST_PASSWORD);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
+
+        decodeText = EncryptUtils.decodeByAES(encodeText, TEST_PASSWORD);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
+
+    }
+
     @Test
     public void test3DES() {
-        String key = "Bhb7FQsrT6TxlWjZSDIpeJFCsmRxzQMHrvGiGuEX";
+        StopWatch watch = new StopWatch();
+        watch.start();
+        String encodeText = EncryptUtils.encodeBy3DES(TEST_PLAIN_TEXT, TEST_PASSWORD);
+        watch.stop();
+        System.out.printf("%d\tms: 3DES(%s)\n", watch.getTime(), encodeText);
 
-        String plainText = "Hello DES!";
-        String encodeText = EncryptUtils.encodeBy3DESAndBase64(plainText, key);
-        String decodeText = EncryptUtils.decodeBy3DESAndBase64(encodeText, key);
-        assertEquals(plainText, decodeText);
+        String decodeText = EncryptUtils.decodeBy3DES(encodeText, TEST_PASSWORD);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
+
+        decodeText = EncryptUtils.decodeBy3DES(encodeText, TEST_PASSWORD);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
+
+        watch.reset();
+        watch.start();
+        encodeText = EncryptUtils.encodeBy3DESAndBase64(TEST_PLAIN_TEXT, TEST_PASSWORD);
+        watch.stop();
+        System.out.printf("%d\tms: 3DES(%s)\n", watch.getTime(), encodeText);
+
+        decodeText = EncryptUtils.decodeBy3DESAndBase64(encodeText, TEST_PASSWORD);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
+
+        decodeText = EncryptUtils.decodeBy3DESAndBase64(encodeText, TEST_PASSWORD);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
     }
 
     @Test
@@ -39,12 +76,19 @@ public class EncryptUtilsTest {
         System.out.println("publicKey: " + publicKey);
         System.out.println("privateKey: " + privateKey);
 
-        String plainText = "Hello RSA!";
-        String encodeText = EncryptUtils.encodeByRSAAndBase64(plainText, publicKey);
-        String decodeText = EncryptUtils.decodeByRSAAndBase64(encodeText, privateKey);
-        assertEquals(plainText, decodeText);
+        StopWatch watch = new StopWatch();
+        watch.start();
+        String encodeText = EncryptUtils.encodeByRSAAndBase64(TEST_PLAIN_TEXT, publicKey);
+        watch.stop();
+        System.out.printf("%d\tms: RSA (%s)\n", watch.getTime(), encodeText);
 
-        plainText = "body=学习周卡&buyer_email=xingken@126.com&buyer_id=2088002097358275&discount=0.00"
+        String decodeText = EncryptUtils.decodeByRSAAndBase64(encodeText, privateKey);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
+
+        decodeText = EncryptUtils.decodeByRSAAndBase64(encodeText, privateKey);
+        assertEquals(TEST_PLAIN_TEXT, decodeText);
+
+        String plainText = "body=学习周卡&buyer_email=xingken@126.com&buyer_id=2088002097358275&discount=0.00"
                 + "&gmt_create=2015-12-14 19:22:57&gmt_payment=2015-12-14 19:22:58&is_total_fee_adjust=N"
                 + "&notify_id=47b6a74eb3ea24ea1cc4de4995ed5a0f3i&notify_time=2015-12-14 19:26:15"
                 + "&notify_type=trade_status_sync&out_trade_no=402881e5519ffd600151a03a84b5015b&payment_type=1"
