@@ -273,6 +273,7 @@ public abstract class EncryptUtils {
      * @return 加密后字符串
      * @see {@link #decodeBy3DESAndBase64(String, String)}
      */
+    @Deprecated
     public static String encodeBy3DESAndBase64(String str, String key) {
         String encoded = null;
 
@@ -301,6 +302,7 @@ public abstract class EncryptUtils {
      * @return 解密后字符串
      * @see {@link #encodeBy3DESAndBase64(String, String)}
      */
+    @Deprecated
     public static String decodeBy3DESAndBase64(String str, String key) {
         String decoded = null;
 
@@ -327,9 +329,9 @@ public abstract class EncryptUtils {
      * @param publicKey
      *            公钥
      * @return 加密后字符串
-     * @see {@link #decodeByRSAAndBase64(String, String)}
+     * @see {@link #decodeByRSA(String, String)}
      */
-    public static String encodeByRSAAndBase64(String str, String publicKey) {
+    public static String encodeByRSA(String str, String publicKey) {
         String encoded = null;
 
         try {
@@ -364,9 +366,9 @@ public abstract class EncryptUtils {
      * @param privateKey
      *            私钥
      * @return 解密后字符串
-     * @see {@link #encodeByRSAAndBase64(String, String)}
+     * @see {@link #encodeByRSA(String, String)}
      */
-    public static String decodeByRSAAndBase64(String str, String privateKey) {
+    public static String decodeByRSA(String str, String privateKey) {
         String decoded = null;
 
         try {

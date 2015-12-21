@@ -39,6 +39,7 @@ public class EncryptUtilsTest {
 
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void test3DES() {
         StopWatch watch = new StopWatch();
@@ -78,14 +79,14 @@ public class EncryptUtilsTest {
 
         StopWatch watch = new StopWatch();
         watch.start();
-        String encodeText = EncryptUtils.encodeByRSAAndBase64(TEST_PLAIN_TEXT, publicKey);
+        String encodeText = EncryptUtils.encodeByRSA(TEST_PLAIN_TEXT, publicKey);
         watch.stop();
         System.out.printf("%d\tms: RSA (%s)\n", watch.getTime(), encodeText);
 
-        String decodeText = EncryptUtils.decodeByRSAAndBase64(encodeText, privateKey);
+        String decodeText = EncryptUtils.decodeByRSA(encodeText, privateKey);
         assertEquals(TEST_PLAIN_TEXT, decodeText);
 
-        decodeText = EncryptUtils.decodeByRSAAndBase64(encodeText, privateKey);
+        decodeText = EncryptUtils.decodeByRSA(encodeText, privateKey);
         assertEquals(TEST_PLAIN_TEXT, decodeText);
 
         String plainText = "body=学习周卡&buyer_email=xingken@126.com&buyer_id=2088002097358275&discount=0.00"
@@ -94,8 +95,8 @@ public class EncryptUtilsTest {
                 + "&notify_type=trade_status_sync&out_trade_no=402881e5519ffd600151a03a84b5015b&payment_type=1"
                 + "&price=0.01&quantity=1&seller_email=zdyaohm@163.com&seller_id=2088111858244206&subject=学习周卡"
                 + "&total_fee=0.01&trade_no=2015121400001000270005361312&trade_status=TRADE_SUCCESS&use_coupon=N";
-        encodeText = EncryptUtils.encodeByRSAAndBase64(plainText, publicKey);
-        decodeText = EncryptUtils.decodeByRSAAndBase64(encodeText, privateKey);
+        encodeText = EncryptUtils.encodeByRSA(plainText, publicKey);
+        decodeText = EncryptUtils.decodeByRSA(encodeText, privateKey);
         assertEquals(plainText, decodeText);
 
         String sign = EncryptUtils.signByRSA(plainText, privateKey);
