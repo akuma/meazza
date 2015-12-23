@@ -457,66 +457,66 @@ public abstract class EncryptUtils {
     }
 
     /**
-     * 带 secure、salt 参数的字符串 SHA1 签名。加密算法为：sha1(secure + str + salt)
+     * 带 secret、salt 参数的字符串 SHA1 签名。加密算法为：SHA1(secret + str + salt)
      */
-    public static String sha1Hex(String str, String secure, String salt) {
-        return DigestUtils.sha1Hex(secure + str + salt);
+    public static String sha1Hex(String str, String secret, String salt) {
+        return DigestUtils.sha1Hex(secret + str + salt);
     }
 
     /**
-     * 带 secure 参数的字符串 MD5 签名。加密算法为：md5(str + secure)
+     * 带 secret 参数的字符串 MD5 签名。加密算法为：md5(str + secret)
      *
      * @param str
      *            需要签名的字符串
-     * @param secure
+     * @param secret
      *            密钥
      * @return 签名结果
      */
-    public static String md5Hex(String str, String secure) {
-        String secureStr = str + secure;
+    public static String md5Hex(String str, String secret) {
+        String secureStr = str + secret;
         return DigestUtils.md5Hex(getBytes(secureStr, DEFAULT_CHARSET));
     }
 
     /**
-     * 验证字符串签名是否匹配。签名算法为：SHA1(str + secure)
+     * 验证字符串签名是否匹配。签名算法为：SHA1(secret + str + salt)
      *
      * @param str
      *            需要签名的字符串
-     * @param secure
+     * @param secret
      *            密钥
      * @param expectSign
      *            期望签名结果
      * @return true/false
      */
-    public static boolean verifyBySHA1(String str, String secure, String expectSign) {
-        String secureStr = str + secure;
+    public static boolean verifyBySHA1(String str, String secret, String salt, String expectSign) {
+        String secureStr = secret + str + salt;
         String actualSign = DigestUtils.sha1Hex(getBytes(secureStr, DEFAULT_CHARSET));
         return actualSign.equals(expectSign);
     }
 
     /**
-     * 验证字符串签名是否匹配。签名算法为：MD5(str + secure)
+     * 验证字符串签名是否匹配。签名算法为：MD5(str + secret)
      *
      * @param str
      *            需要签名的字符串
-     * @param secure
+     * @param secret
      *            密钥
      * @param expectSign
      *            期望签名结果
      * @return true/false
      */
-    public static boolean verifyByMD5(String str, String secure, String expectSign) {
-        String secureStr = str + secure;
+    public static boolean verifyByMD5(String str, String secret, String expectSign) {
+        String secureStr = str + secret;
         String actualSign = DigestUtils.md5Hex(getBytes(secureStr, DEFAULT_CHARSET));
         return actualSign.equals(expectSign);
     }
 
     /**
-     * 验证字符串签名是否匹配。签名算法为：MD5(str + secure)
+     * 验证字符串签名是否匹配。签名算法为：MD5(str + secret)
      *
      * @param str
      *            需要签名的字符串
-     * @param secure
+     * @param secret
      *            密钥
      * @param expectSign
      *            期望签名结果
@@ -524,8 +524,8 @@ public abstract class EncryptUtils {
      * @deprecated 请使用 {@link #verifyByMD5(String, String, String)}
      */
     @Deprecated
-    public static boolean verifyMd5Hex(String str, String secure, String expectSign) {
-        return verifyByMD5(str, secure, expectSign);
+    public static boolean verifyMd5Hex(String str, String secret, String expectSign) {
+        return verifyByMD5(str, secret, expectSign);
     }
 
     /**
