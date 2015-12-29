@@ -7,7 +7,7 @@ package com.guomi.meazza.spring.mvc;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,8 +33,8 @@ public class ResponseMessage implements Serializable {
     private int code = SUCCESS_CODE; // 响应代码
     private Collection<String> actionMessages = new ArrayList<>(); // 普通提示信息
     private Collection<String> actionErrors = new ArrayList<>(); // 普通出错提示
-    private Map<String, Collection<String>> fieldErrors = new HashMap<>(); // 字段出错提示
-    private Map<String, Object> data = new HashMap<>(); // 业务数据
+    private Map<String, Collection<String>> fieldErrors = new LinkedHashMap<>(); // 字段出错提示
+    private Map<String, Object> data = new LinkedHashMap<>(); // 业务数据
 
     public String getId() {
         return id;
