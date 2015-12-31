@@ -216,7 +216,7 @@ public abstract class AbstractController implements ValidationSupport {
 
         // 将存放在 model 中的数据放到返回结果中
         // 需要过滤掉部分不需要的数据
-        Map<String, Object> data = model.asMap();
+        Map<String, Object> data = new HashMap<>(model.asMap());
         data.remove(ACTION_MESSAGES);
         data.remove(ACTION_ERRORS);
         data.remove(FIELD_ERRORS);
