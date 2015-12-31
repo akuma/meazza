@@ -161,7 +161,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
      */
     public static boolean isWhitespace(char ch) {
         // 添加对 '\u005Cu00A0', '\u005Cu2007', '\u005Cu202F' 的判断
- return (Character.isWhitespace(ch) || ch == '\u00A0' || ch == '\u2007' || ch == '\u202F');
+        return (Character.isWhitespace(ch) || ch == '\u00A0' || ch == '\u2007' || ch == '\u202F');
     }
 
     /**
@@ -464,11 +464,11 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
 
         char[] charArray = str.toCharArray();
         for (char c : charArray) {
-            if ((c >= 0x4e00) && (c <= 0x9fbb)) {
-                return true;
+            if ((c < 0x4e00) || (c > 0x9fbb)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**

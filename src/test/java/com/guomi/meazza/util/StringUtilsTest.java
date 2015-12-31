@@ -142,4 +142,11 @@ public class StringUtilsTest {
         assertFalse(StringUtils.isFloatNumber(null));
     }
 
+    @Test
+    public void testIsChineseCharacter() {
+        assertFalse(StringUtils.isChineseCharacter("徐,.\"'"));
+        assertFalse(StringUtils.isChineseCharacter("徐@，"));
+        assertTrue(StringUtils.isChineseCharacter("徐炯晓"));
+    }
+
 }
