@@ -93,12 +93,7 @@ public abstract class AbstractAppSettings implements Serializable {
         // 如果是测试环境，则开启定时读取 assets version 文件的任务
         if (isTest()) {
             executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    initAssetsVersion(assetsVersionPath);
-                }
-            }, 60, 10, TimeUnit.SECONDS);
+            executor.scheduleWithFixedDelay(() -> initAssetsVersion(assetsVersionPath), 60, 10, TimeUnit.SECONDS);
         }
     }
 
@@ -292,7 +287,7 @@ public abstract class AbstractAppSettings implements Serializable {
             String versionPath = getAssetsVersionPath(assetsPaths[i]);
 
             try {
-                Map<String, String> assetsVersion = MAPPER.reader(Map.class).readValue(new URL(versionPath));
+                Map<String, String> assetsVersion = MAPPER.readerFor(Map.class).readValue(new URL(versionPath));
                 assetsVersions.put(String.valueOf(i + 1), assetsVersion);
             } catch (IOException e) {
                 if (e instanceof FileNotFoundException) {

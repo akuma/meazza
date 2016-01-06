@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * URL 工具类。
- * 
+ *
  * @author akuma
  */
 public abstract class URLUtils {
@@ -48,7 +48,7 @@ public abstract class URLUtils {
 
     /**
      * 设置字母集
-     * 
+     *
      * @param charSet
      */
     public static void setCharSet(String charSet) {
@@ -57,7 +57,7 @@ public abstract class URLUtils {
 
     /**
      * 拼接URL，参数从obj中通过反射取得。
-     * 
+     *
      * @param url
      *            URL
      * @param obj
@@ -69,9 +69,8 @@ public abstract class URLUtils {
         List<Object> values = new ArrayList<>();
 
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> properties = BeanUtils.describe(obj);
-            for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            Map<String, String> properties = BeanUtils.describe(obj);
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String name = entry.getKey();
                 if ("class".equals(name)) {
                     continue;
@@ -88,7 +87,7 @@ public abstract class URLUtils {
 
     /**
      * 拼接URL，参数从obj中通过反射取得
-     * 
+     *
      * @param url
      *            URL
      * @param obj
@@ -111,7 +110,7 @@ public abstract class URLUtils {
 
     /**
      * 拼接URL
-     * 
+     *
      * @param url
      *            URL
      * @param queryString
@@ -133,7 +132,7 @@ public abstract class URLUtils {
 
     /**
      * 拼接URL
-     * 
+     *
      * @param url
      *            URL
      * @param name
@@ -148,7 +147,7 @@ public abstract class URLUtils {
 
     /**
      * 拼接 URL。
-     * 
+     *
      * @param url
      *            URL
      * @param names
@@ -202,7 +201,7 @@ public abstract class URLUtils {
 
     /**
      * 对 url 按照指定编码方式解码。
-     * 
+     *
      * @param url
      * @param encoding
      * @return
@@ -218,7 +217,7 @@ public abstract class URLUtils {
 
     /**
      * 使 URL 成为动态 URL，如果没有问号就在最后添加问号。
-     * 
+     *
      * @param url
      * @return
      */
@@ -231,7 +230,7 @@ public abstract class URLUtils {
 
     /**
      * 对 url 按照指定编码方式编码。
-     * 
+     *
      * @param url
      * @param encoding
      * @return
@@ -247,7 +246,7 @@ public abstract class URLUtils {
 
     /**
      * 通过servletPath取得action的名称
-     * 
+     *
      * @param servletPath
      * @return
      */
@@ -257,7 +256,7 @@ public abstract class URLUtils {
 
     /**
      * 取得url的后缀名
-     * 
+     *
      * @param url
      * @return
      */
@@ -270,13 +269,13 @@ public abstract class URLUtils {
 
         int interrogationIndex = url.indexOf(QUESTION_MARK);
 
-        return interrogationIndex == -1 ? url.substring(pointIndex + 1) : url.substring(pointIndex + 1,
-                interrogationIndex);
+        return interrogationIndex == -1 ? url.substring(pointIndex + 1)
+                : url.substring(pointIndex + 1, interrogationIndex);
     }
 
     /**
      * 通过servletPath获得namespace
-     * 
+     *
      * @param servletPath
      * @return
      */
@@ -286,7 +285,7 @@ public abstract class URLUtils {
 
     /**
      * 忽略URL中的末尾的'/'符号.
-     * 
+     *
      * @param url
      *            url地址字符串
      * @return 忽略末尾'/'符号后的url地址.
@@ -306,7 +305,7 @@ public abstract class URLUtils {
 
     /**
      * 访问页面URL，获得输入流
-     * 
+     *
      * @param pageURL
      *            页面URL
      * @return 输入流
@@ -326,7 +325,7 @@ public abstract class URLUtils {
 
     /**
      * 访问页面URL，获得页面内容
-     * 
+     *
      * @param pageURL
      *            页面URL
      * @return 页面内容
@@ -354,7 +353,7 @@ public abstract class URLUtils {
 
     /**
      * 从URL中分析字符串参数，放到一个 map 里。
-     * 
+     *
      * @param url
      *            URL
      * @return map，存放的都是字符串的键值对
@@ -389,7 +388,7 @@ public abstract class URLUtils {
 
     /**
      * 缩短url，把baseURL开头的部分去掉，缩短的url都是以"/"开头的
-     * 
+     *
      * @param url
      * @param baseURL
      * @return
@@ -402,13 +401,13 @@ public abstract class URLUtils {
             baseURL = baseURL.substring(0, baseURL.length() - 1);
         }
 
-        return !StringUtils.isEmpty(url) && !StringUtils.isEmpty(baseURL) && url.startsWith(baseURL) ? url
-                .substring(baseURL.length()) : url;
+        return !StringUtils.isEmpty(url) && !StringUtils.isEmpty(baseURL) && url.startsWith(baseURL)
+                ? url.substring(baseURL.length()) : url;
     }
 
     /**
      * 查询字符串后面增加参数
-     * 
+     *
      * @param queryString
      *            查询字符串，比如：id=1&type=1
      * @param name
