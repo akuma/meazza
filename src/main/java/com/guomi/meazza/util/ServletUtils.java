@@ -15,7 +15,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URLEncoder;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,10 +89,10 @@ public abstract class ServletUtils {
 
     private static final String USER_AGENT = "user-agent";
 
-    private static final Pattern PATTERN_BROWSER_REGEX_MOST = Pattern.compile(
-            ".*((msie |firefox/|chrome/|opera/)\\d+(\\.\\d+)*).*", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PATTERN_BROWSER_REGEX_SAFARI = Pattern.compile(
-            "(?!.*chrome).*(safari/\\d+(\\.\\d+)*).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_BROWSER_REGEX_MOST = Pattern
+            .compile(".*((msie |firefox/|chrome/|opera/)\\d+(\\.\\d+)*).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_BROWSER_REGEX_SAFARI = Pattern
+            .compile("(?!.*chrome).*(safari/\\d+(\\.\\d+)*).*", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern PATTERN_IP_ADDRESS_PREFIX = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.");
     private static final String REGEX_IP_ADDRESS = "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
@@ -557,13 +555,7 @@ public abstract class ServletUtils {
             hostname = address.getHostName();
 
             List<NetworkInterface> nets = Collections.list(NetworkInterface.getNetworkInterfaces());
-            Collections.sort(nets, new Comparator<NetworkInterface>() {
-
-                @Override
-                public int compare(NetworkInterface o1, NetworkInterface o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
+            Collections.sort(nets, (o1, o2) -> o1.getName().compareTo(o2.getName()));
             for (NetworkInterface net : nets) {
                 List<InetAddress> inetAddrs = Collections.list(net.getInetAddresses());
                 for (InetAddress inetAddr : inetAddrs) {
@@ -764,6 +756,18 @@ public abstract class ServletUtils {
     public static boolean isAjaxRequest(HttpServletRequest request) {
         String header = request.getHeader(AJAX_REQUEST_HEADER);
         return AJAX_REQUEST_HEADER_VALUE.equalsIgnoreCase(header);
+    }
+
+    /**
+     * 判断客户端是否是 Android 设备。
+     *
+     * @param request
+     *            请求对象
+     * @return true/false
+     */
+    public static boolean isAndroidDevice(HttpServletRequest request) {
+        String userAgent = StringUtils.defaultString(request.getHeader(USER_AGENT)).toLowerCase();
+        return userAgent.contains("android");
     }
 
     private static void doDownload(File file, HttpServletRequest request, HttpServletResponse response)
