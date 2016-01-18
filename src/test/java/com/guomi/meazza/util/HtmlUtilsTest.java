@@ -65,7 +65,8 @@ public class HtmlUtilsTest {
     public void testIsBlank() {
         String[] blankSamples = { null, "", "   ", "&nbsp;", "<br>", "<div></div>", "<p></p>", "<div>&nbsp;</div>",
                 "<p>&nbsp; </p>", "<div>&nbsp;</div><br><p>&nbsp;</p>",
-                "<DIV>&nbsp;</DIV>\n<DIV> &nbsp;</DIV>\n<DIV>&nbsp; </dIv>", "<p>&nbsp;</p><ul style='color:red'></ul>" };
+                "<DIV>&nbsp;</DIV>\n<DIV> &nbsp;</DIV>\n<DIV>&nbsp; </dIv>",
+                "<p>&nbsp;</p><ul style='color:red'></ul>" };
         for (String s : blankSamples) {
             // System.out.println("isBlank: " + s);
             assertTrue(HtmlUtils.isBlank(s));
@@ -109,8 +110,8 @@ public class HtmlUtilsTest {
         assertEquals("test", HtmlUtils.cleanEditorHtml("  <div>&nbsp;test</div>  "));
         assertEquals("test", HtmlUtils.cleanEditorHtml(" test<br>  "));
         assertEquals("test<b>test</b>test", HtmlUtils.cleanEditorHtml(" test<b>test</b>test  ", false));
-        assertEquals("test<br /><br />test", HtmlUtils.cleanEditorHtml("&nbsp;<div>&nbsp; test<br><br/>test  ", false));
-        assertEquals("test<br /><br />test", HtmlUtils.cleanEditorHtml(" test<br><br/>test  "));
+        assertEquals("test<br><br>test", HtmlUtils.cleanEditorHtml("&nbsp;<div>&nbsp; test<br><br/>test  ", false));
+        assertEquals("test<br><br>test", HtmlUtils.cleanEditorHtml(" test<br><br/>test  "));
         assertEquals("a<sub>3</sub> b<sup>4</sup>",
                 HtmlUtils.cleanEditorHtml("&nbsp; a<sub>3</sub> b<sup>4</sup> &nbsp;<p>", false));
         assertEquals("", HtmlUtils.cleanEditorHtml(null));
@@ -158,9 +159,8 @@ public class HtmlUtilsTest {
         String largeSample = FileUtils.readFileToString(new File("src/test/java/com/guomi/meazza/util/htmlSample.txt"),
                 "utf-8");
         int times = 20;
-        StopWatch watch = new StopWatch("HtmlUtils.cleanEditorHtml(String) Performance Test (sample length: "
-                + largeSample.length()
-                + ")");
+        StopWatch watch = new StopWatch(
+                "HtmlUtils.cleanEditorHtml(String) Performance Test (sample length: " + largeSample.length() + ")");
         watch.start("Call HtmlUtils.cleanEditorHtml(String) " + times + " times");
         for (int i = 0; i < times; i++) {
             HtmlUtils.cleanEditorHtml(largeSample);
