@@ -303,15 +303,22 @@ public abstract class AbstractController implements ValidationSupport {
     }
 
     /**
-     * 判断浏览器是否是移动版本。
+     * 判断是否是移动设备的浏览器。
      */
     protected boolean isMobileAgent(WebRequest request) {
-        String ua = request.getHeader("User-Agent").toLowerCase();
-        if (StringUtils.isBlank(ua)) {
-            return false;
-        }
-
+        String ua = getUserAgent(request);
         return ua.matches(REGEX_MOBILE_AGENT1) || ua.substring(0, 4).matches(REGEX_MOBILE_AGENT2);
+    }
+
+    /**
+     * 判断是否是 Android 设备的浏览器。
+     */
+    protected boolean isAndroidAgent(WebRequest request) {
+        return getUserAgent(request).contains("android");
+    }
+
+    private String getUserAgent(WebRequest request) {
+        return StringUtils.defaultString(request.getHeader("User-Agent")).toLowerCase();
     }
 
 }
