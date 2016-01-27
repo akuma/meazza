@@ -18,6 +18,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
@@ -69,6 +70,9 @@ public abstract class EncryptUtils {
     // RSA 加密算法、签名算法
     private static final String RSA_ALGORITHM = "RSA";
     private static final String RSA_SIG_ALGORITHM = "SHA1withRSA";
+
+    // HMAC 签名算法
+    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
 
     /**
      * 自身混淆加密，最多只能加密 30 个字节长度的字符串。
@@ -402,7 +406,7 @@ public abstract class EncryptUtils {
      *            源字符串
      * @param privateKey
      *            私钥
-     * @return 字符串的签名结果
+     * @return Base64 字符串形式的签名结果
      * @see {@link #verifyByRSA(String, String, String)}
      */
     public static String signByRSA(String str, String privateKey) {
@@ -457,20 +461,65 @@ public abstract class EncryptUtils {
     }
 
     /**
+     * 使用 HmacSHA1 算法签名，然后使用 Base64 编码。
+     *
+     * @param str
+     *            需要签名的字符串
+     * @param secret
+     *            密钥
+     * @return Base64 字符串形式的签名结果
+     * @see {@link #verifyByHmacSHA1(String, String, String)}
+     */
+    public static String signByHmacSHA1(String str, String secret) {
+        String result = null;
+        try {
+            SecretKeySpec signingKey = new SecretKeySpec(getBytes(secret), HMAC_SHA1_ALGORITHM);
+            Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
+            mac.init(signingKey);
+            result = Base64.encodeBase64String(mac.doFinal());
+        } catch (Exception e) {
+            logger.error("Sign by HmacSHA1 error", e);
+        }
+        return result;
+    }
+
+    /**
+     * 使用 Base64 解码，然后使用 HmacSHA1 进行签名验证。
+     *
+     * @param str
+     *            签名
+     * @param secret
+     *            密钥
+     * @param expectSign
+     *            期望签名结果
+     * @return 签名是否验证通过
+     * @see {@link #signByHmacSHA1(String, String)}
+     */
+    public static boolean verifyByHmacSHA1(String str, String secret, String expectSign) {
+        return signByHmacSHA1(str, secret).equals(expectSign);
+    }
+
+    /**
      * 带 secret、salt 参数的字符串 SHA1 签名。加密算法为：SHA1(secret + str + salt)
+     *
+     * @param str
+     *            需要签名的字符串
+     * @param secret
+     *            密钥
+     * @return 16 进制字符串形式的签名结果
      */
     public static String sha1Hex(String str, String secret, String salt) {
         return DigestUtils.sha1Hex(secret + str + salt);
     }
 
     /**
-     * 带 secret 参数的字符串 MD5 签名。加密算法为：md5(str + secret)
+     * 带 secret 参数的字符串 MD5 签名。加密算法为：MD5(str + secret)
      *
      * @param str
      *            需要签名的字符串
      * @param secret
      *            密钥
-     * @return 签名结果
+     * @return 16 进制字符串形式的签名结果
      */
     public static String md5Hex(String str, String secret) {
         String secureStr = str + secret;
@@ -478,7 +527,7 @@ public abstract class EncryptUtils {
     }
 
     /**
-     * 验证字符串签名是否匹配。签名算法为：SHA1(secret + str + salt)
+     * 验证字符串签名是否匹配。签名算法采用 {@link #sha1Hex(String, String, String)}。
      *
      * @param str
      *            需要签名的字符串
@@ -489,13 +538,11 @@ public abstract class EncryptUtils {
      * @return true/false
      */
     public static boolean verifyBySHA1(String str, String secret, String salt, String expectSign) {
-        String secureStr = secret + str + salt;
-        String actualSign = DigestUtils.sha1Hex(getBytes(secureStr, DEFAULT_CHARSET));
-        return actualSign.equals(expectSign);
+        return sha1Hex(str, secret, salt).equals(expectSign);
     }
 
     /**
-     * 验证字符串签名是否匹配。签名算法为：MD5(str + secret)
+     * 验证字符串签名是否匹配。签名算法采用 {@link #md5Hex(String, String)}。
      *
      * @param str
      *            需要签名的字符串
@@ -506,9 +553,7 @@ public abstract class EncryptUtils {
      * @return true/false
      */
     public static boolean verifyByMD5(String str, String secret, String expectSign) {
-        String secureStr = str + secret;
-        String actualSign = DigestUtils.md5Hex(getBytes(secureStr, DEFAULT_CHARSET));
-        return actualSign.equals(expectSign);
+        return md5Hex(str, secret).equals(expectSign);
     }
 
     /**

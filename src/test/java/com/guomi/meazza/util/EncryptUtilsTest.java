@@ -103,4 +103,28 @@ public class EncryptUtilsTest {
         assertTrue(EncryptUtils.verifyByRSA(plainText, publicKey, sign));
     }
 
+    @Test
+    public void testSign() {
+        StopWatch watch = new StopWatch();
+        watch.start();
+        String sig = EncryptUtils.signByHmacSHA1(TEST_PLAIN_TEXT, TEST_PASSWORD);
+        watch.stop();
+        System.out.printf("%d\tms: HmacSHA1 (%s)\n", watch.getTime(), sig);
+        assertTrue(EncryptUtils.verifyByHmacSHA1(TEST_PLAIN_TEXT, TEST_PASSWORD, sig));
+
+        watch.reset();
+        watch.start();
+        sig = EncryptUtils.sha1Hex(TEST_PLAIN_TEXT, TEST_PASSWORD, TEST_PASSWORD);
+        watch.stop();
+        System.out.printf("%d\tms: SHA1 (%s)\n", watch.getTime(), sig);
+        assertTrue(EncryptUtils.verifyBySHA1(TEST_PLAIN_TEXT, TEST_PASSWORD, TEST_PASSWORD, sig));
+
+        watch.reset();
+        watch.start();
+        sig = EncryptUtils.md5Hex(TEST_PLAIN_TEXT, TEST_PASSWORD);
+        watch.stop();
+        System.out.printf("%d\tms: MD5 (%s)\n", watch.getTime(), sig);
+        assertTrue(EncryptUtils.verifyByMD5(TEST_PLAIN_TEXT, TEST_PASSWORD, sig));
+    }
+
 }
