@@ -596,7 +596,7 @@ public abstract class BasicMongoService {
             return;
         }
 
-        if (update.modifies("modifyTime") && autoUpdateModifyTime) {
+        if (!update.modifies("modifyTime") && autoUpdateModifyTime) {
             update.set("modifyTime", new Date());
         }
     }
