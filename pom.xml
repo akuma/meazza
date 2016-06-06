@@ -4,14 +4,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.guomi.meazza</groupId>
     <artifactId>meazza</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>Meazza: Guomi Core Libraries for Java</name>
-    <description>Meazza is a libraries that include utility classes, framework wrapper classes, and much more.</description>
+    <description>Meazza is a libraries that include utility classes, framework wrapper classes, and etc.</description>
 
     <scm>
-        <developerConnection>scm:git:git@gitweb.gm.com:common/meazza.git</developerConnection>
-        <url>http://gitlab.gm.com/common/meazza</url>
+        <developerConnection>scm:git:git@github.com:akuma/meazza.git</developerConnection>
+        <url>https://github.com/akuma/meazza</url>
     </scm>
 
     <properties>
