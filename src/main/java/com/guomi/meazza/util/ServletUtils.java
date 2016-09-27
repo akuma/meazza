@@ -789,7 +789,7 @@ public abstract class ServletUtils {
     /**
      * 判断是否是移动设备的浏览器。
      */
-    public boolean isMobileAgent(HttpServletRequest request) {
+    public static boolean isMobileAgent(HttpServletRequest request) {
         String userAgent = StringUtils.defaultString(getUserAgent(request)).toLowerCase();
         return userAgent.matches(ServletUtils.REGEX_MOBILE_AGENT1)
                 || userAgent.substring(0, 4).matches(REGEX_MOBILE_AGENT2);
