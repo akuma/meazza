@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.guomi.meazza</groupId>
     <artifactId>meazza</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Meazza: Guomi Core Libraries for Java</name>
     <description>Meazza is a libraries that include utility classes, framework wrapper classes, and etc.</description>
