@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -38,12 +39,15 @@ public abstract class AbstractAppSettings implements Serializable {
 
     private static final long serialVersionUID = -8794135442659506482L;
 
+    public static final Pattern HTTP_PROTOCOL_PREFIX_PATTERN = Pattern.compile("^(https?:)?//.+",
+            Pattern.CASE_INSENSITIVE);
+
     private static final String EXTENSION_JS = "js";
     private static final String EXTENSION_CSS = "css";
     private static final String ASSETS_MIN_FLAG = ".min.";
     private static final String ASSETS_VERION_FILENAME = "version.json";
 
-    private static ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -203,17 +207,16 @@ public abstract class AbstractAppSettings implements Serializable {
             return StringUtils.EMPTY;
         }
 
-        // 如果资源以 / 开头，则删除该字符
-        if (originAsset.startsWith("/")) {
+        // 如果资源以 / 开头并且不以 // 开头，则删除该字符
+        if (originAsset.startsWith("/") && !originAsset.startsWith("//")) {
             originAsset = originAsset.substring(1);
         }
 
         // 获取资源后缀名
         String extension = FilenameUtils.getExtension(originAsset);
 
-        // 如果资源不以 http/https 开头，则尝试给资源添加 css/、js/ 这样的前缀目录
-        if (!originAsset.startsWith("http://") && !originAsset.startsWith("https://")) {
-
+        // 如果资源不以 //、http://、https:// 开头，则尝试给资源添加 css/、js/ 这样的前缀目录
+        if (!HTTP_PROTOCOL_PREFIX_PATTERN.matcher(originAsset).matches()) {
             String prefix = StringUtils.EMPTY;
             if (EXTENSION_JS.equalsIgnoreCase(extension)) {
                 prefix = EXTENSION_JS + "/";
@@ -285,9 +288,12 @@ public abstract class AbstractAppSettings implements Serializable {
         // 1 -> map1, 2 -> map2...
         for (int i = 0; i < assetsPaths.length; i++) {
             String versionPath = getAssetsVersionPath(assetsPaths[i]);
+            if (versionPath.startsWith("//")) {
+                versionPath = "http:" + versionPath;
+            }
 
             try {
-                Map<String, String> assetsVersion = MAPPER.readerFor(Map.class).readValue(new URL(versionPath));
+                Map<String, String> assetsVersion = OBJECT_MAPPER.readerFor(Map.class).readValue(new URL(versionPath));
                 assetsVersions.put(String.valueOf(i + 1), assetsVersion);
             } catch (IOException e) {
                 if (e instanceof FileNotFoundException) {
