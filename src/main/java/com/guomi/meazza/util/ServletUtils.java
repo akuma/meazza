@@ -531,23 +531,17 @@ public abstract class ServletUtils {
         String timestamp = null;
         String revision = null;
 
-        InputStream in = null;
-        try {
-            in = servletContext.getResourceAsStream(MANIFEST_FILE);
-            if (in != null) {
-                Manifest manifest = new Manifest(in);
-                Attributes atts = manifest.getMainAttributes();
+        try (InputStream in = servletContext.getResourceAsStream(MANIFEST_FILE)) {
+            Manifest manifest = new Manifest(in);
+            Attributes atts = manifest.getMainAttributes();
 
-                appName = atts.getValue("Implementation-Title");
-                version = atts.getValue("Implementation-Version");
-                qualifier = atts.getValue("Implementation-Qualifier");
-                timestamp = atts.getValue("Implementation-Timestamp");
-                revision = atts.getValue("Implementation-Revision");
-            }
+            appName = atts.getValue("Implementation-Title");
+            version = atts.getValue("Implementation-Version");
+            qualifier = atts.getValue("Implementation-Qualifier");
+            timestamp = atts.getValue("Implementation-Timestamp");
+            revision = atts.getValue("Implementation-Revision");
         } catch (IOException e) {
             logger.debug("Read webapp's '" + MANIFEST_FILE + "' error", e);
-        } finally {
-            IOUtils.closeQuietly(in);
         }
 
         appName = StringUtils.defaultIfEmpty(appName, "unknown");
@@ -710,13 +704,9 @@ public abstract class ServletUtils {
         response.setContentType(mimeType + "; charset=" + charSet);
         // response.setContentLength(value.getBytes().length);
 
-        PrintWriter out = null;
-        try {
-            out = response.getWriter();
+        try (PrintWriter out = response.getWriter()) {
             out.print(value);
             out.flush();
-        } finally {
-            IOUtils.closeQuietly(out);
         }
     }
 

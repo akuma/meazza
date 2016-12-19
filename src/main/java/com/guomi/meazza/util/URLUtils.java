@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -332,12 +331,8 @@ public abstract class URLUtils {
      * @throws IOException
      */
     public static String readContent(String pageURL) throws IOException {
-        InputStream in = null;
-        ByteArrayOutputStream out = null;
-
-        try {
-            in = visitContent(pageURL);
-            out = new ByteArrayOutputStream();
+        try (InputStream in = visitContent(pageURL);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             byte[] buffer = new byte[BUFFER_SIZE];
             int length;
@@ -345,9 +340,6 @@ public abstract class URLUtils {
                 out.write(buffer, 0, length);
             }
             return new String(out.toByteArray());
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
         }
     }
 
