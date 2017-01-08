@@ -2,10 +2,27 @@
 <!DOCTYPE configuration>
 <configuration>
 
+    <property name="LOG_PATH" value="${LOG_HOME:-logs}" />
+
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{32}:%line -&gt; %msg%n</pattern>
+            <pattern>%date{ISO8601} %-5level [%thread] %logger{32}:%line - %msg%n</pattern>
         </encoder>
+    </appender>
+
+    <appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender -->
+        <file>${LOG_PATH}/meazza.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%date{ISO8601} %-5level [%thread] %logger{32}:%line - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <maxIndex>3</maxIndex>
+            <fileNamePattern>${LOG_PATH}/meazza.%i.log</fileNamePattern>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>1MB</maxFileSize>
+        </triggeringPolicy>
     </appender>
 
     <logger name="org.springframework" level="WARN" />
@@ -13,6 +30,7 @@
 
     <root level="ERROR">
         <appender-ref ref="Console" />
+        <appender-ref ref="File" />
     </root>
 
 </configuration>
